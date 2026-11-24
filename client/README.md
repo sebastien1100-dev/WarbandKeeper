@@ -4,16 +4,21 @@ Petit programme Windows pour installer et mettre à jour l'addon sans manipuler 
 Warband Keeper est fait pour **WoW Forever** seulement : le client ne propose que ses installations.
 Après chaque mise à jour, il dit s'il faut redémarrer complètement le jeu (nouveaux fichiers) ou si un `/reload` suffit.
 
-- **Tableau de bord** : or et sa courbe, dernière séance, enchères, recharges, listes d'achat, Rangement et courrier (résumé écrit par l'addon à chaque déconnexion).
-- **Mises à jour** : version installée et dernière version publiée, bouton « Mettre à jour », dernière sauvegarde, prochaine vérification, dossier de l'addon, nouveautés à installer.
-- **Réglages**, en onglets : Dossier, GitHub, Mises à jour, Notifications (notifications Windows : enchères qui expirent, recharges prêtes, repos plein, courrier ; heures calmes), Données.
-- **Nouveautés** : les notes de toutes les versions.
-- **Sauvegardes** : tes réglages de l'addon (SavedVariables) sont sauvegardés avant chaque mise à jour,
-  restaurables en un clic (jeu fermé) ; la version précédente de l'addon est gardée (« Revenir à cette version »).
+Un rail d'icônes à gauche (Accueil, Addon, Découvertes) ; en haut de chaque page ses chiffres clés et l'état de
+l'addon et du client ; la roue en haut à droite ouvre les Réglages.
+
+- **Accueil** : or du compte et sa courbe (7 / 30 / 90 jours), persos (niveau, or, repos), dernières 24 h par cause,
+  « À surveiller » (Rangement, courrier, enchères, recharges, listes d'achat) et « En bref » (séance, addon, client,
+  découvertes, sauvegarde, HV) : résumé écrit par l'addon à chaque déconnexion.
+- **Addon** : version installée et dernière version publiée, « Mettre à jour » / « Vérifier », client PC, sauvegardes
+  de tes réglages (SavedVariables, faites avant chaque mise à jour, restaurables en un clic, jeu fermé), version
+  précédente de l'addon (« Remettre »), et « Quoi de neuf » en deux volets : addon et client (client/CHANGELOG.md).
+- **Découvertes** : ce que l'addon a appris en jeu, envoyé tout seul sur GitHub (voir plus bas).
+- **Réglages** (roue), en onglets : Dossier, GitHub, Mises à jour, Notifications (notifications Windows : enchères qui
+  expirent, recharges prêtes, repos plein, courrier ; heures calmes), Données.
 - **Installation de l'addon** : le client cherche WoW tout seul (registre de Windows, réglages de Battle.net,
   tous les disques) et ne garde que WoW Forever ; s'il en trouve plusieurs, il te laisse choisir
   (« Installer ici »). Le dossier `Interface\AddOns` est créé s'il manque.
-- **Nouveautés** en deux volets : notes de l'**addon** et notes du **client** (client/CHANGELOG.md, à part).
 - **Réglages** : dossier du jeu (« Détecter » ou « Parcourir »), jeton GitHub,
   **Mises à jour** (toutes les heures par défaut, toutes les 6 h, au démarrage seulement ou à la demande ; le client prévient en clignotant dans la barre des tâches ; installation automatique ; lancement avec Windows, réduit),
   **Données** (vérification sur GitHub chaque jour, chaque lundi ou à la demande ; publication automatique

@@ -33,7 +33,7 @@ from tkinter import filedialog, font as tkfont
 
 import learned  # Découvertes (client/learned.py, partagé avec tools/gen_learned.py)
 
-CLIENT_VERSION = "1.9.12"
+CLIENT_VERSION = "1.9.13"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 DATA_ADDON = "WarbandKeeper_Data"  # grosses bases, chargées à la demande (dossier à côté de l'addon)
@@ -51,8 +51,11 @@ C = {
     "bg": "#0f1012", "sidebar": "#0c0d0e", "surface": "#17191b", "surface2": "#1c1e21",
     "hover": "#212327", "border": "#303338", "text": "#edeff2", "muted": "#999ea8",
     "dim": "#65686f", "accent": "#1f8fff", "accent2": "#4da6ff", "onAccent": "#ffffff",
-    "positive": "#9ed17a", "warning": "#f2a84d", "negative": "#e86b6b",
+    "positive": "#9ed17a", "warning": "#f2a84d", "negative": "#e86b6b", "gold": "#e8c35a",
 }
+# couleurs de classe du jeu (persos de l'Accueil)
+CLASS_COLORS = {"WARRIOR": "#c79c6e", "PALADIN": "#f58cba", "HUNTER": "#abd473", "ROGUE": "#fff569", "PRIEST": "#e6e6e6",
+                "SHAMAN": "#0070de", "MAGE": "#69ccf0", "WARLOCK": "#9482c9", "DRUID": "#ff7d0a"}
 
 # ---------------------------------------------------------------------------
 # Réglages du client
@@ -689,6 +692,26 @@ def quiet_now(now=None):
 
 CLASS_COLORS = {"WARRIOR": "#c79c6e", "PALADIN": "#f58cba", "HUNTER": "#abd473", "ROGUE": "#fff569", "PRIEST": "#ffffff",
                 "SHAMAN": "#0070de", "MAGE": "#69ccf0", "WARLOCK": "#9482c9", "DRUID": "#ff7d0a"}
+
+
+def short_until(t):
+    """Délai court jusqu'à t : « 3 h », « 27 j » (listes étroites de l'Accueil)."""
+    left = (t or 0) - time.time()
+    if left <= 3600:
+        return "< 1 h"
+    if left < 86400:
+        return "%d h" % (left // 3600)
+    return "%d j" % (left // 86400)
+
+
+def dur_text(sec):
+    """Durée courte : « 45 s », « 12 min », « 1 h 05 »."""
+    sec = int(sec or 0)
+    if sec < 60:
+        return "%d s" % sec
+    if sec < 3600:
+        return "%d min" % (sec // 60)
+    return "%d h %02d" % (sec // 3600, sec % 3600 // 60)
 
 
 def money_text(c):
@@ -1678,10 +1701,60 @@ def page(key, title, icon):
 
 
 class Page(tk.Frame):
+    """Page du client (maquette « mix ») : en-tête de pastilles de chiffres clés (set_pills ; sans pastilles :
+    le titre), état de l'addon et du client à droite (paint_status, clic = page Addon), roue = Réglages."""
+
     def __init__(self, app, parent):
         super().__init__(parent, bg=C["bg"])
         self.app = app
-        label(self, self.title, font="h1").pack(anchor="w", pady=(0, 8))
+        head = tk.Frame(self, bg=C["bg"])
+        head.pack(fill="x")
+        self.head = head
+        # à droite : laisse la place des boutons réduire / fermer de la fenêtre sans cadre
+        right = tk.Frame(head, bg=C["bg"])
+        right.pack(side="right", padx=(8, 92 if IS_WIN else 0))
+        gear = label(right, "⚙", fg="muted", font="h2", cursor="hand2")
+        gear.pack(side="right", padx=(8, 0))
+        gear.bind("<Button-1>", lambda e: app.show("settings"))
+        gear.bind("<Enter>", lambda e: gear.configure(fg=C["text"]))
+        gear.bind("<Leave>", lambda e: gear.configure(fg=C["muted"]))
+        self.stClient = Chip(right)
+        self.stClient.pack(side="right", padx=(6, 0))
+        self.stAddon = Chip(right)
+        self.stAddon.pack(side="right")
+        for ch in (self.stAddon, self.stClient):
+            ch.configure(cursor="hand2")
+            ch.bind("<Button-1>", lambda e: app.show("home"))
+        self.pillBox = tk.Frame(head, bg=C["bg"])
+        self.pillBox.pack(side="left", fill="x", expand=True)
+        tk.Frame(self, bg=C["border"], height=1).pack(fill="x", pady=(8, 10))
+        self.set_pills(None)
+
+    def set_pills(self, items):
+        """items = [(libellé, valeur, couleur)] ; None = le titre de la page."""
+        for w in self.pillBox.winfo_children():
+            w.destroy()
+        if not items:
+            label(self.pillBox, self.title, font="h2").pack(side="left", pady=(2, 0))
+            return
+        for lab, val, col in items:
+            p = tk.Frame(self.pillBox, bg=C["surface"], highlightthickness=1, highlightbackground=C["border"])
+            p.pack(side="left", padx=(0, 6))
+            tk.Label(p, text=lab, bg=C["surface"], fg=C["dim"], font=App.fonts["smallb"]).pack(side="left", padx=(8, 5), pady=3)
+            tk.Label(p, text=val, bg=C["surface"], fg=C.get(col, col) if col else C["text"],
+                     font=App.fonts["bodyb"]).pack(side="left", padx=(0, 8), pady=3)
+
+    def paint_status(self):
+        a = self.app
+        inst, latest = a.installed, a.latest_version
+        if inst:
+            newer = bool(latest and vtuple(latest) > vtuple(inst))
+            self.stAddon.set("Addon %s" % inst, C["warning"] if newer else C["positive"])
+        else:
+            self.stAddon.set("Addon non installé", C["muted"])
+        asset, ver = best_client(a.releases) if a.releases else (None, None)
+        cnew = bool(asset and ver and vtuple(ver) > vtuple(CLIENT_VERSION))
+        self.stClient.set("Client %s" % CLIENT_VERSION, C["warning"] if cnew else C["positive"])
 
     def on_show(self):
         pass
@@ -1689,6 +1762,33 @@ class Page(tk.Frame):
     def on_state(self):
         """Appelé quand l'état change (versions, dossier, sauvegardes)."""
         pass
+
+
+def card_title(parent, text, right=None, rightColor="dim"):
+    """Titre de carte en petites majuscules (comme l'addon), texte optionnel à droite."""
+    row = tk.Frame(parent, bg=parent["bg"])
+    row.pack(fill="x", pady=(0, 4))
+    label(row, text.upper(), fg="dim", font="smallb").pack(side="left")
+    r = None
+    if right is not None:
+        r = label(row, right, fg=rightColor, font="small")
+        r.pack(side="right")
+    return row, r
+
+
+def thin_row(parent):
+    """Ligne de liste séparée par un filet (listes des cartes de l'Accueil et de la page Addon)."""
+    tk.Frame(parent, bg=C["border"], height=1).pack(fill="x")
+    row = tk.Frame(parent, bg=parent["bg"])
+    row.pack(fill="x", pady=3)
+    return row
+
+
+def link(parent, text, cmd, fg="accent"):
+    w = label(parent, text, fg=fg, font="small", cursor="hand2")
+    w.bind("<Button-1>", lambda e: cmd())
+    return w
+
 
 
 def notes_view(parent, height=10):
@@ -1762,18 +1862,16 @@ def plural(n, one, many=None):
     return "%d %s" % (n, one if n <= 1 else (many or one + "s"))
 
 
-@page("dash", "Tableau de bord", "▦")
+@page("dash", "Accueil", "▦")
 class DashPage(Page):
-    """Tiré du résumé que l'addon écrit à la déconnexion : quatre chiffres clés, la courbe de l'or
-    (7 / 30 / 90 jours) et « À surveiller », une liste triée par urgence. Tout tient dans la fenêtre fixe."""
+    """Accueil (maquette « mix » 1) : pastilles (or, 24 h, courrier, envois, enchères) puis trois colonnes :
+    or du compte + persos ; dernières 24 h par cause + À surveiller ; « En bref » (séance, addon, découvertes,
+    sauvegarde, HV, vérification). Tiré du résumé que l'addon écrit à la déconnexion (WarbandKeeperDB.clientDash)."""
 
     RANGES = [(7, "7 j"), (30, "30 j"), (90, "90 j")]
 
     def __init__(self, app, parent):
         super().__init__(app, parent)
-        # sous-titre à côté du titre de la page
-        self.when = label(self, "", fg="dim", font="small")
-        self.when.place(in_=self, x=190, y=8)
         self.body = tk.Frame(self, bg=C["bg"])
         self.body.pack(fill="both", expand=True)
         self.key = None
@@ -1791,89 +1889,76 @@ class DashPage(Page):
         if not fresh:
             self.app.load_save()
         waiting = dash is None and not fresh
-        key = (id(dash), self.app.addons, self.app.cfg.get("dashRange", 30), id(self.app.dataLog), self.app.installed, waiting)
+        a = self.app
+        key = (id(dash), a.addons, a.cfg.get("dashRange", 30), id(a.dataLog), a.installed, a.latest_version, waiting,
+               a.busy, str(a.cfg.get("learnedLast")), len(list_backups()), id(a.releases))
         if key == self.key and not force:
             return
         self.key = key
         for w in self.body.winfo_children():
             w.destroy()
         if waiting:
-            self.when.configure(text="")
+            self.set_pills(None)
             label(self.body, "Lecture de la sauvegarde de l'addon…", fg="muted").pack(anchor="w")
             return
         if not isinstance(dash, dict):
-            self.when.configure(text="")
-            label(self.body, "Rien à montrer pour l'instant : joue un perso avec l'addon 1.69 ou plus récent, puis déconnecte-toi "
-                             "(ou /reload) ; le tableau de bord se remplit avec ce que l'addon sait.", fg="muted", wraplength=520).pack(anchor="w")
+            self.set_pills(None)
+            label(self.body, "Rien à montrer pour l'instant : joue un perso avec l'addon, puis déconnecte-toi "
+                             "(ou /reload) ; l'accueil se remplit avec ce que l'addon sait.", fg="muted", wraplength=560).pack(anchor="w")
             return
         now = time.time()
-        self.when.configure(text="sauvegarde lue %s · déconnexion de %s" % (ago_text(dash.get("at")), dash.get("char") or "?"))
         gold = [int(v or 0) for v in lua_list(dash.get("gold"))]
         sess = dash.get("session") or {}
-        auc = [a for a in lua_list(dash.get("auctions")) if isinstance(a, dict) and (a.get("exp") or 0) > now]
+        auc = [x for x in lua_list(dash.get("auctions")) if isinstance(x, dict) and (x.get("exp") or 0) > now]
         mail = [m for m in lua_list(dash.get("mail")) if isinstance(m, dict)]
-
-        # -- quatre chiffres clés
-        kp = tk.Frame(self.body, bg=C["bg"])
-        kp.pack(fill="x")
-        for i in range(4):
-            kp.columnconfigure(i, weight=1, uniform="k")
-
-        def kpi(col, title, value, color, sub, subColor="dim"):
-            c = Card(kp)
-            c.grid(row=0, column=col, sticky="nsew", padx=(0 if col == 0 else 5, 0 if col == 3 else 5))
-            label(c.body, title, fg="muted", font="small").pack(anchor="w")
-            label(c.body, value, fg=color, font="h2").pack(anchor="w", pady=(1, 1))
-            label(c.body, sub, fg=subColor, font="small").pack(anchor="w")
-        cur = gold[-1] if gold else 0
-        dv = cur - gold[-8] if len(gold) > 7 else 0
-        kpi(0, "Or du compte", money_text(cur), "warning", "%s%s sur 7 jours" % ("+" if dv >= 0 else "-", money_text(abs(dv))),
-            "positive" if dv >= 0 else "negative")
+        stash = [x for x in lua_list(dash.get("stash")) if isinstance(x, dict)]
         day = dash.get("day") if isinstance(dash.get("day"), dict) else None
+        cur = gold[-1] if gold else 0
         if day is not None:
-            # or des dernières 24 h, tous persos, avec ce qui a le plus pesé (journal de l'or de l'addon)
-            g = int(day.get("net") or 0)
-            by = [b for b in lua_list(day.get("by")) if isinstance(b, dict)]
-            if by:
-                top = by[0]
-                v = int(top.get("v") or 0)
-                sub = "surtout %s (%s%s)" % (str(top.get("s") or "?").lower(), "+" if v >= 0 else "-", money_text(abs(v)))
-            else:
-                sub = "aucun mouvement d'or"
-            kpi(1, "Dernières 24 h", ("+" if g >= 0 else "-") + money_text(abs(g)), "positive" if g >= 0 else "negative", sub)
+            net = int(day.get("net") or 0)
         else:
-            # sauvegarde d'un addon sans journal de l'or : écart de l'or du compte sur 24 h (courbe journalière)
-            g = (gold[-1] - gold[-2]) if len(gold) > 1 else 0
-            kpi(1, "Dernières 24 h", ("+" if g >= 0 else "-") + money_text(abs(g)), "positive" if g >= 0 else "negative",
-                "or du compte, d'hier à aujourd'hui")
-        soon = [a for a in auc if (a.get("exp") or 0) <= now + 86400]
-        kpi(2, "Enchères en vente", str(len(auc)), "text",
-            (plural(len(soon), "expire", "expirent") + " sous 24 h") if soon else ("aucune n'expire" if auc else "dernier passage à l'HV"),
-            "warning" if soon else "dim")
+            net = (gold[-1] - gold[-2]) if len(gold) > 1 else 0
         letters = sum(int(m.get("count") or 0) for m in mail)
-        first = min([m.get("exp") or 0 for m in mail if (m.get("exp") or 0) > now] or [0])
-        kpi(3, "Courrier à prendre", plural(letters, "lettre"), "text",
-            ("%s · la 1re %s" % (plural(len(mail), "perso"), until_text(first))) if mail else "rien en attente")
+        self.set_pills([("OR", money_text(cur), "gold"), ("24 H", ("+" if net >= 0 else "-") + money_text(abs(net)),
+                                                           "positive" if net >= 0 else "negative"),
+                        ("COURRIER", str(letters), "warning" if letters else None),
+                        ("ENVOIS", plural(len(stash), "lot") if stash else "0", "accent" if stash else None)])
+        cols = tk.Frame(self.body, bg=C["bg"])
+        cols.pack(fill="both", expand=True)
+        for i, wgt in enumerate((5, 4, 3)):
+            cols.columnconfigure(i, weight=wgt, uniform="c")
+        cols.rowconfigure(0, weight=1)
+        c1, c2, c3 = (tk.Frame(cols, bg=C["bg"]) for _ in range(3))
+        c1.grid(row=0, column=0, sticky="nsew", padx=(0, 5))
+        c2.grid(row=0, column=1, sticky="nsew", padx=5)
+        c3.grid(row=0, column=2, sticky="nsew", padx=(5, 0))
+        self.gold_card(c1, gold)
+        self.chars_card(c1, chars, dash)
+        self.day_card(c2, day, gold)
+        self.watch_card(c2, dash, auc, mail, stash, now)
+        self.brief_card(c3, dash, sess, auc)
 
-        # -- courbe de l'or et « À surveiller »
-        low = tk.Frame(self.body, bg=C["bg"])
-        low.pack(fill="both", expand=True, pady=(10, 0))
-        low.columnconfigure(0, weight=5, uniform="l")
-        low.columnconfigure(1, weight=4, uniform="l")
-        low.rowconfigure(0, weight=1)
-        ch = Card(low, "Or du compte")
-        ch.grid(row=0, column=0, sticky="nsew", padx=(0, 5))
+    # -- or du compte : courbe 7 / 30 / 90 jours
+    def gold_card(self, parent, gold):
+        ch = Card(parent)
+        ch.pack(fill="x")
         days = self.app.cfg.get("dashRange", 30)
-        seg = tk.Frame(ch.head, bg=C["surface"])
-        seg.pack(side="right")
-        for d, txt in self.RANGES:
-            b = label(seg, " %s " % txt, fg="text" if d == days else "muted", font="small", cursor="hand2")
-            b.configure(bg=C["surface2"] if d == days else C["surface"])
-            b.pack(side="left", padx=2)
+        row, _ = card_title(ch.body, "Or du compte")
+        for d, txt in reversed(self.RANGES):
+            b = label(row, " %s " % txt, fg="text" if d == days else "muted", font="smallb" if d == days else "small",
+                      cursor="hand2")
+            b.pack(side="right", padx=1)
             b.bind("<Button-1>", lambda e, d=d: (self.app.cfg.__setitem__("dashRange", d), save_config(self.app.cfg), self.fill(True)))
         pts = gold[-(days + 1):] if gold else []
-        cv = tk.Canvas(ch.body, height=150, bg=C["surface"], highlightthickness=0)
-        cv.pack(fill="both", expand=True, pady=(4, 6))
+        top = tk.Frame(ch.body, bg=C["surface"])
+        top.pack(fill="x")
+        label(top, money_text(pts[-1] if pts else 0), fg="gold", font="h2").pack(side="left")
+        if len(pts) > 1:
+            dv = pts[-1] - pts[0]
+            label(top, "  %s%s sur %d j" % ("+" if dv >= 0 else "-", money_text(abs(dv)), days),
+                  fg="positive" if dv >= 0 else "negative", font="small").pack(side="left", pady=(4, 0))
+        cv = tk.Canvas(ch.body, height=104, bg=C["surface"], highlightthickness=0)
+        cv.pack(fill="x", pady=(4, 0))
 
         def draw(e, pts=pts, cv=cv):
             cv.delete("all")
@@ -1883,28 +1968,87 @@ class DashPage(Page):
                 return
             lo, hi = min(pts), max(pts)
             span = max(1, hi - lo)
-            for f in (0.15, 0.5, 0.85):
-                cv.create_line(0, h * f, w, h * f, fill=C["border"])
-            cv.create_text(2, h * 0.15 - 8, text=money_text(hi), fill=C["dim"], font=App.fonts["small"], anchor="w")
-            cv.create_text(2, h * 0.85 - 8, text=money_text(lo), fill=C["dim"], font=App.fonts["small"], anchor="w")
+            for f in (0.12, 0.9):
+                cv.create_line(0, h * f, w, h * f, fill=C["border"], dash=(3, 4))
+            cv.create_text(w - 2, h * 0.12 - 7, text=money_text(hi), fill=C["dim"], font=App.fonts["small"], anchor="e")
             xy = []
             for i, v in enumerate(pts):
-                xy += [i * (w - 4) / (len(pts) - 1) + 2, h * 0.85 - (v - lo) / span * h * 0.7]
+                xy += [i * (w - 4) / (len(pts) - 1) + 2, h * 0.9 - (v - lo) / span * h * 0.78]
             cv.create_polygon(*(xy + [w - 2, h, 2, h]), fill="#2a2416", outline="")
-            cv.create_line(*xy, fill=C["warning"], width=2, smooth=True)
+            cv.create_line(*xy, fill=C["gold"], width=2, smooth=True)
         cv.bind("<Configure>", draw)
-        foot = tk.Frame(ch.body, bg=C["surface"])
-        foot.pack(fill="x")
-        for k, v in (("Plus haut", money_text(max(pts) if pts else 0)), ("Ventes HV (séance)", money_text(sess.get("ah") or 0)),
-                     ("Persos", str(len(chars)))):
-            label(foot, k + " ", fg="muted", font="small").pack(side="left")
-            label(foot, v, font="smallb").pack(side="left", padx=(0, 14))
 
-        wc = Card(low, "À surveiller", "du plus urgent au moins urgent")
-        wc.grid(row=0, column=1, sticky="nsew", padx=(5, 0))
+    # -- persos : niveau, or, repos, dernière connexion
+    def chars_card(self, parent, chars, dash):
+        pc = Card(parent)
+        pc.pack(fill="both", expand=True, pady=(10, 0))
+        card_title(pc.body, "Persos", "repos plein en vert")
+        rest = {r.get("char"): r for r in lua_list(dash.get("rest")) if isinstance(r, dict)}
+        if not chars:
+            label(pc.body, "Aucun perso lu.", fg="dim", font="small").pack(anchor="w")
+        for c in chars[:6]:
+            row = thin_row(pc.body)
+            col = CLASS_COLORS.get(str(c.get("cls") or "").upper(), C["text"])
+            dot = tk.Canvas(row, width=8, height=8, bg=C["surface"], highlightthickness=0)
+            dot.create_oval(1, 1, 7, 7, fill=col, outline="")
+            dot.pack(side="left", padx=(0, 6))
+            r = rest.get(c.get("name"))
+            if r and r.get("full"):
+                rt, rc = "repos plein", "positive"
+            elif r and (r.get("at") or 0) > time.time():
+                rt, rc = "repos plein " + short_until(r.get("at")), "muted"
+            else:
+                rt, rc = ago_text(c.get("seen")) if c.get("seen") else "", "dim"
+            label(row, rt, fg=rc, font="small").pack(side="right")
+            label(row, money_text(int(c.get("money") or 0)), fg="gold", font="small").pack(side="right", padx=(6, 8))
+            label(row, "niv. %s" % (c.get("level") or "?"), fg="muted", font="small").pack(side="right")
+            tk.Label(row, text=c.get("name") or "?", bg=C["surface"], fg=col, font=App.fonts["small"], anchor="w").pack(
+                side="left", fill="x", expand=True)
+        if len(chars) > 6:
+            label(pc.body, "+ %d de plus" % (len(chars) - 6), fg="dim", font="small").pack(anchor="w", pady=(3, 0))
+
+    # -- dernières 24 h par cause (journal de l'or de l'addon)
+    def day_card(self, parent, day, gold):
+        dc = Card(parent)
+        dc.pack(fill="x")
+        if day is None:
+            g = (gold[-1] - gold[-2]) if len(gold) > 1 else 0
+            card_title(dc.body, "Dernières 24 h", ("+" if g >= 0 else "-") + money_text(abs(g)), "positive" if g >= 0 else "negative")
+            label(dc.body, "Or du compte d'hier à aujourd'hui (addon sans journal de l'or).", fg="dim", font="small",
+                  wraplength=240).pack(anchor="w")
+            return
+        net = int(day.get("net") or 0)
+        card_title(dc.body, "Dernières 24 h", ("+" if net >= 0 else "-") + money_text(abs(net)), "positive" if net >= 0 else "negative")
+        by = [b for b in lua_list(day.get("by")) if isinstance(b, dict)][:5]
+        if not by:
+            label(dc.body, "Aucun mouvement d'or.", fg="dim", font="small").pack(anchor="w")
+        mx = max([abs(int(b.get("v") or 0)) for b in by] or [1]) or 1
+        for b in by:
+            v = int(b.get("v") or 0)
+            row = tk.Frame(dc.body, bg=C["surface"])
+            row.pack(fill="x", pady=1)
+            tk.Label(row, text=("+" if v >= 0 else "-") + money_text(abs(v)), bg=C["surface"],
+                     fg=C["positive"] if v >= 0 else C["negative"], font=App.fonts["small"], width=9, anchor="e").pack(side="right")
+            label(row, str(b.get("s") or "?"), font="small").pack(side="left")
+            bar = tk.Canvas(dc.body, height=4, bg=C["surface"], highlightthickness=0)
+            bar.pack(fill="x", pady=(0, 3))
+
+            def draw(e, bar=bar, f=abs(v) / mx, col=C["positive"] if v >= 0 else C["negative"]):
+                bar.delete("all")
+                rounded(bar, 0, 0, e.width, 4, 2, fill=C["surface2"])
+                if f > 0:
+                    rounded(bar, 0, 0, max(4, e.width * f), 4, 2, fill=col)
+            bar.bind("<Configure>", draw)
+
+    # -- à surveiller, du plus urgent au moins urgent
+    def watch_card(self, parent, dash, auc, mail, stash, now):
+        wc = Card(parent)
+        wc.pack(fill="both", expand=True, pady=(10, 0))
+        card_title(wc.body, "À surveiller")
         rows = []  # (rang, couleur du point, texte, droite, couleur de droite)
-        for a in soon:
-            rows.append((1, C["warning"], "Enchère : %s x%d (%s)" % (a.get("name"), a.get("qty") or 1, a.get("char")), until_text(a.get("exp")), "warning"))
+        soon = [x for x in auc if (x.get("exp") or 0) <= now + 86400]
+        for x in soon:
+            rows.append((1, C["warning"], "Enchère : %s x%d" % (x.get("name"), x.get("qty") or 1), until_text(x.get("exp")), "warning"))
         pend = self.app.pending_data()
         if pend:
             rows.append((1, C["accent"], "Nouvelles données : %s" % data_text(*data_sum(pend)), "à installer", "accent"))
@@ -1912,45 +2056,82 @@ class DashPage(Page):
             left = (m.get("exp") or 0) - now
             urgent = 0 < left < 3 * 86400
             rows.append((0 if urgent else 3, C["negative"] if urgent else C["warning"],
-                         "Courrier de %s (%s)" % (m.get("char"), plural(int(m.get("count") or 0), "lettre")),
-                         ("expire " + until_text(m.get("exp"))) if left > 0 else "à prendre", "negative" if urgent else "warning"))
-        for x in [x for x in lua_list(dash.get("stash")) if isinstance(x, dict)]:
-            rows.append((2, C["accent"], "Rangement : %s de %s pour %s" % (plural(int(x.get("n") or 0), "lot"), x.get("from"), x.get("to")),
-                         "à envoyer", "accent"))
+                         "Courrier de %s (%d)" % (m.get("char"), int(m.get("count") or 0)),
+                         ("expire " + short_until(m.get("exp"))) if left > 0 else "à prendre", "negative" if urgent else "warning"))
+        for x in stash:
+            rows.append((2, C["accent"], "Rangement : %s %s » %s" % (plural(int(x.get("n") or 0), "lot"),
+                                                                    str(x.get("from") or "?").split(" ")[0],
+                                                                    str(x.get("to") or "?").split(" ")[0]), "à envoyer", "accent"))
         cds = sorted([c for c in lua_list(dash.get("cds")) if isinstance(c, dict)], key=lambda c: c.get("readyAt") or 0)
         for c in cds[:3]:
             ready = (c.get("readyAt") or 0) <= now
             rows.append((2 if ready else 5, C["positive"] if ready else C["muted"], "%s · %s" % (c.get("name"), c.get("char")),
                          "prête" if ready else until_text(c.get("readyAt")), "positive" if ready else "muted"))
-        for r in [r for r in lua_list(dash.get("rest")) if isinstance(r, dict) and r.get("full")][:2]:
-            rows.append((4, C["positive"], "Repos plein : %s" % r.get("char"), "150 %", "positive"))
-        lists = [l for l in lua_list(dash.get("lists")) if isinstance(l, dict)]
-        for l in lists[:2]:
+        for l in [l for l in lua_list(dash.get("lists")) if isinstance(l, dict)][:2]:
             short = int(l.get("short") or 0)
             if short:
                 cost = int(l.get("cost") or 0)
-                rows.append((6, C["muted"], "Liste « %s » : %s" % (l.get("name"), plural(short, "objet manque", "objets manquent")),
-                             ("~ " + money_text(cost)) if cost else "prix inconnu", "muted"))
+                rows.append((6, C["muted"], "Liste « %s » : %s" % (l.get("name"), plural(short, "objet")),
+                             ("manque " + money_text(cost)) if cost else "prix inconnu", "dim"))
         q = dash.get("queue") or {}
         if q.get("n"):
             rows.append((6, C["muted"], "File de fabrication : %s" % plural(int(q.get("n") or 0), "recette"),
-                         plural(int(q.get("missing") or 0), "composant manquant", "composants manquants"), "muted"))
-        if not cds:
-            rows.append((9, C["dim"], "Recharges de métier", "aucune suivie", "dim"))
-        if not auc:
-            rows.append((9, C["dim"], "Enchères", "rien en vente", "dim"))
+                         plural(int(q.get("missing") or 0), "manquant"), "dim"))
         rows.sort(key=lambda r: r[0])
-        for _, col, txt, right, rcol in rows[:9]:
-            row = tk.Frame(wc.body, bg=C["surface"])
-            row.pack(fill="x", pady=3)
-            dot = tk.Canvas(row, width=10, height=10, bg=C["surface"], highlightthickness=0)
-            dot.create_oval(1, 1, 9, 9, fill=col, outline="")
-            dot.pack(side="left", padx=(0, 8))
-            label(row, right, fg=rcol, font="small").pack(side="right", padx=(8, 0))
-            lt = label(row, txt, font="small")
-            lt.pack(side="left", fill="x", expand=True)
-        if len(rows) > 9:
-            label(wc.body, "+ %d de plus" % (len(rows) - 9), fg="dim", font="small").pack(anchor="w", pady=(4, 0))
+        if not rows:
+            label(wc.body, "Rien d'urgent.", fg="dim", font="small").pack(anchor="w")
+        for _, col, txt, right, rcol in rows[:7]:
+            row = thin_row(wc.body)
+            dot = tk.Canvas(row, width=8, height=8, bg=C["surface"], highlightthickness=0)
+            dot.create_oval(1, 1, 7, 7, fill=col, outline="")
+            dot.pack(side="left", padx=(0, 6))
+            label(row, right, fg=rcol, font="small").pack(side="right", padx=(6, 0))
+            label(row, txt, font="small").pack(side="left", fill="x", expand=True)
+        if len(rows) > 7:
+            label(wc.body, "+ %d de plus" % (len(rows) - 7), fg="dim", font="small").pack(anchor="w", pady=(3, 0))
+
+    # -- en bref : une ligne par sujet, action au bout
+    def brief_card(self, parent, dash, sess, auc):
+        a = self.app
+        bc = Card(parent)
+        bc.pack(fill="both", expand=True)
+        card_title(bc.body, "En bref")
+
+        def item(title, value, sub="", vcol="text", action=None):
+            tk.Frame(bc.body, bg=C["border"], height=1).pack(fill="x")
+            box = tk.Frame(bc.body, bg=C["surface"])
+            box.pack(fill="x", pady=4)
+            if action:
+                Button(box, action[0], action[1], "primary", height=24, font=App.fonts["smallb"]).pack(side="right")
+            label(box, title.upper(), fg="dim", font="smallb").pack(anchor="w")
+            line = tk.Frame(box, bg=C["surface"])
+            line.pack(anchor="w", fill="x")
+            label(line, value, fg=vcol, font="bodyb").pack(side="left")
+            if sub:
+                label(line, "  " + sub, fg="muted", font="small").pack(side="left")
+        item("Sauvegarde du jeu", "lue " + ago_text(dash.get("at")), "", "muted")
+        dur = int(sess.get("dur") or 0)
+        item("Séance", str(sess.get("char") or dash.get("char") or "?"),
+             "%s · %s%s" % (dur_text(dur), "+" if int(sess.get("gold") or 0) >= 0 else "-", money_text(abs(int(sess.get("gold") or 0)))))
+        inst, latest = a.installed, a.latest_version
+        if inst and latest and vtuple(latest) > vtuple(inst):
+            item("Addon", latest, "disponible", "warning", ("Installer", a.update_addon) if not a.busy else None)
+        else:
+            item("Addon", inst or "non installé", "à jour" if inst else "", "positive" if inst else "muted")
+        asset, ver = best_client(a.releases) if a.releases else (None, None)
+        if asset and ver and vtuple(ver) > vtuple(CLIENT_VERSION):
+            item("Client PC", ver, "disponible", "warning",
+                 ("Installer", lambda: a.update_client(asset)) if (FROZEN and IS_WIN) else None)
+        last = a.cfg.get("learnedLast") or {}
+        if last.get("at"):
+            item("Découvertes", plural(int(last.get("n") or 0), "ajout"),
+                 "envoyés " + datetime.fromtimestamp(last["at"]).strftime("%d/%m %H:%M"), "positive")
+        else:
+            item("Découvertes", "envoi auto" if a.cfg.get("learnedAuto", True) else "envoi coupé", "rien envoyé pour l'instant", "muted")
+        bk = list_backups()
+        item("Sauvegarde", datetime.fromtimestamp(bk[0]["time"]).strftime("%d/%m %H:%M") if bk else "aucune",
+             plural(len(bk), "gardée") if bk else "")
+        item("HV", plural(len(auc), "enchère"), "en vente" if auc else "rien en vente")
 
 
 class NotifyPanel:
@@ -1999,78 +2180,106 @@ class NotifyPanel:
             self.app.toast("Warband Keeper · Les notifications fonctionnent.", "positive")
 
 
-@page("home", "Mises à jour", "⟳")
+@page("home", "Addon", "⟳")
 class HomePage(Page):
+    """Page Addon (maquette « mix » 3) : à gauche l'addon (version, état, mettre à jour / vérifier, choix du dossier,
+    avancée de l'installation), le client PC, les sauvegardes et la version précédente ; à droite « Quoi de neuf »
+    (notes de l'addon ou du client). Remplace les anciennes pages Mises à jour, Nouveautés et Sauvegardes."""
+
     def __init__(self, app, parent):
         super().__init__(app, parent)
-        hero = Card(self)
-        hero.pack(fill="x")
-        b = hero.body
-        top = tk.Frame(b, bg=C["surface"])
-        top.pack(fill="x")
-        left = tk.Frame(top, bg=C["surface"])
-        left.pack(side="left", fill="x", expand=True)
-        tl = tk.Frame(left, bg=C["surface"])
-        tl.pack(anchor="w")
-        label(tl, "Warband Keeper", font="h2").pack(side="left")
-        label(tl, "  pour WoW Forever", fg="muted", font="small").pack(side="left", pady=(4, 0))
-        self.versions = label(left, "", fg="muted")
-        self.versions.pack(anchor="w", pady=(2, 8))
-        self.chip = Chip(left)
-        self.chip.pack(anchor="w")
-        right = tk.Frame(top, bg=C["surface"])
-        right.pack(side="right")
-        self.action = Button(right, "Mettre à jour", self.app.update_addon, "primary", width=190, height=44, font=App.fonts["btnL"])
-        self.action.pack(anchor="e")
-        # un seul bouton : « Mettre à jour » quand une version attend, sinon « Vérifier maintenant »
+        self.tab = "addon"
+        body = tk.Frame(self, bg=C["bg"])
+        body.pack(fill="both", expand=True)
+        left = tk.Frame(body, bg=C["bg"], width=300)
+        left.pack(side="left", fill="y")
+        left.pack_propagate(False)
+        # -- addon
+        ac = Card(left)
+        ac.pack(fill="x")
+        b = ac.body
+        card_title(b, "Warband Keeper", "pour WoW Forever")
+        self.versions = label(b, "", font="h2")
+        self.versions.pack(anchor="w")
+        self.chip = Chip(b)
+        self.chip.pack(anchor="w", pady=(4, 0))
+        btns = tk.Frame(b, bg=C["surface"])
+        btns.pack(fill="x", pady=(8, 0))
+        self.action = Button(btns, "Mettre à jour", self.app.update_addon, "primary", height=30)
+        self.action.pack(side="left")
+        self.checkBtn = Button(btns, "Vérifier", self.app.refresh, "secondary", height=30)
+        self.checkBtn.pack(side="left", padx=(6, 0))
         self.picker = tk.Frame(b, bg=C["surface"])
         self.progress = Progress(b)
-        self.status = label(b, "", fg="muted", font="small", wraplength=600)
-        self.status.pack(anchor="w", fill="x", pady=(10, 0))
-        b.bind("<Configure>", lambda e: self.status.configure(wraplength=max(300, e.width - 10)), add="+")
+        self.status = label(b, "", fg="muted", font="small", wraplength=250)
+        self.status.pack(anchor="w", fill="x", pady=(6, 0))
+        # -- client
+        cc = Card(left)
+        cc.pack(fill="x", pady=(8, 0))
+        row, self.clientChip = card_title(cc.body, "Client PC", "", "positive")
+        self.clientRow = tk.Frame(cc.body, bg=C["surface"])
+        self.clientRow.pack(fill="x")
+        # -- sauvegardes
+        sc = Card(left)
+        sc.pack(fill="x", pady=(8, 0))
+        row, _ = card_title(sc.body, "Sauvegardes")
+        link(row, "Sauvegarder", self.backup_now).pack(side="right")
+        self.bkList = tk.Frame(sc.body, bg=C["surface"])
+        self.bkList.pack(fill="x")
+        # -- version précédente
+        pv = Card(left)
+        pv.pack(fill="x", pady=(8, 0))
+        row, _ = card_title(pv.body, "Version précédente")
+        self.prevLink = link(row, "Remettre", self.rollback)
+        self.prevLink.pack(side="right")
+        self.prev = label(pv.body, "", font="small", wraplength=250)
+        self.prev.pack(anchor="w")
+        # -- quoi de neuf
+        nc = Card(body)
+        nc.pack(side="left", fill="both", expand=True, padx=(10, 0))
+        row, _ = card_title(nc.body, "Quoi de neuf")
+        self.tabLinks = {}
+        for key, txt in (("client", "Client PC"), ("addon", "Addon")):
+            t = label(row, txt, fg="muted", font="small", cursor="hand2")
+            t.pack(side="right", padx=(10, 0))
+            t.bind("<Button-1>", lambda e, k=key: self.set_tab(k))
+            self.tabLinks[key] = t
+        wrap, self.txt = notes_view(nc.body, 20)
+        wrap.pack(fill="both", expand=True)
 
-        # Dessous : trois tuiles (sauvegarde, prochaine vérification, dossier). Les nouveautés ont leur page,
-        # les persos sont dans le Tableau de bord.
-        tiles = tk.Frame(self, bg=C["bg"])
-        tiles.pack(fill="x", pady=(12, 0))
-        for i in range(3):
-            tiles.columnconfigure(i, weight=1, uniform="t")
+    def set_tab(self, t):
+        self.tab = t
+        self.fill_notes()
 
-        def tile(col, title, link, cmd):
-            c = Card(tiles)
-            c.grid(row=0, column=col, sticky="nsew", padx=(0 if col == 0 else 6, 0 if col == 2 else 6))
-            label(c.body, title, fg="dim", font="smallb").pack(anchor="w")
-            v = label(c.body, "", font="bodyb")
-            v.pack(anchor="w", pady=(2, 2))
-            ln = label(c.body, link, fg="accent", font="small", cursor="hand2")
-            ln.pack(anchor="w")
-            ln.bind("<Button-1>", lambda e: cmd())
-            return v
-        self.sv = tile(0, "DERNIÈRE SAUVEGARDE", "Sauvegarder maintenant", lambda: self.app.pages["backups"].backup_now())
-        self.nextCheck = tile(1, "PROCHAINE VÉRIFICATION", "Changer dans Réglages", lambda: self.app.show_settings("updates"))
-        self.folder = tile(2, "DOSSIER DE L'ADDON", "Ouvrir le dossier", self.app.open_addons)
+    def fill_notes(self):
+        for k, t in self.tabLinks.items():
+            t.configure(fg=C["text"] if k == self.tab else C["muted"], font=App.fonts["smallb" if k == self.tab else "small"])
+        if self.tab == "client":
+            fill_notes(self.txt, parse_client_notes(self.app.clientNotes or bundled_client_notes()),
+                       "Pas de notes du client pour l'instant.")
+        else:
+            fill_notes(self.txt, self.app.releases, "Aucune version trouvée pour l'instant (Vérifier).")
 
     def update_next(self):
-        """Prochaine vérification : recalculée toutes les 20 s (le compte à rebours avance tout seul)."""
+        """Prochaine vérification (pastille de l'en-tête) : recalculée toutes les 20 s."""
         a = self.app
         every = {"1h": 3600, "6h": 6 * 3600}.get(a.cfg["checkEvery"])
         if not every:
-            txt = "à la main (Réglages)" if a.cfg["checkEvery"] == "manual" else "au prochain démarrage"
+            nxt = "à la main" if a.cfg["checkEvery"] == "manual" else "au démarrage"
         elif a.busy:
-            txt = "en cours…"
+            nxt = "en cours"
         elif not a.lastCheck:
-            txt = "bientôt"
+            nxt = "bientôt"
         else:
-            left = max(0, every - (time.time() - a.lastCheck))
-            if left < 60:
-                txt = "dans moins d'une minute"
-            elif left < 3600:
-                txt = "dans %d min" % -(-left // 60)
-            else:
-                h, m = int(left // 3600), int(left % 3600 // 60)
-                txt = "dans %d h %02d" % (h, m)
-            txt += " (à %s)" % datetime.fromtimestamp(a.lastCheck + every).strftime("%H:%M")
-        self.nextCheck.configure(text=txt)
+            nxt = datetime.fromtimestamp(a.lastCheck + every).strftime("%H:%M")
+        inst, latest = a.installed, a.latest_version
+        pills = [("INSTALLÉE", inst or "aucune", None)]
+        if latest and inst and vtuple(latest) > vtuple(inst):
+            pills.append(("DISPONIBLE", latest, "warning"))
+        if a.lastCheck:
+            pills.append(("VÉRIFIÉ", datetime.fromtimestamp(a.lastCheck).strftime("%H:%M"), None))
+        pills.append(("PROCHAINE", nxt, "muted"))
+        self.set_pills(pills)
         if getattr(self, "_nextJob", None):
             self.after_cancel(self._nextJob)
         self._nextJob = self.after(20000, self.update_next)
@@ -2080,7 +2289,7 @@ class HomePage(Page):
             self.progress.pack_forget()
         else:
             if not self.progress.winfo_ismapped():
-                self.progress.pack(fill="x", pady=(12, 0), before=self.status)
+                self.progress.pack(fill="x", pady=(8, 0), before=self.status)
             self.progress.set(value)
         self.status.configure(text=text)
 
@@ -2091,34 +2300,31 @@ class HomePage(Page):
         if a.addons:
             self.picker.pack_forget()
             return
-        self.picker.pack(fill="x", pady=(12, 0), before=self.status)
-        for inst in a.installs[:6]:
+        self.picker.pack(fill="x", pady=(8, 0), before=self.status)
+        for inst in a.installs[:4]:
             row = tk.Frame(self.picker, bg=C["surface2"])
             row.pack(fill="x", pady=2)
-            inner = tk.Frame(row, bg=C["surface2"])
-            inner.pack(fill="x", padx=10, pady=6)
-            Button(inner, "Installer ici", lambda i=inst: a.choose_install(i), "primary" if inst["forever"] else "secondary", height=28).pack(side="right")
-            label(inner, inst["label"], fg="accent" if inst["forever"] else "text", font="bodyb").pack(side="left")
-            label(inner, "   " + short_path(os.path.dirname(os.path.dirname(inst["addons"]))), fg="muted", font="small").pack(side="left")
-        other = tk.Frame(self.picker, bg=C["surface"])
-        other.pack(fill="x", pady=(6, 0))
-        Button(other, "Autre dossier…", a.browse_addons, "ghost", height=28).pack(side="left")
-        label(other, "  le dossier du jeu, ou son Interface\\AddOns", fg="dim", font="small").pack(side="left")
+            Button(row, "Ici", lambda i=inst: a.choose_install(i), "primary" if inst["forever"] else "secondary",
+                   height=24).pack(side="right", padx=6, pady=4)
+            label(row, inst["label"], fg="accent" if inst["forever"] else "text", font="smallb").pack(anchor="w", padx=8, pady=(4, 0))
+            label(row, short_path(os.path.dirname(os.path.dirname(inst["addons"])), 30), fg="muted", font="small").pack(
+                anchor="w", padx=8, pady=(0, 4))
+        Button(self.picker, "Autre dossier…", a.browse_addons, "ghost", height=26).pack(anchor="w", pady=(4, 0))
 
     def on_state(self):
         a = self.app
         inst, latest = a.installed, a.latest_version
         self.build_picker()
+        self.checkBtn.set(enabled=not a.busy)
         if not a.addons:
             n = len(a.installs)
-            self.versions.configure(text=("%d installations de WoW Forever trouvées : choisis la tienne." % n) if n > 1 else
-                                    "WoW Forever introuvable automatiquement : indique son dossier.")
-            self.chip.set("Où installer Warband Keeper ?", C["warning"])
+            self.versions.configure(text="Où l'installer ?")
+            self.chip.set(("%d installations trouvées" % n) if n > 1 else "WoW Forever introuvable", C["warning"])
             self.action.set("Rechercher", True, "secondary")
             self.action.command = a.rescan
         elif a.error and not latest:
-            self.versions.configure(text="Installée : %s" % (inst or "non installée"))
-            self.chip.set(a.error, C["negative"])
+            self.versions.configure(text=inst or "non installé")
+            self.chip.set(a.error[:46] + ("…" if len(a.error) > 46 else ""), C["negative"])
             if "jeton" in a.error:
                 self.action.set("Ajouter le jeton", True, "secondary")
                 self.action.command = lambda: a.show_settings("github")
@@ -2126,99 +2332,80 @@ class HomePage(Page):
                 self.action.set("Réessayer", True, "secondary")
                 self.action.command = a.refresh
         elif latest is None:
-            self.versions.configure(text="Installée : %s" % (inst or "non installée"))
+            self.versions.configure(text=inst or "non installé")
             self.chip.set("Recherche des versions…", C["muted"])
             self.action.set("Vérification…", False, "secondary")
         elif not inst:
-            self.versions.configure(text="Pas encore installé dans %s · dernière version %s" % (flavor_label(a.addons), latest))
-            self.chip.set("Prêt à installer", C["accent"])
+            self.versions.configure(text="Pas encore installé")
+            self.chip.set("Prêt à installer · %s" % latest, C["accent"])
             self.action.set("Installer", not a.busy, "primary")
             self.action.command = a.update_addon
         # même version que la dernière Release seulement : sur une version plus récente (de développement),
         # « Réparer » aurait installé une version plus ancienne
         elif data_missing(a.addons, inst) and vtuple(inst) == vtuple(latest):
-            # même version, mais le dossier des données à la demande manque : réinstaller la répare
-            self.versions.configure(text="Installée : %s (dossier WarbandKeeper_Data manquant)" % inst)
-            self.chip.set("À réparer : dossier des données manquant", C["warning"])
+            self.versions.configure(text=inst)
+            self.chip.set("Dossier des données manquant", C["warning"])
             self.action.set("Réparer", not a.busy, "alert")
             self.action.command = a.update_addon
         elif vtuple(inst) < vtuple(latest):
-            self.versions.configure(text="Installée : %s   »   disponible : %s" % (inst, latest))
+            self.versions.configure(text="%s  »  %s" % (inst, latest))
             n = len(a.newer())
-            self.chip.set("%d nouvelle%s version%s" % (n, "s" if n > 1 else "", "s" if n > 1 else ""), C["negative"])
-            self.action.set("Mettre à jour", not a.busy, "alert")
+            self.chip.set("%s de retard" % plural(n, "version"), C["warning"])
+            self.action.set("Mettre à jour", not a.busy, "primary")
             self.action.command = a.update_addon
         else:
-            self.versions.configure(text="Installée : %s" % inst)
+            self.versions.configure(text=inst)
             last = getattr(a, "lastInstall", None)
             # consigne seulement si le jeu tournait à l'installation et tourne encore
             live = last and last[0] == inst and last[1] is not None and game_running()
             if live and last[1]:
-                self.chip.set("À jour · redémarre complètement le jeu", C["warning"])
+                self.chip.set("À jour · redémarre le jeu", C["warning"])
             elif live:
                 self.chip.set("À jour · un /reload suffit", C["positive"])
             else:
                 self.chip.set("À jour", C["positive"])
-            self.action.set("Vérifier maintenant", not a.busy, "secondary")
-            self.action.command = a.refresh
-        last = list_backups()
-        self.sv.configure(text=datetime.fromtimestamp(last[0]["time"]).strftime("le %d/%m à %H:%M") if last else "aucune pour l'instant")
-        self.update_next()
-        self.folder.configure(text=short_path(game_dir(a.addons), 34) if a.addons else "pas choisi")
-
-
-
-@page("notes", "Nouveautés", "✦")
-class NotesPage(Page):
-    def __init__(self, app, parent):
-        super().__init__(app, parent)
-        self.tab = "addon"
-        self.seg = Segmented(self, [("addon", "Addon"), ("client", "Client PC")], lambda: self.tab, self.set_tab)
-        self.seg.pack(anchor="w", pady=(0, 10))
-        c = Card(self)
-        c.pack(fill="both", expand=True)
-        self.sub = label(c.body, "", fg="muted", font="small")
-        self.sub.pack(anchor="w", pady=(0, 6))
-        wrap, self.txt = notes_view(c.body, 20)
-        wrap.pack(fill="both", expand=True)
-
-    def set_tab(self, t):
-        self.tab = t
-        self.on_state()
-
-    def on_state(self):
-        self.seg.refresh()
-        if self.tab == "client":
-            self.sub.configure(text="Notes du client PC (installé : %s)" % CLIENT_VERSION)
-            fill_notes(self.txt, parse_client_notes(self.app.clientNotes or bundled_client_notes()),
-                       "Pas de notes du client pour l'instant.")
+            self.action.set("À jour", False, "ok")
+        # client PC
+        for w in self.clientRow.winfo_children():
+            w.destroy()
+        asset, ver = best_client(a.releases) if a.releases else (None, None)
+        if asset and ver and vtuple(ver) > vtuple(CLIENT_VERSION):
+            self.clientChip.configure(text="%s disponible" % ver, fg=C["warning"])
+            label(self.clientRow, CLIENT_VERSION, font="bodyb").pack(side="left")
+            if FROZEN and IS_WIN:
+                Button(self.clientRow, "Mettre à jour", lambda: a.update_client(asset), "primary", height=26).pack(side="right")
+            else:
+                label(self.clientRow, "sur GitHub, page Releases", fg="muted", font="small").pack(side="right")
         else:
-            self.sub.configure(text="Notes de l'addon, version par version (publiées sur GitHub)")
-            fill_notes(self.txt, self.app.releases, "Aucune version trouvée pour l'instant.")
+            self.clientChip.configure(text="à jour", fg=C["positive"])
+            label(self.clientRow, CLIENT_VERSION, font="bodyb").pack(side="left")
+        # sauvegardes
+        for w in self.bkList.winfo_children():
+            w.destroy()
+        items = list_backups()
+        if not items:
+            label(self.bkList, "Aucune pour l'instant.", fg="dim", font="small").pack(anchor="w")
+        for bk in items[:4]:
+            row = thin_row(self.bkList)
+            link(row, "Restaurer", lambda bk=bk: self.restore(bk)).pack(side="right")
+            label(row, datetime.fromtimestamp(bk["time"]).strftime("%d/%m %H:%M"), font="smallb").pack(side="left")
+            parts = [x.strip() for x in bk["info"].split("·")] if bk["info"] else []
+            desc = ("v" + parts[0].replace("Warband Keeper ", "") + " · " + parts[1]) if len(parts) >= 2 else ""
+            label(row, "  " + desc[:26], fg="muted", font="small").pack(side="left")
+        if len(items) > 4:
+            label(self.bkList, "+ %d plus anciennes" % (len(items) - 4), fg="dim", font="small").pack(anchor="w")
+        # version précédente
+        prev = previous_versions()
+        if prev:
+            self.prev.configure(text="%s · gardée le %s" % (prev[0]["version"], datetime.fromtimestamp(prev[0]["time"]).strftime("%d/%m")))
+            self.prevLink.configure(fg=C["accent"] if (a.addons and not a.busy) else C["dim"])
+        else:
+            self.prev.configure(text="Aucune : gardée à la prochaine mise à jour.")
+            self.prevLink.configure(fg=C["dim"])
+        self.fill_notes()
+        self.update_next()
 
-
-@page("backups", "Sauvegardes", "⟲")
-class BackupsPage(Page):
-    def __init__(self, app, parent):
-        super().__init__(app, parent)
-        c = Card(self, "Tes réglages", "persos, listes, envies… (SavedVariables de l'addon)")
-        c.pack(fill="both", expand=True)
-        bar = tk.Frame(c.body, bg=C["surface"])
-        bar.pack(fill="x", pady=(0, 8))
-        Button(bar, "Sauvegarder", self.backup_now, "secondary", height=30).pack(side="right")
-        label(bar, "Sauvegardés avant chaque mise à jour. Restaurer : jeu fermé.", fg="muted", font="small").pack(side="left")
-        self.list = tk.Frame(c.body, bg=C["surface"])
-        self.list.pack(fill="both", expand=True)
-
-        p = Card(self, "Version précédente de l'addon", "si une mise à jour pose problème")
-        p.pack(fill="x", pady=(12, 0))
-        row = tk.Frame(p.body, bg=C["surface"])
-        row.pack(fill="x")
-        self.prev = label(row, "", fg="muted")
-        self.prev.pack(side="left")
-        self.prevBtn = Button(row, "Revenir à cette version", self.rollback, "secondary", height=30)
-        self.prevBtn.pack(side="right")
-
+    # -- sauvegardes et retour en arrière (anciennes pages Sauvegardes)
     def backup_now(self):
         a = self.app
         if not a.addons:
@@ -2278,30 +2465,6 @@ class BackupsPage(Page):
                 a.toast("Version %s remise. Redémarre le jeu." % target["version"], "positive")
             a.state_changed()
         a.run(job, done)
-
-    def on_state(self):
-        for w in self.list.winfo_children():
-            w.destroy()
-        items = list_backups()
-        if not items:
-            label(self.list, "Aucune sauvegarde pour l'instant.", fg="dim").pack(anchor="w", pady=6)
-        for b in items[:12]:
-            row = tk.Frame(self.list, bg=C["surface2"])
-            row.pack(fill="x", pady=2)
-            inner = tk.Frame(row, bg=C["surface2"])
-            inner.pack(fill="x", padx=10, pady=6)
-            label(inner, datetime.fromtimestamp(b["time"]).strftime("%d/%m/%Y  %H:%M"), font="bodyb").pack(side="left")
-            parts = [x.strip() for x in b["info"].split("·")] if b["info"] else []
-            desc = ("v" + parts[0].replace("Warband Keeper ", "") + "  ·  " + parts[1]) if len(parts) >= 2 else b["name"]
-            label(inner, "   " + desc, fg="muted", font="small").pack(side="left")
-            Button(inner, "Restaurer", lambda b=b: self.restore(b), "ghost", height=26).pack(side="right")
-        prev = previous_versions()
-        if prev:
-            self.prev.configure(text="Warband Keeper %s, gardée le %s" % (prev[0]["version"], datetime.fromtimestamp(prev[0]["time"]).strftime("%d/%m/%Y")))
-            self.prevBtn.set(enabled=bool(self.app.addons) and not self.app.busy)
-        else:
-            self.prev.configure(text="Aucune : elle est gardée à la prochaine mise à jour.")
-            self.prevBtn.set(enabled=False)
 
 
 # --- Découvertes : ce que l'addon a appris en jeu, intégré à l'addon pour tout le monde (client/learned.py) ---
@@ -2410,24 +2573,7 @@ class LearnedPage(Page):
         self.mine, self.base, self.rows, self.loading = None, {}, [], False
         self.genre, self.status = None, "all"
         self.choices = {}
-        top = tk.Frame(self, bg=C["bg"])
-        top.place(relx=1.0, y=2, anchor="ne")
-        Button(top, "Relire ma sauvegarde", self.reload, "secondary", height=30).pack(side="right")
-        Button(top, "Importer un fichier…", self.import_file, "secondary", height=30).pack(side="right", padx=(0, 6))
 
-        kpi = tk.Frame(self, bg=C["bg"])
-        kpi.pack(fill="x", pady=(0, 10))
-        self.kpis = {}
-        for i, (key, title) in enumerate((("new", "Nouveau à intégrer"), ("src", "Sources"), ("look", "À regarder"))):
-            c = Card(kpi)
-            c.grid(row=0, column=i, sticky="nsew", padx=(0 if i == 0 else 8, 0))
-            kpi.columnconfigure(i, weight=1)
-            label(c.body, title, fg="muted", font="small").pack(anchor="w")
-            v = label(c.body, "-", font="h2")
-            v.pack(anchor="w")
-            s = label(c.body, "", fg="dim", font="small")
-            s.pack(anchor="w")
-            self.kpis[key] = (v, s)
 
         body = tk.Frame(self, bg=C["bg"])
         body.pack(fill="both", expand=True)
@@ -2470,6 +2616,8 @@ class LearnedPage(Page):
         self.clearBtn.pack(side="right", padx=(0, 6))
         self.exportBtn = Button(bot, "Exporter", self.export, "ghost", height=32)
         self.exportBtn.pack(side="right", padx=(0, 6))
+        Button(bot, "Importer…", self.import_file, "ghost", height=32).pack(side="right", padx=(0, 6))
+        Button(bot, "Relire", self.reload, "ghost", height=32).pack(side="right", padx=(0, 6))
 
     # -- données
     def sources(self):
@@ -2523,13 +2671,15 @@ class LearnedPage(Page):
         new = n.get(learned.INTEGRATED, 0)
         src = self.sources()
         look = n.get(learned.CHECK, 0) + n.get(learned.REJECTED, 0) + n.get(learned.PENDING, 0)
-        self.kpis["new"][0].configure(text=str(new), fg=C["positive"] if new else C["text"])
-        self.kpis["new"][1].configure(text="%s déjà connues" % n.get(learned.KNOWN, 0))
-        self.kpis["src"][0].configure(text=str(len(src)))
-        self.kpis["src"][1].configure(text="ce PC + %s" % plural(max(0, len(src) - (1 if self.mine else 0)), "fichier"))
-        self.kpis["look"][0].configure(text=str(look), fg=C["warning"] if look else C["text"])
-        self.kpis["look"][1].configure(text="%d à vérifier · %d rejetées · %d en attente" % (
-            n.get(learned.CHECK, 0), n.get(learned.REJECTED, 0), n.get(learned.PENDING, 0)))
+        last = self.app.cfg.get("learnedLast") or {}
+        pills = [("NOUVEAU", str(new), "positive" if new else None), ("CONNUES", str(n.get(learned.KNOWN, 0)), None),
+                 ("SOURCES", "ce PC" + (" + %d" % (len(src) - 1) if len(src) > 1 else ""), None)]
+        if look:
+            pills.append(("À REGARDER", str(look), "warning"))
+        if last.get("at"):
+            pills.append(("DERNIER ENVOI", "%s · %d" % (datetime.fromtimestamp(last["at"]).strftime("%d/%m %H:%M"),
+                                                       int(last.get("n") or 0)), "positive"))
+        self.set_pills(pills)
         # genres : nombre noté sur le PC, nouveautés en vert ; clic = filtre
         for w in self.genres.winfo_children():
             w.destroy()
@@ -3168,43 +3318,48 @@ class App:
         except tk.TclError:
             self.logoSmall = None
 
+    RAIL = ["dash", "home", "learned"]  # rail d'icônes ; Réglages : roue de l'en-tête des pages
+
     def build(self):
-        side = tk.Frame(self.root, bg=C["sidebar"], width=220)
+        side = tk.Frame(self.root, bg=C["sidebar"], width=92)
         side.pack(side="left", fill="y")
         side.pack_propagate(False)
         self.side = side
         brand = tk.Frame(side, bg=C["sidebar"])
         self.brand = brand
-        brand.pack(fill="x", padx=14, pady=(18, 22))
+        brand.pack(pady=(14, 14))
         if self.logoSmall:
-            tk.Label(brand, image=self.logoSmall, bg=C["sidebar"]).pack(side="left", padx=(0, 8))
-        tb = tk.Frame(brand, bg=C["sidebar"])
-        tb.pack(side="left")
-        tk.Label(tb, text="Warband Keeper", bg=C["sidebar"], fg=C["accent"], font=App.fonts["h3"]).pack(anchor="w")
-        tk.Label(tb, text="Client " + CLIENT_VERSION, bg=C["sidebar"], fg=C["dim"], font=App.fonts["small"]).pack(anchor="w")
+            tk.Label(brand, image=self.logoSmall, bg=C["sidebar"]).pack()
+        else:
+            tk.Label(brand, text="W", bg=C["accent"], fg="#ffffff", font=App.fonts["h2"], width=2).pack()
         self.nav = {}
-        # ordre de la barre latérale (les pages sont déclarées dans un autre ordre)
-        order = ["dash", "home", "notes", "backups", "learned", "settings"]
+        order = self.RAIL + ["settings"]
         PAGES.sort(key=lambda c: order.index(c.key) if c.key in order else 99)
         for cls in PAGES:
-            b = tk.Label(side, text="  %s   %s" % (cls.icon, cls.title), bg=C["sidebar"], fg=C["muted"], font=App.fonts["nav"],
-                         anchor="w", padx=14, pady=9, cursor="hand2")
-            b.pack(fill="x", padx=10, pady=1)
-            b.bind("<Button-1>", lambda e, k=cls.key: self.show(k))
-            b.bind("<Enter>", lambda e, b=b, k=cls.key: b.configure(bg=C["hover"] if k != self.current else C["surface2"]))
-            b.bind("<Leave>", lambda e, b=b, k=cls.key: b.configure(bg=C["surface2"] if k == self.current else C["sidebar"]))
+            if cls.key not in self.RAIL:
+                continue
+            b = tk.Frame(side, bg=C["sidebar"], cursor="hand2")
+            b.pack(fill="x", padx=7, pady=2)
+            ic = tk.Label(b, text=cls.icon, bg=C["sidebar"], fg=C["muted"], font=App.fonts["h2"], cursor="hand2")
+            ic.pack(pady=(7, 0))
+            tx = tk.Label(b, text=cls.title, bg=C["sidebar"], fg=C["muted"], font=App.fonts["small"], cursor="hand2")
+            tx.pack(pady=(0, 7))
+            b.parts = (ic, tx)
+            for w in (b, ic, tx):
+                w.bind("<Button-1>", lambda e, k=cls.key: self.show(k))
+                w.bind("<Enter>", lambda e, k=cls.key: self.paint_nav(hover=k))
+                w.bind("<Leave>", lambda e: self.paint_nav())
             self.nav[cls.key] = b
-        # pastille sur « Mises à jour » : nombre de versions à installer (ou « client » pour le client seul)
-        # (sœur de l'entrée, posée par-dessus : redessiner l'entrée au survol ne l'efface plus)
-        self.navBadge = tk.Label(side, text="", bg=C["negative"], fg="#ffffff", font=App.fonts["smallb"], padx=6, pady=0, cursor="hand2")
+        # point sur « Addon » : nombre de versions à installer (ou « C » pour le client seul)
+        self.navBadge = tk.Label(side, text="", bg=C["negative"], fg="#ffffff", font=App.fonts["smallb"], padx=4, pady=0, cursor="hand2")
         self.navBadge.bind("<Button-1>", lambda e: self.show("home"))
-        for ev in ("<Enter>", "<Leave>", "<Button-1>"):
-            self.nav["home"].bind(ev, lambda e: self.root.after_idle(self.navBadge.lift), add="+")
-        self.clientBanner = tk.Frame(side, bg=C["sidebar"])
-        self.clientBanner.pack(side="bottom", fill="x", padx=12, pady=12)
+        for w in (self.nav["home"],) + self.nav["home"].parts:
+            for ev in ("<Enter>", "<Leave>", "<Button-1>"):
+                w.bind(ev, lambda e: self.root.after_idle(self.navBadge.lift), add="+")
+        tk.Label(side, text=CLIENT_VERSION, bg=C["sidebar"], fg=C["dim"], font=App.fonts["small"]).pack(side="bottom", pady=10)
 
         main = tk.Frame(self.root, bg=C["bg"])
-        main.pack(side="left", fill="both", expand=True, padx=22, pady=(14, 14))
+        main.pack(side="left", fill="both", expand=True, padx=14, pady=(10, 12))
         self.pages = {}
         for cls in PAGES:
             p = cls(self, main)
@@ -3270,7 +3425,7 @@ class App:
         btn("close", root.destroy, "#c42b1c")
         # glisser : le haut de la fenêtre et la colonne de gauche ; double-clic en haut : agrandir
         strip = tk.Frame(root, bg=C["bg"], height=14, cursor="fleur")
-        strip.place(x=220, y=0, relwidth=1.0, width=-(220 + 100))
+        strip.place(x=92, y=0, relwidth=1.0, width=-(92 + 100))
         drag = {}
 
         def start(e):
@@ -3327,8 +3482,15 @@ class App:
                 p.on_show()
             else:
                 p.pack_forget()
+        self.paint_nav()
+
+    def paint_nav(self, hover=None):
         for k, b in self.nav.items():
-            b.configure(bg=C["surface2"] if k == key else C["sidebar"], fg=C["text"] if k == key else C["muted"])
+            bg = C["surface2"] if k == self.current else (C["hover"] if k == hover else C["sidebar"])
+            fg = C["text"] if k == self.current else C["muted"]
+            b.configure(bg=bg)
+            for w in b.parts:
+                w.configure(bg=bg, fg=fg)
 
     def show_settings(self, tab):
         """Réglages, ouverts sur un onglet (folder, github, updates, notify, data)."""
@@ -3498,10 +3660,10 @@ class App:
         n = len(self.newer()) if (self.installed and self.releases) else 0
         asset, ver = best_client(self.releases) if self.releases else (None, None)
         client = bool(asset and ver and vtuple(ver) > vtuple(CLIENT_VERSION))
-        text = str(n) if n else ("client" if client else "")
+        text = str(n) if n else ("C" if client else "")
         if text:
             self.navBadge.configure(text=text)
-            self.navBadge.place(in_=self.nav["home"], relx=1.0, rely=0.5, x=-10, anchor="e")
+            self.navBadge.place(in_=self.nav["home"], relx=1.0, x=-4, y=4, anchor="ne")
             self.navBadge.lift()
         else:
             self.navBadge.place_forget()
@@ -3728,22 +3890,13 @@ class App:
 
     # -- mise à jour du client lui-même
     def client_banner(self):
-        for w in self.clientBanner.winfo_children():
-            w.destroy()
-        asset, ver = best_client(self.releases)
-        if not (asset and vtuple(ver) > vtuple(CLIENT_VERSION)):
-            return
-        box = tk.Frame(self.clientBanner, bg=C["surface2"])
-        box.pack(fill="x")
-        tk.Label(box, text="Client %s disponible" % ver, bg=C["surface2"], fg=C["accent"], font=App.fonts["smallb"]).pack(anchor="w", padx=10, pady=(8, 2))
-        see = tk.Label(box, text="Voir les nouveautés", bg=C["surface2"], fg=C["muted"], font=App.fonts["small"], cursor="hand2")
-        see.pack(anchor="w", padx=10)
-        see.bind("<Button-1>", lambda e: (setattr(self.pages["notes"], "tab", "client"), self.show("notes"), self.pages["notes"].on_state()))
-        if FROZEN and IS_WIN:
-            Button(box, "Mettre à jour le client", lambda: self.update_client(asset), "primary", height=30).pack(fill="x", padx=10, pady=(4, 10))
-        else:
-            tk.Label(box, text="À télécharger sur GitHub, page Releases.", bg=C["surface2"], fg=C["muted"], font=App.fonts["small"],
-                     wraplength=170, justify="left").pack(anchor="w", padx=10, pady=(0, 8))
+        """Ancienne bannière de la barre latérale : la mise à jour du client est maintenant dans la page Addon
+        (carte Client PC) et l'Accueil (En bref) ; l'état est repeint dans l'en-tête de chaque page."""
+        for p in self.pages.values():
+            try:
+                p.paint_status()
+            except Exception as e:
+                print("état", p.key, e)
 
     def update_client(self, asset):
         dest = sys.executable + ".new"

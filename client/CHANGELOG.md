@@ -3,6 +3,13 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.9.13 — 24/11/2026
+
+### Nouveautés
+- Nouveau design, plus compact et aux couleurs de l'addon. À gauche, un rail d'icônes avec trois pages : Accueil, Addon, Découvertes. Les Réglages s'ouvrent avec la roue en haut à droite. En haut de chaque page : ses chiffres clés en pastilles, plus l'état de l'addon et du client (orange s'il y a une mise à jour ; un clic mène à la page Addon).
+- Accueil enrichi : l'or du compte (7, 30 ou 90 jours), tes persos (niveau, or, repos), les dernières 24 h par cause (ventes, butin, quêtes, dépenses), « À surveiller », et une colonne « En bref » (séance, addon avec « Installer », client, découvertes envoyées, sauvegarde, HV).
+- Page Addon : les anciennes pages Mises à jour, Nouveautés et Sauvegardes en une seule. À gauche : l'addon (mettre à jour, vérifier), le client PC, les sauvegardes (restaurer) et la version précédente. À droite : quoi de neuf, pour l'addon ou le client.
+
 ## 1.9.12 — 24/11/2026
 
 ### Changements
