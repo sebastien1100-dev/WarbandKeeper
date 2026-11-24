@@ -33,7 +33,7 @@ from tkinter import filedialog, font as tkfont
 
 import learned  # Découvertes (client/learned.py, partagé avec tools/gen_learned.py)
 
-CLIENT_VERSION = "1.9.24"
+CLIENT_VERSION = "1.9.25"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 DATA_ADDON = "WarbandKeeper_Data"  # grosses bases, chargées à la demande (dossier à côté de l'addon)
@@ -2816,12 +2816,23 @@ class LearnedPage(Page):
                     datetime.fromtimestamp(last["at"]).strftime("%d/%m %H:%M"), plural(int(last.get("n") or 0), "ajout")),
                     fg="muted", font="small").pack(anchor="w", pady=(2, 4))
                 items = last.get("items") or []
+                # sources retrouvées dans les découvertes du moment (même texte) : un envoi d'avant la 1.9.23 n'a
+                # gardé que le texte, et ces lignes sont toujours dans ta sauvegarde (statut « connue »)
+                bytext = {}
+                for r in self.rows or []:
+                    try:
+                        bytext.setdefault(learned.short(r["genre"], r["key"], r["value"]), r)
+                    except Exception:
+                        pass
                 for it in items[:self.MAX_ROWS]:
-                    # envoi d'avant la 1.9.23 : seulement le texte, sources inconnues (tiret)
                     if isinstance(it, dict):
                         t, srcs, conf = it.get("t") or "", ", ".join(it.get("s") or []), str(it.get("c") or "")
                     else:
                         t, srcs, conf = str(it), "", ""
+                    if not srcs and t in bytext:
+                        r = bytext[t]
+                        srcs = ", ".join(r.get("srcs") or [])
+                        conf = str(r.get("confirm") or len(r.get("srcs") or []) or "")
                     row = tk.Frame(self.list.inner, bg=C["surface"])
                     row.pack(fill="x", pady=1)
                     label(row, "envoyée", fg="positive", font="small", width=12).pack(side="right")
