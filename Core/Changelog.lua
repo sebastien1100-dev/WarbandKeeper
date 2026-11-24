@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.269", date = "24/11/2026",
+        fixed = {
+            "Quêtes du donjon : le nom du donjon passait sous les pastilles « en cours » et « à prendre ». Le titre s'arrête maintenant avant elles ; si le nom est trop long, les pastilles passent sur une ligne sous le titre.",
+        },
+    },
+    {
         version = "1.128.268", date = "24/11/2026",
         changed = {
             "Carte du donjon : le clic droit sur la pastille d'un boss ouvre un petit menu. « Lier dans le chat » met son nom, « Lier avec son butin » ajoute jusqu'à 3 objets (les plus utiles pour toi d'abord), « Lier avec sa position » ajoute l'endroit sur la carte. En groupe, « Annoncer au groupe » envoie « Prochain : [nom] (niv. 33, boss 3) ». Sur la carte du monde remplacée dans le donjon, un simple clic suffit.",

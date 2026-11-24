@@ -49,6 +49,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.269 — 24/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Quêtes du donjon : le nom du donjon passait sous les pastilles « en cours » et « à prendre ». Le titre s'arrête maintenant avant elles ; si le nom est trop long, les pastilles passent sur une ligne sous le titre.
+
 ## v1.128.268 — 24/11/2026
 
 _Un /reload suffit._

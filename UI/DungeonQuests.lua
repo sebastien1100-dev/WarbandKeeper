@@ -176,23 +176,40 @@ local function build()
         self.xpText = (data.xp or 0) > 0 and string.format(T("env. %d XP"), data.xp) or nil
         -- pastilles : quêtes du journal, quêtes à prendre (cachées à zéro), alignées à droite du titre
         local pdef = { { #data.log, T("%d en cours"), { ar, ag, ab } }, { #data.avail, T("%d à prendre"), C.gold } }
-        local px = -28
-        for i = 2, 1, -1 do
+        -- à droite du titre s'il tient sur une ligne à côté, sinon sur une ligne sous le titre (avant : le titre
+        -- gardait deux ancres à droite et passait sous les pastilles)
+        local widths, pillsW = {}, 0
+        for i = 1, 2 do
             local p, d = self.pills[i], pdef[i]
             if d[1] > 0 then
                 p.t:SetText(string.format(d[2], d[1])); p.t:SetTextColor(d[3][1], d[3][2], d[3][3])
                 p.bg:SetColor(d[3][1], d[3][2], d[3][3], 0.18)
-                local pw = math.floor((p.t:GetStringWidth() or 40) + 12)
-                p:SetWidth(pw); p:ClearAllPoints(); p:SetPoint("TOPRIGHT", px, -8)
-                px = px - pw - 4
+                widths[i] = math.floor((p.t:GetStringWidth() or 40) + 12)
+                p:SetWidth(widths[i])
+                pillsW = pillsW + widths[i] + 4
                 p:Show()
             else
                 p:Hide()
             end
         end
-        self.title:SetPoint("RIGHT", px - 2, 0)
+        self.title:ClearAllPoints(); self.title:SetPoint("TOPLEFT", 11, -9); self.title:SetPoint("TOPRIGHT", -28, -9)
+        local avail = (self:GetWidth() or W) - 11 - 28
+        local below = pillsW > 0 and (self.title:GetStringWidth() or 0) + pillsW + 6 > avail
+        if pillsW > 0 and not below then self.title:SetPoint("TOPRIGHT", -28 - pillsW - 2, -9) end
         local th = math.max(14, math.min(30, self.title:GetStringHeight() or 14))
+        local px, py = -28, -8
+        if below then px, py = 11, -(9 + th + 4) end
+        for i = 2, 1, -1 do
+            local p = self.pills[below and (3 - i) or i]
+            local w = widths[below and (3 - i) or i]
+            if w then
+                p:ClearAllPoints()
+                if below then p:SetPoint("TOPLEFT", px, py); px = px + w + 4
+                else p:SetPoint("TOPRIGHT", px, py); px = px - w - 4 end
+            end
+        end
         local top = 9 + th + 8
+        if below then top = top + 15 + 4 end
         self.drag:SetHeight(top)
         local compact = cfg.questWinCompact
         -- hauteur bornée (plus de poignée) : au-delà, la molette fait défiler
