@@ -535,6 +535,16 @@ local function hudEntries()
     end
     return out
 end
+-- fermée par la croix ou en s'éloignant du poste de travail (plus de 15 m de l'endroit où le métier a été ouvert)
+local hudDismissed, hudAnchor
+local HUD_AWAY = 15
+local function playerPos()
+    if not _G.UnitPosition then return nil end
+    local ok, y, x, _, inst = pcall(_G.UnitPosition, "player")
+    if not ok or type(x) ~= "number" or type(y) ~= "number" then return nil end
+    if _G.issecretvalue and (_G.issecretvalue(x) or _G.issecretvalue(y)) then return nil end
+    return x, y, inst
+end
 local function buildHUD()
     local f = CreateFrame("Frame", "WarbandKeeperCraftHUD", UIParent)
     f:SetSize(240, 74)
@@ -543,6 +553,24 @@ local function buildHUD()
     f.title = UI:Text(f, 10, C.muted); f.title:SetPoint("TOPLEFT", 12, -8); f.title:SetText(T("File de fabrication"))
     f.name = UI:Text(f, 12); f.name:SetPoint("TOPLEFT", 12, -22); f.name:SetPoint("TOPRIGHT", -60, -22)
     f.count = UI:Text(f, 12); f.count:SetPoint("TOPRIGHT", -12, -22); f.count:SetJustifyH("RIGHT")
+    -- croix : fermée jusqu'à la prochaine ouverture du métier
+    f.close = UI:IconButton(f, "close", 16, "Fermer (revient à la prochaine ouverture du métier)")
+    f.close:SetPoint("TOPRIGHT", -6, -5)
+    f.close:SetScript("OnClick", function() hudDismissed = true; f:Hide() end)
+    -- éloigné du poste de travail : la fenêtre se ferme (la fenêtre du métier du jeu peut rester ouverte) ;
+    -- vérifié une fois par seconde, seulement quand elle est affichée
+    f:SetScript("OnUpdate", function(s2, el)
+        s2.awayAcc = (s2.awayAcc or 0) + el
+        if s2.awayAcc < 1 then return end
+        s2.awayAcc = 0
+        if not hudAnchor or UI.editing then return end
+        local x, y, inst = playerPos()
+        if not x then return end
+        local dx, dy = x - hudAnchor[1], y - hudAnchor[2]
+        if inst ~= hudAnchor[3] or (dx * dx + dy * dy) > HUD_AWAY * HUD_AWAY then
+            hudDismissed = true; s2:Hide()
+        end
+    end)
     f.bar = UI:Progress(f, 5); f.bar:SetPoint("TOPLEFT", 12, -40); f.bar:SetPoint("TOPRIGHT", -12, -40)
     f.make = UI:Button(f, T("Fabriquer"), nil, 22, "primary"); f.make:SetPoint("BOTTOMLEFT", 10, 6)
     f.skip = UI:Button(f, T("Suivant"), nil, 22, "ghost"); f.skip:SetPoint("LEFT", f.make, "RIGHT", 6, 0)
@@ -563,7 +591,7 @@ local profOpen = false
 function UI:RefreshCraftHUD()
     if not hud then hud = buildHUD() end
     if UI.editing then return end
-    local list = (profOpen and cfg().queueHud) and hudEntries() or {}
+    local list = (profOpen and cfg().queueHud and not hudDismissed) and hudEntries() or {}
     if #list == 0 then hud:Hide() return end
     if hudPick > #list then hudPick = 1 end
     local e = list[hudPick]
@@ -579,7 +607,12 @@ function UI:RefreshCraftHUD()
     hud.skip:SetShown(#list > 1)
     hud:Show()
 end
-WK:On("TRADE_SKILL_SHOW", function() profOpen = true; C_Timer.After(0.5, function() UI:RefreshCraftHUD() end) end)
+WK:On("TRADE_SKILL_SHOW", function()
+    profOpen = true; hudDismissed = false
+    local x, y, inst = playerPos()
+    hudAnchor = x and { x, y, inst } or nil
+    _G.C_Timer.After(0.5, function() UI:RefreshCraftHUD() end)
+end)
 WK:On("TRADE_SKILL_CLOSE", function() profOpen = false; if hud then hud:Hide() end end)
 WK:On("BAG_UPDATE_DELAYED", function() if profOpen and hud then UI:RefreshCraftHUD() end end)
 WK:On("PLAYER_LOGIN", function() if not hud then hud = buildHUD() end end)

@@ -142,7 +142,7 @@ local function tipItem(f, y, id, have, need, note, small)
     r.fill:SetVertexColor(col[1], col[2], col[3], 1)
     return y + isz + 12
 end
-local function showGuideTip(owner, st, n, title, extra)
+local function showGuideTip(owner, st, n, title, extra, char)
     guideTip = guideTip or buildGuideTip()
     local f = guideTip
     f:Reset()
@@ -165,7 +165,12 @@ local function showGuideTip(owner, st, n, title, extra)
     end
     if #plan.comps > 0 then
         y = tipLabel(f, y, T("Composants"))
-        for _, c in ipairs(plan.comps) do y = tipItem(f, y, c.id, c.have, c.need) end
+        for _, cp in ipairs(plan.comps) do
+            -- combien dans les sacs du perso (le reste est en banque, au courrier ou sur un autre perso)
+            local mine = char and (char.bags or {})[cp.id] or nil
+            local note = (mine and mine < math.min(cp.have, cp.need)) and string.format(T("(%d sur toi)"), mine) or nil
+            y = tipItem(f, y, cp.id, cp.have, cp.need, note)
+        end
     end
     if #plan.raw > 0 then
         y = tipSep(f, y)
@@ -1654,7 +1659,7 @@ local function Detail(page, parent)
                     extra[#extra + 1] = { T("Vendeurs : ") .. table.concat(vs, ", "), C.muted }
                 end
             end
-            showGuideTip(s, st, n, s.title, extra)
+            showGuideTip(s, st, n, s.title, extra, tab.lastC)
         end)
         r:SetScript("OnLeave", function() UI.HideGuideStepTip() end)
         return r
@@ -1732,8 +1737,17 @@ local function Detail(page, parent)
                 local need = rg[2] * n
                 local txt = need .. " " .. ((UI:ItemInfo(rg[1])) or "?")
                 if e.status ~= "done" and Inv and Inv.AccountCount then
+                    -- vert : dans les sacs du perso ; doré : sur le compte mais pas sur lui (« 3 sur toi ») ;
+                    -- rouge : il en manque
                     local have = Inv:AccountCount(rg[1]) or 0
-                    txt = UI:Hex(have >= need and C.positive or C.negative) .. txt .. "|r"
+                    local mine = (c and c.bags or {})[rg[1]] or 0
+                    if mine >= need then txt = UI:Hex(C.positive) .. txt .. "|r"
+                    elseif have >= need then
+                        txt = UI:Hex(C.gold) .. txt .. " " .. string.format(T("(%d sur toi)"), mine) .. "|r"
+                    else
+                        local onMe = mine > 0 and (" " .. string.format(T("(%d sur toi)"), mine)) or ""
+                        txt = UI:Hex(C.negative) .. txt .. onMe .. "|r"
+                    end
                 end
                 table.insert(reag, txt)
             end

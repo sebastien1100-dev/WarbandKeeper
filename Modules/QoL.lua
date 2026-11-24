@@ -121,7 +121,7 @@ local CLASS_DEFAULTS = {
     buffReminder = true,
     -- Druide, Prêtre, Mage, Paladin : bouton « Buffer le suivant » (UI/BuffButton.lua)
     buffAround = true, kingsFirst = true, buffRefresh = 10, buffInstance = false, buffMounted = false,
-    buffPlates = true,
+    buffPlates = true, buffCity = false,
     -- Mage
     portalText = "Portail vers %s, chuchote-moi !",
 }

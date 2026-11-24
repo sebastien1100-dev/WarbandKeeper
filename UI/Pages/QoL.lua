@@ -2993,7 +2993,7 @@ UI:RegisterPage({
             if WK.BUFF_CLASSES and WK.BUFF_CLASSES[class] then
                 subtab("Buffer autour", 7)
                 local pal = class == "PALADIN"
-                local bb = card("Buffer autour de toi", 40 + (pal and 7 or 6) * 46 + 8, "un bouton : le joueur proche qui n'a pas ton buff, un clic ou une touche")
+                local bb = card("Buffer autour de toi", 40 + (pal and 8 or 7) * 46 + 8, "un bouton : le joueur proche qui n'a pas ton buff, un clic ou une touche")
                 local function bt(field) return toggle(bb, function() return cc[field] ~= false end, function(v)
                     cc[field] = v; UI:SyncBuffPlates(); UI:RefreshBuffButton() end) end
                 local by = -40
@@ -3010,6 +3010,13 @@ UI:RegisterPage({
                 UI:SettingRow(bb, by, "En instance", nil, toggle(bb, function() return cc.buffInstance end, function(v) cc.buffInstance = v end), 80)
                 by = by - 46
                 UI:SettingRow(bb, by, "Sur une monture", nil, toggle(bb, function() return cc.buffMounted end, function(v) cc.buffMounted = v end), 80)
+                by = by - 46
+                local cityTip = "Regarder aussi les joueurs autour en ville et à l'auberge. "
+                    .. "Coupé : seulement toi, ta cible, ta focalisation et ton groupe "
+                    .. "(moins de calcul, beaucoup de monde passe en ville)."
+                local cityT = toggle(bb, function() return cc.buffCity end,
+                    function(v) cc.buffCity = v; UI:RefreshBuffButton() end)
+                UI:SettingRow(bb, by, "En ville", cityTip, cityT, 80)
                 by = by - 46
                 UI:SettingRow(bb, by, "Plaques de nom des joueurs amis", "Allumées par l'addon hors combat : il en a besoin pour savoir qui est autour (rendues comme avant si tu coupes le bouton).", bt("buffPlates"), 80)
                 by = by - 46

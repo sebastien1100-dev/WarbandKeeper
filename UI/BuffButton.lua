@@ -223,7 +223,10 @@ local function candidates()
     elseif IsInGroup and IsInGroup() then
         for i = 1, 4 do table.insert(units, "party" .. i) end
     end
-    plateUnits(units)
+    -- en ville (repos : ville ou auberge), les joueurs autour ne sont pas regardés sauf réglage « En ville » :
+    -- des dizaines de plaques à lire à chaque passage pour rien ; toi, ta cible, ta focalisation et ton groupe restent
+    local inCity = _G.IsResting and _G.IsResting()
+    if not inCity or c.buffCity then plateUnits(units) end
     local refresh = (c.buffRefresh or 10) * 60
     local mePvp = UnitIsPVP and UnitIsPVP("player")
     for _, u in ipairs(units) do

@@ -50,6 +50,17 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.295 — 24/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Buffer autour de toi : réglage « En ville » (coupé d'office). En ville et à l'auberge, le bouton ne regarde plus tous les joueurs autour, seulement toi, ta cible, ta focalisation et ton groupe : moins de calcul là où il y a le plus de monde.
+
+### Modifications
+- Métiers > Guide : les composants d'une étape disent s'ils sont sur toi. Vert : dans tes sacs ; doré : sur le compte mais pas sur toi, avec « (3 sur toi) » ; rouge : il en manque. Même précision dans l'infobulle de l'étape.
+- File de fabrication (petite fenêtre près du métier) : une croix pour la fermer, et elle se ferme seule quand tu t'éloignes du poste de travail (plus de 15 m). Elle revient à la prochaine ouverture du métier.
+
 ## v1.128.294 — 24/11/2026
 
 _Un /reload suffit._
