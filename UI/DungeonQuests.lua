@@ -9,7 +9,7 @@ local CreateFrame, GameTooltip, GetCursorPosition = CreateFrame, GameTooltip, Ge
 --   DANS TON JOURNAL (objectifs, prête à rendre), À PRENDRE (zone et distance du donneur),
 --   APRÈS PRÉREQUIS (le prérequis à faire d'abord), FAITES · n (repliées, clic pour déplier).
 -- Niveau de chaque quête à la couleur du jeu (gris, vert, jaune, orange, rouge). Clic sur une quête à
--- prendre : guidage vers son donneur ; « Prendre (n) » = Dungeons:PickQuests.
+-- la fenêtre (gauche ou droit) : son lien dans le chat ; « Prendre (n) » = Dungeons:PickQuests.
 -- Donjon montré : celui où l'on est, sinon celui dont l'entrée est à moins de 400 m (affichage
 -- « Près du donjon ») ; « Toujours » garde le dernier donjon vu ou choisi (page Donjons, LFG).
 -- Réglages : Dungeons:Config() questWin (auto / always / off), questWinObjs (opacité : UI:HudAlpha, commune),
@@ -149,9 +149,10 @@ local function build()
             r.fill = r:CreateTexture(nil, "OVERLAY"); r.fill:SetHeight(3)
             r.fill:SetPoint("TOPLEFT", r.track, "TOPLEFT", 0, 0)
             r:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-            r:SetScript("OnClick", function(s, btn)
-                if s.qid and UI:QuestClick(btn, s.qid) then return end
-                if btn == "LeftButton" and s.onClick then s.onClick() end
+            -- clic (gauche ou droit) : lien de la quête dans le chat (à la demande du joueur : plus de guidage
+            -- ni de menu ici)
+            r:SetScript("OnClick", function(s)
+                if s.qid then WK.ChatInsert((UI:QuestLink(s.qid))) elseif s.onClick then s.onClick() end
             end)
             r:SetScript("OnEnter", function(s)
                 if not s.tip then return end
@@ -386,15 +387,14 @@ function UI:DungeonQuestsData(d, cfg)
         local e = { name = UI.GroupTag(q.id) .. Qm:Name(q) .. badge(q.id), lvl = q.lvl, qid = q.id }
         if ready then
             e.right, e.rightColor, e.frac, e.barColor = T("prête à rendre"), C.positive, 1, C.positive
-            e.tip = { Qm:Name(q), T("Prête à rendre"), T("Clic : guider vers le rendu · clic droit : menu") }
+            e.tip = { Qm:Name(q), T("Prête à rendre"), T("Clic : lier dans le chat") }
         else
             local frac, txt = progressOf(q.id)
             e.right = txt or T("en cours")
             e.frac = cfg.questWinObjs ~= false and (frac or 0) or nil
             local obj = objectivesText(q.id)
-            e.tip = { Qm:Name(q), obj ~= "" and obj or nil, T("Clic : guider · clic droit : menu") }
+            e.tip = { Qm:Name(q), obj ~= "" and obj or nil, T("Clic : lier dans le chat") }
         end
-        e.onClick = function() if QT and QT.GuideQuest then QT:GuideQuest(q.id) end end
         table.insert(out.log, e)
         out.xp = out.xp + (q.xp or 0)
     end
@@ -404,8 +404,7 @@ function UI:DungeonQuestsData(d, cfg)
         table.insert(out.avail, { qid = q.id, name = UI.GroupTag(q.id) .. Qm:Name(q) .. badge(q.id),
             lvl = q.lvl, nameColor = C.gold, q = q, zone = zone, -- q et zone : distance refaite seule (lightDistances)
             right = dt or T("à prendre"), sub = zone .. (dt and (" · " .. dt) or ""),
-            tip = { Qm:Name(q), zone ~= "" and zone or nil, T("À prendre · clic : guider vers le donneur") },
-            onClick = function() Qm:GuideTo(q) end })
+            tip = { Qm:Name(q), zone ~= "" and zone or nil, T("À prendre"), T("Clic : lier dans le chat") } })
         out.xp = out.xp + (q.xp or 0)
     end
     for _, q in ipairs(s.waiting) do
@@ -414,8 +413,7 @@ function UI:DungeonQuestsData(d, cfg)
         local sub = pre and string.format(T("après : %s"), Qm:Name(pre)) or T("après une autre quête (en cours)")
         table.insert(out.waiting, { qid = q.id, name = UI.GroupTag(q.id) .. Qm:Name(q) .. badge(q.id),
             lvl = q.lvl, nameColor = C.warning, right = T("prérequis"), rightColor = C.warning, sub = sub,
-            tip = pre and { Qm:Name(q), sub, T("Clic : guider vers le donneur du prérequis") } or { Qm:Name(q), sub },
-            onClick = pre and function() Qm:GuideTo(pre) end or nil })
+            tip = { Qm:Name(q), sub, T("Clic : lier dans le chat") } })
         out.xp = out.xp + (q.xp or 0)
     end
     for _, q in ipairs(s.doneList or {}) do

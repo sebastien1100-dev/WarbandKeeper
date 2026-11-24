@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.267", date = "24/11/2026",
+        changed = {
+            "Quêtes du donjon (fenêtre à l'écran) : un clic sur une quête met son lien dans le chat. Le guidage vers le donneur et le menu du clic droit sont retirés de cette fenêtre.",
+        },
+        added = {
+            "Carte du donjon : clic droit sur la pastille d'un boss = son nom dans le chat (« [Charlga Trancheflanc] (niv. 33) »). Sur la carte du monde remplacée dans le donjon, un simple clic suffit.",
+        },
+    },
+    {
         version = "1.128.266", date = "24/11/2026",
         added = {
             "/wk cartedonjon donne aussi les coordonnées du monde, la direction et la vitesse du perso, quand le jeu les fournit : pour savoir si ta position peut être estimée dans un donjon sans carte (Kraal de Tranchebauge…).",

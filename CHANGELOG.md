@@ -49,6 +49,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.267 — 24/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Carte du donjon : clic droit sur la pastille d'un boss = son nom dans le chat (« [Charlga Trancheflanc] (niv. 33) »). Sur la carte du monde remplacée dans le donjon, un simple clic suffit.
+
+### Modifications
+- Quêtes du donjon (fenêtre à l'écran) : un clic sur une quête met son lien dans le chat. Le guidage vers le donneur et le menu du clic droit sont retirés de cette fenêtre.
+
 ## v1.128.266 — 24/11/2026
 
 _Un /reload suffit._

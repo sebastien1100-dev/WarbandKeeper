@@ -2979,6 +2979,9 @@ WK.Locales.enUS.text = {
     ["Numéro de l'objet ou du sort"] = "Item or spell ID",
     ["En bas de l'infobulle d'un objet, d'un sort ou d'un effet : son numéro (ID), pour signaler un souci."] = "At the bottom of an item, spell or effect tooltip: its number (ID), to report an issue.",
     ["%s libres"] = "%s free",
+    ["Clic : lier dans le chat"] = "Click: link in chat",
+    ["Clic droit : lier dans le chat"] = "Right-click: link in chat",
+    ["À prendre"] = "To pick up",
     ["Barre d'XP"] = "XP bar",
     ["Avant de partir"] = "Before you go",
     ["Le meilleur objet de chaque sorte pour ton niveau ; rouge : sous le seuil. Seuils x2 en raid ; en JcJ, pas d'élixir et moitié de nourriture."] = "The best item of each kind for your level; red: below threshold. Thresholds x2 in raids; in PvP, no elixir and half the food.",
@@ -4430,16 +4433,8 @@ WK.Locales.enUS.text = {
         "Mouse wheel: scroll",
     ["Prête à rendre"] =
         "Ready to turn in",
-    ["Clic : guider vers le rendu · clic droit : menu"] =
-        "Click: guide to turn-in · right-click: menu",
-    ["Clic : guider · clic droit : menu"] =
-        "Click: guide · right-click: menu",
     ["à prendre"] =
         "to pick up",
-    ["À prendre · clic : guider vers le donneur"] =
-        "To pick up · click: guide to the giver",
-    ["Clic : guider vers le donneur du prérequis"] =
-        "Click: guide to the prerequisite's giver",
     ["Dans la barre des sacs"] =
         "In the bags bar",
     ["Vers le bas"] =

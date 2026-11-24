@@ -28,6 +28,13 @@ function UI.DungeonBossPin(m, b)
     return p
 end
 
+-- Texte d'un boss pour le chat : « [Nom] (niv. 33) » (le jeu n'a pas de vrai lien pour un boss)
+function UI.DungeonBossChat(b)
+    local n = "[" .. tostring(WK.modules.Dungeons:BossName(b)) .. "]"
+    if (b.level or 0) > 0 then n = n .. " (" .. string.format(T("niv. %d"), b.level) .. ")" end
+    return n .. " "
+end
+
 -- Portrait d'un boss (n° de modèle du Dungeon Journal de Naowh Forever) dans une texture, rond ; faux sans portrait
 local MASK = "Interface\\CharacterFrame\\TempPortraitAlphaMask"
 -- Hauteur de la carte pour une largeur W : carrée, ou 3:2 (668 x 1002 utiles) ; étage nil = le plus haut
@@ -250,10 +257,17 @@ function UI.DungeonMapView(_, parent)
             end
             if #loot > 4 then GameTooltip:AddLine(string.format(T("et %d autre(s)"), #loot - 4), 0.6, 0.6, 0.6) end
             if v.onBoss then GameTooltip:AddLine(T("Clic : le choisir"), 0.5, 0.5, 0.5) end
+            local hint = v.onBoss and T("Clic droit : lier dans le chat") or T("Clic : lier dans le chat")
+            GameTooltip:AddLine(hint, 0.5, 0.5, 0.5)
             GameTooltip:Show()
         end)
         p:SetScript("OnLeave", function() if v.onHover then v.onHover(nil) end GameTooltip:Hide() end)
-        p:SetScript("OnClick", function(s) if v.onBoss then v.onBoss(s.boss) end end)
+        -- clic droit (ou clic sans choix possible, carte du monde) : nom du boss dans le chat
+        p:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+        p:SetScript("OnClick", function(s, btn)
+            if btn ~= "RightButton" and v.onBoss then return v.onBoss(s.boss) end
+            WK.ChatInsert(UI.DungeonBossChat(s.boss))
+        end)
         return p
     end)
 
