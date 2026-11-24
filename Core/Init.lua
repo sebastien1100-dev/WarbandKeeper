@@ -1,7 +1,7 @@
 local ADDON_NAME, WK = ...
 _G.WarbandKeeper = WK
 
-WK.version = "1.128.263"
+WK.version = "1.128.264"
 WK.modules = {}
 
 -- Gestion centralisée des événements : chaque module s'abonne via WK:On(event, fn).
@@ -97,6 +97,9 @@ WK:On("ADDON_LOADED", function(name)
         if not ok then WK.HandlerError(label, err) end
     end
     step("DB:Init", WK.DB.Init, WK.DB)
+    -- découvertes intégrées (Modules/Learned.lua) : ajoutées à ce qui manque avant que les modules ne lisent
+    local LD = WK.modules.Learned
+    if LD then step("Learned:Fill", LD.Fill, LD) end
     -- profil de réglages de ce perso, avant que quoi que ce soit ne lise les réglages
     local P = WK.modules.Profiles
     if P then step("Profiles:Apply", P.Apply, P) end

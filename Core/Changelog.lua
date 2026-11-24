@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.264", date = "24/11/2026", restart = true,
+        added = {
+            "Découvertes intégrées : ce que l'addon apprend en jeu (quêtes de WoW Forever, boss, durées et tracés des vols, tram, chemins, feu de camp, prix des maîtres et des marchands, points de récolte) peut maintenant être intégré à l'addon. Une installation neuve le reçoit d'office, sans tout réapprendre. Au démarrage, seul ce qui manque est ajouté : ce que tu as noté toi-même n'est jamais remplacé, et ce que tu effaces ne revient pas.",
+            "Client PC 1.9.11 : nouvelle page « Découvertes » : ce que ta sauvegarde a appris est comparé à ce que l'addon contient. Le nouveau s'envoie en demande de fusion sur GitHub. Un autre joueur peut exporter ses découvertes en fichier .wkd (rien de personnel), que tu importes ensuite.",
+        },
+    },
+    {
         version = "1.128.263", date = "24/11/2026",
         fixed = {
             "Sacs, chez le marchand : le bouton « Vendre les inutiles » passait sur l'or en bas de la fenêtre. Quand la place manque, le texte des places devient « 12 libres », puis l'or s'efface tant que les boutons sont affichés.",

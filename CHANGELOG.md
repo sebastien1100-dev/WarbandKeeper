@@ -49,6 +49,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.264 — 24/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Découvertes intégrées : ce que l'addon apprend en jeu (quêtes de WoW Forever, boss, durées et tracés des vols, tram, chemins, feu de camp, prix des maîtres et des marchands, points de récolte) peut maintenant être intégré à l'addon. Une installation neuve le reçoit d'office, sans tout réapprendre. Au démarrage, seul ce qui manque est ajouté : ce que tu as noté toi-même n'est jamais remplacé, et ce que tu effaces ne revient pas.
+- Client PC 1.9.11 : nouvelle page « Découvertes » : ce que ta sauvegarde a appris est comparé à ce que l'addon contient. Le nouveau s'envoie en demande de fusion sur GitHub. Un autre joueur peut exporter ses découvertes en fichier .wkd (rien de personnel), que tu importes ensuite.
+
 ## v1.128.263 — 24/11/2026
 
 _Un /reload suffit._

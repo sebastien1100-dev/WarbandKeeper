@@ -31,7 +31,9 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.9.10"
+import learned  # Découvertes (client/learned.py, partagé avec tools/gen_learned.py)
+
+CLIENT_VERSION = "1.9.11"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 DATA_ADDON = "WarbandKeeper_Data"  # grosses bases, chargées à la demande (dossier à côté de l'addon)
@@ -72,6 +74,8 @@ RUN_NAME = "WarbandKeeperClient"
 SCHEDULE_PATH = "tools/update_schedule.json"
 DATALOG_PATH = "Modules/DataLogDB.lua"  # journal des données (ligne « -- DATA » en JSON, tools/datalog.py)
 DATA_WORKFLOW = "update-data.yml"
+LEARNED_JSON = "tools/learned/learned.json"  # Découvertes : base de référence (client/learned.py)
+LEARNED_LUA = "Modules/LearnedDB.lua"
 
 
 def load_config():
@@ -836,6 +840,46 @@ class GitHub:
             if line.startswith("-- DATA "):
                 return json.loads(line[8:])
         return []
+
+    def learned_pr(self, sources, choices):
+        """Découvertes : fusionne les sources avec la base de main (tools/learned/learned.json), pousse la nouvelle
+        base et Modules/LearnedDB.lua sur une branche decouvertes-<date> et ouvre une demande de fusion.
+        Rend son adresse, ou None s'il n'y a rien de nouveau."""
+        import base64
+
+        def get(path):
+            try:
+                r = self.api("GET", "/contents/%s?ref=main" % path)
+                return base64.b64decode(r["content"]).decode("utf-8"), r["sha"]
+            except NetError:
+                return None, None
+        text, jsha = get(LEARNED_JSON)
+        base = learned.from_json(text) if text else {}
+        rows = learned.merge(sources, base, choices)
+        added = [r for r in rows if r["status"] == learned.INTEGRATED]
+        if not added:
+            return None
+        new = learned.build(base, rows)
+        _, lsha = get(LEARNED_LUA)
+        head = self.api("GET", "/git/ref/heads/main")["object"]["sha"]
+        branch = "decouvertes-" + datetime.now().strftime("%Y%m%d-%H%M%S")
+        self.api("POST", "/git/refs", {"ref": "refs/heads/" + branch, "sha": head})
+        per = {}
+        for r in added:
+            per[r["genre"]] = per.get(r["genre"], 0) + 1
+        what = ", ".join("%s %d" % (learned.LABEL[g].lower(), n) for g, n in per.items())
+        for path, content, sha in ((LEARNED_JSON, learned.to_json(new), jsha), (LEARNED_LUA, learned.to_lua(new), lsha)):
+            body = {"message": "Découvertes : %s (client PC)" % what, "branch": branch,
+                    "content": base64.b64encode(content.encode("utf-8")).decode("ascii")}
+            if sha:
+                body["sha"] = sha
+            self.api("PUT", "/contents/" + path, body)
+        pr = self.api("POST", "/pulls", {
+            "title": "Découvertes : %d ajout%s" % (len(added), "s" if len(added) > 1 else ""), "head": branch, "base": "main",
+            "body": "Découvertes intégrées à l'addon, envoyées par le client PC (page Découvertes).\n\n"
+                    + "\n".join("- %s : %d" % (learned.LABEL[g], n) for g, n in per.items())
+                    + "\n\nSources : %s." % ", ".join(s["name"] for s in sources)})
+        return pr.get("html_url")
 
     def last_data_run(self):
         r = self.api("GET", "/actions/workflows/%s/runs?per_page=1" % DATA_WORKFLOW)
@@ -2256,6 +2300,370 @@ class BackupsPage(Page):
             self.prevBtn.set(enabled=False)
 
 
+# --- Découvertes : ce que l'addon a appris en jeu, intégré à l'addon pour tout le monde (client/learned.py) ---
+def learned_dir():
+    d = os.path.join(data_dir(), "decouvertes")
+    os.makedirs(d, exist_ok=True)
+    return d
+
+
+def learned_files():
+    """Fichiers .wkd importés (copiés dans le dossier du client) : [(chemin, src, data)] ; illisibles ignorés."""
+    out = []
+    for name in sorted(os.listdir(learned_dir())):
+        if name.lower().endswith(".wkd"):
+            p = os.path.join(learned_dir(), name)
+            try:
+                with open(p, encoding="utf-8") as f:
+                    src, data = learned.read_wkd(f.read())
+                out.append((p, src, data))
+            except (OSError, ValueError):
+                pass
+    return out
+
+
+_learn_cache = {}
+
+
+def read_learned(addons):
+    """Ce que ta sauvegarde a appris ({ genre: { clé: valeur } }), lu une fois par version du fichier.
+    Lecture bloquante (le fichier fait plusieurs Mo) : jamais sur le thread Tk."""
+    path, mt = _save_file(addons)
+    if path is None:
+        return None
+    if _learn_cache.get("path") == path and _learn_cache.get("mt") == mt:
+        return _learn_cache["data"]
+    with open(path, encoding="utf-8", errors="replace") as f:
+        data = learned.extract(learned.read_save(f.read()))
+    _learn_cache.update(path=path, mt=mt, data=data)
+    return data
+
+
+def installed_learned(addons):
+    """Base des découvertes de l'addon installé (Modules/LearnedDB.lua), ou {}."""
+    p = os.path.join(addons or "", "WarbandKeeper", "Modules", "LearnedDB.lua")
+    try:
+        with open(p, encoding="utf-8") as f:
+            return learned.from_lua(f.read())
+    except OSError:
+        return {}
+
+
+@page("learned", "Découvertes", "✚")
+class LearnedPage(Page):
+    """Maquette « mix » : en-tête (importer, relire), trois chiffres, genres à gauche, détail filtré à droite,
+    envoi en PR en bas. Ton PC est une source sûre ; les fichiers d'autres joueurs (.wkd) ont besoin d'une 2e
+    confirmation pour les quêtes, chaînes et boss ; deux valeurs différentes = à vérifier (clic sur la ligne)."""
+    MAX_ROWS = 150
+
+    def __init__(self, app, parent):
+        super().__init__(app, parent)
+        self.mine, self.base, self.rows, self.loading = None, {}, [], False
+        self.genre, self.status = None, "all"
+        self.choices = {}
+        top = tk.Frame(self, bg=C["bg"])
+        top.place(relx=1.0, y=2, anchor="ne")
+        Button(top, "Relire ma sauvegarde", self.reload, "secondary", height=30).pack(side="right")
+        Button(top, "Importer un fichier…", self.import_file, "secondary", height=30).pack(side="right", padx=(0, 6))
+
+        kpi = tk.Frame(self, bg=C["bg"])
+        kpi.pack(fill="x", pady=(0, 10))
+        self.kpis = {}
+        for i, (key, title) in enumerate((("new", "Nouveau à intégrer"), ("src", "Sources"), ("look", "À regarder"))):
+            c = Card(kpi)
+            c.grid(row=0, column=i, sticky="nsew", padx=(0 if i == 0 else 8, 0))
+            kpi.columnconfigure(i, weight=1)
+            label(c.body, title, fg="muted", font="small").pack(anchor="w")
+            v = label(c.body, "-", font="h2")
+            v.pack(anchor="w")
+            s = label(c.body, "", fg="dim", font="small")
+            s.pack(anchor="w")
+            self.kpis[key] = (v, s)
+
+        body = tk.Frame(self, bg=C["bg"])
+        body.pack(fill="both", expand=True)
+        left = Card(body, "Genres")
+        left.configure(width=205)
+        left.pack_propagate(False)
+        left.pack(side="left", fill="y")
+        self.genres = tk.Frame(left.body, bg=C["surface"], width=200)
+        self.genres.pack(fill="both", expand=True)
+        right = Card(body)
+        right.pack(side="left", fill="both", expand=True, padx=(10, 0))
+        seg = tk.Frame(right.body, bg=C["surface"])
+        seg.pack(anchor="w", pady=(0, 6))
+        self.segBtns = {}
+        for v, t in (("all", "Toutes"), ("integrated", "Intégrées"), ("pending", "En attente"), ("check", "À vérifier"),
+                     ("rejected", "Rejetées")):
+            b = Button(seg, t, lambda v=v: self.set_status(v), "ghost", height=26, font=App.fonts["small"])
+            b.pack(side="left", padx=(0, 3))
+            self.segBtns[v] = b
+        head = tk.Frame(right.body, bg=C["surface"])
+        head.pack(fill="x")
+        for text, w in (("DÉCISION", 12), ("CONF.", 5), ("SOURCES", 9)):
+            label(head, text, fg="dim", font="smallb", width=w).pack(side="right")
+        label(head, "DÉTAIL", fg="dim", font="smallb").pack(side="left")
+        self.note = label(right.body, "", fg="muted", font="small", wraplength=480)
+        self.note.pack(side="bottom", anchor="w", pady=(6, 0))
+        self.list = ScrollArea(right.body)
+        self.list.configure(bg=C["surface"])
+        self.list.cv.configure(bg=C["surface"])
+        self.list.inner.configure(bg=C["surface"])
+        self.list.pack(fill="both", expand=True)
+
+        bot = tk.Frame(self, bg=C["bg"])
+        bot.pack(fill="x", pady=(10, 0))
+        self.prBtn = Button(bot, "Envoyer en PR", self.send_pr, "primary", height=32)
+        self.prBtn.pack(side="right")
+        self.clearBtn = Button(bot, "Retirer les fichiers importés", self.clear_files, "ghost", height=32)
+        self.clearBtn.pack(side="right", padx=(0, 6))
+        self.exportBtn = Button(bot, "Exporter mes découvertes", self.export, "ghost", height=32)
+        self.exportBtn.pack(side="right", padx=(0, 6))
+
+    # -- données
+    def sources(self):
+        out = []
+        if self.mine:
+            out.append({"name": "Ce PC", "trusted": True, "data": self.mine})
+        me = self.app.cfg.get("learnedSrc")
+        for _, src, data in learned_files():
+            if src != me:
+                out.append({"name": src, "trusted": False, "data": data})
+        return out
+
+    def compute(self):
+        ch = {}
+        for k, v in (self.app.cfg.get("learnedChoices") or {}).items():
+            g, _, key = k.partition("|")
+            ch[(g, key)] = v
+        self.choices = ch
+        self.rows = learned.merge(self.sources(), self.base, ch)
+
+    def reload(self, force=True):
+        a = self.app
+        if self.loading:
+            return
+        if not a.addons:
+            self.note.configure(text="Choisis d'abord le dossier AddOns dans Réglages.")
+            return
+        if force:
+            _learn_cache.clear()
+        self.loading = True
+        self.note.configure(text="Lecture de ta sauvegarde…")
+        addons = a.addons
+
+        def done(res, err):
+            self.loading = False
+            if err:
+                self.note.configure(text="Sauvegarde illisible : %s" % err)
+                return
+            self.mine, self.base = res
+            self.fill()
+        a.run(lambda: (read_learned(addons), installed_learned(addons)), done)
+
+    def on_show(self):
+        self.reload(force=False)
+
+    # -- affichage
+    def set_status(self, s):
+        self.status = s
+        self.fill()
+
+    def set_genre(self, g):
+        self.genre = None if self.genre == g else g
+        self.fill()
+
+    def fill(self):
+        self.compute()
+        rows = self.rows
+        n = {}
+        for r in rows:
+            n[r["status"]] = n.get(r["status"], 0) + 1
+        new = n.get(learned.INTEGRATED, 0)
+        src = self.sources()
+        look = n.get(learned.CHECK, 0) + n.get(learned.REJECTED, 0) + n.get(learned.PENDING, 0)
+        self.kpis["new"][0].configure(text=str(new), fg=C["positive"] if new else C["text"])
+        self.kpis["new"][1].configure(text="%s déjà dans l'addon" % n.get(learned.KNOWN, 0))
+        self.kpis["src"][0].configure(text=str(len(src)))
+        self.kpis["src"][1].configure(text="ce PC + %s" % plural(max(0, len(src) - (1 if self.mine else 0)), "fichier"))
+        self.kpis["look"][0].configure(text=str(look), fg=C["warning"] if look else C["text"])
+        self.kpis["look"][1].configure(text="%d à vérifier · %d rejetées · %d en attente" % (
+            n.get(learned.CHECK, 0), n.get(learned.REJECTED, 0), n.get(learned.PENDING, 0)))
+        # genres : nombre noté sur le PC, nouveautés en vert ; clic = filtre
+        for w in self.genres.winfo_children():
+            w.destroy()
+        mine = self.mine or {}
+        for g, title, _ in learned.GENRES:
+            k = sum(1 for r in rows if r["genre"] == g and r["status"] == learned.INTEGRATED)
+            have = len(mine.get(g) or {})
+            if not have and not k:
+                continue
+            sel = self.genre == g
+            row = tk.Frame(self.genres, bg=C["surface2"] if sel else C["surface"], cursor="hand2")
+            row.pack(fill="x", pady=1)
+            b = label(row, ("+%d  " % k if k else "") + str(have), fg="positive" if k else "dim", font="smallb")
+            b.pack(side="right", padx=6)
+            a = label(row, title, fg="text" if sel else "muted", font="small")
+            a.pack(side="left", padx=6, pady=1)
+            for w in (row, a, b):
+                w.bind("<Button-1>", lambda e, g=g: self.set_genre(g))
+        if not self.genres.winfo_children():
+            label(self.genres, "Rien d'appris pour l'instant." if self.mine is not None else "Lecture…",
+                  fg="dim", font="small").pack(anchor="w")
+        for v, b in self.segBtns.items():
+            b.set(style="primary" if v == self.status else "ghost")
+        # détail
+        for w in self.list.inner.winfo_children():
+            w.destroy()
+        want = None if self.status == "all" else (self.status,)
+        shown = [r for r in rows if (not self.genre or r["genre"] == self.genre)
+                 and (want is None or r["status"] in want) and (want is not None or r["status"] != learned.KNOWN)]
+        for r in shown[:self.MAX_ROWS]:
+            self.add_row(r)
+        if len(shown) > self.MAX_ROWS:
+            label(self.list.inner, "… et %d autres (choisis un genre à gauche)" % (len(shown) - self.MAX_ROWS),
+                  fg="dim", font="small").pack(anchor="w", pady=4)
+        if not shown:
+            label(self.list.inner, "Rien ici." if self.mine is not None else "Lecture de ta sauvegarde…",
+                  fg="dim", font="small").pack(anchor="w", pady=6)
+        can = bool(new and self.app.cfg.get("token"))
+        self.prBtn.set(text="Envoyer en PR (%d)" % new if new else "Envoyer en PR", enabled=can)
+        files = len(learned_files())
+        self.clearBtn.set(enabled=bool(files))
+        if files:
+            self.clearBtn.pack(side="right", padx=(0, 6), before=self.exportBtn)
+        else:
+            self.clearBtn.pack_forget()
+        if not self.loading:
+            self.note.configure(text="Rien de nouveau : tout ce que tu as appris est déjà dans l'addon." if not new else (
+                "Crée une branche et une demande de fusion sur GitHub (rien n'est publié avant la fusion)."
+                if self.app.cfg.get("token") else "Ajoute un jeton GitHub (Réglages) pour envoyer en PR ; "
+                "sinon « Exporter mes découvertes » et envoie le fichier au mainteneur."))
+
+    COLORS = {learned.INTEGRATED: "positive", learned.PENDING: "muted", learned.CHECK: "warning",
+              learned.REJECTED: "negative", learned.KNOWN: "dim"}
+
+    def add_row(self, r):
+        row = tk.Frame(self.list.inner, bg=C["surface"])
+        row.pack(fill="x", pady=1)
+        st = r["status"]
+        dec = {learned.PENDING: "en attente ▸", learned.CHECK: "à vérifier ▸"}.get(st, learned.STATUS_LABEL[st])
+        c = label(row, dec, fg=self.COLORS[st], font="small", width=12)
+        c.pack(side="right")
+        label(row, str(r.get("confirm") or len(r["srcs"])), fg="muted", font="small", width=5).pack(side="right")
+        srcs = ", ".join(r["srcs"])
+        label(row, srcs if len(srcs) < 11 else srcs[:10] + "…", fg="dim", font="small", width=9).pack(side="right")
+        v = r["value"] if r["value"] is not None else (r["values"][0] if r["values"] else {})
+        try:
+            text = learned.short(r["genre"], r["key"], v)
+        except Exception:
+            text = "%s %s" % (r["genre"], r["key"])
+        if r.get("reason") and st != learned.PENDING:
+            text += " · " + r["reason"]
+        d = label(row, text if len(text) < 47 else text[:46] + "…", font="small")
+        d.pack(side="left", fill="x", expand=True)
+        if st in (learned.CHECK, learned.PENDING):
+            for w in (row, c, d):
+                w.configure(cursor="hand2")
+                w.bind("<Button-1>", lambda e, r=r: self.decide(r, e))
+
+    def decide(self, r, e):
+        """Clic sur une ligne à vérifier : choisir la valeur ; en attente : l'intégrer quand même."""
+        m = tk.Menu(self, tearoff=0, bg=C["surface2"], fg=C["text"], activebackground=C["accent"], bd=0)
+        key = "%s|%s" % (r["genre"], r["key"])
+
+        def pick(i):
+            ch = dict(self.app.cfg.get("learnedChoices") or {})
+            if i is None:
+                ch.pop(key, None)
+            else:
+                ch[key] = i
+            self.app.cfg["learnedChoices"] = ch
+            save_config(self.app.cfg)
+            self.fill()
+        if r["status"] == learned.CHECK:
+            for i, v in enumerate(r["values"]):
+                t = json.dumps(v, ensure_ascii=False)
+                m.add_command(label="Garder : " + (t if len(t) < 70 else t[:69] + "…"), command=lambda i=i: pick(i))
+        else:
+            m.add_command(label="Intégrer quand même (1 seule confirmation)", command=lambda: pick(0))
+        if key in (self.app.cfg.get("learnedChoices") or {}):
+            m.add_command(label="Annuler mon choix", command=lambda: pick(None))
+        m.tk_popup(e.x_root, e.y_root)
+
+    # -- fichiers
+    def import_file(self):
+        paths = filedialog.askopenfilenames(title="Découvertes d'un autre joueur",
+                                            filetypes=[("Découvertes Warband Keeper", "*.wkd"), ("Tous", "*.*")])
+        ok, bad = 0, 0
+        for p in paths or ():
+            try:
+                with open(p, encoding="utf-8") as f:
+                    learned.read_wkd(f.read())
+                shutil.copy2(p, os.path.join(learned_dir(), os.path.basename(p)))
+                ok += 1
+            except (OSError, ValueError):
+                bad += 1
+        if ok or bad:
+            self.app.toast("%s importé%s%s" % (plural(ok, "fichier"), "s" if ok > 1 else "",
+                                               (", %d illisible%s" % (bad, "s" if bad > 1 else "")) if bad else ""),
+                           "positive" if ok else "negative")
+            self.fill()
+
+    def clear_files(self):
+        files = learned_files()
+        if not files or not self.app.confirm("Retirer les %s importés ?" % plural(len(files), "fichier")):
+            return
+        for p, _, _ in files:
+            try:
+                os.remove(p)
+            except OSError:
+                pass
+        self.fill()
+
+    def export(self):
+        if not self.mine:
+            return self.app.toast("Rien à exporter : ta sauvegarde n'est pas encore lue.", "warning")
+        cfg = self.app.cfg
+        if not cfg.get("learnedSrc"):
+            import secrets
+            cfg["learnedSrc"] = "wk-" + secrets.token_hex(4)
+            save_config(cfg)
+        docs = os.path.join(os.path.expanduser("~"), "Documents")
+        p = filedialog.asksaveasfilename(title="Exporter mes découvertes", defaultextension=".wkd",
+                                         initialdir=docs if os.path.isdir(docs) else None,
+                                         initialfile="WarbandKeeper-decouvertes-%s.wkd" % datetime.now().strftime("%Y%m%d"),
+                                         filetypes=[("Découvertes Warband Keeper", "*.wkd")])
+        if not p:
+            return
+        try:
+            with open(p, "w", encoding="utf-8") as f:
+                f.write(learned.export_wkd(self.mine, cfg["learnedSrc"]))
+        except OSError as e:
+            return self.app.toast("Export impossible : %s" % e, "negative")
+        self.app.toast("Découvertes exportées (rien de personnel : ni persos, ni or, ni sacs).", "positive")
+
+    # -- envoi
+    def send_pr(self):
+        a = self.app
+        if not a.cfg.get("token"):
+            return a.show_settings("github")
+        srcs, choices = self.sources(), self.choices
+        self.prBtn.set(enabled=False)
+        self.note.configure(text="Envoi sur GitHub…")
+
+        def done(res, err):
+            if err:
+                a.toast("Envoi impossible : %s" % err, "negative")
+            elif res:
+                a.toast("Demande de fusion créée.", "positive")
+                webbrowser.open(res)
+            else:
+                a.toast("Rien de nouveau par rapport à la base sur GitHub.", "muted")
+            self.fill()
+        a.run(lambda: GitHub(a.cfg["token"]).learned_pr(srcs, choices), done)
+
+
 @page("settings", "Réglages", "⚙")
 class SettingsPage(Page):
     def __init__(self, app, parent):
@@ -2727,7 +3135,7 @@ class App:
         tk.Label(tb, text="Client " + CLIENT_VERSION, bg=C["sidebar"], fg=C["dim"], font=App.fonts["small"]).pack(anchor="w")
         self.nav = {}
         # ordre de la barre latérale (les pages sont déclarées dans un autre ordre)
-        order = ["dash", "home", "notes", "backups", "settings"]
+        order = ["dash", "home", "notes", "backups", "learned", "settings"]
         PAGES.sort(key=lambda c: order.index(c.key) if c.key in order else 99)
         for cls in PAGES:
             b = tk.Label(side, text="  %s   %s" % (cls.icon, cls.title), bg=C["sidebar"], fg=C["muted"], font=App.fonts["nav"],

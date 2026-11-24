@@ -3,6 +3,12 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.9.11 — 24/11/2026
+
+### Nouveautés
+- Nouvelle page « Découvertes » : ce que l'addon a appris en jeu (quêtes de WoW Forever, boss, durées et tracés des vols, tram, chemins, feu de camp, prix des maîtres et des marchands, points de récolte) est comparé à ce que l'addon contient déjà. Ce qui est nouveau peut être envoyé en demande de fusion sur GitHub (jeton avec « Contents : Read and write » et « Pull requests : Read and write »). Une fois fusionné, chaque installation neuve le reçoit d'office.
+- Plusieurs joueurs : « Exporter mes découvertes » crée un fichier .wkd, sans rien de personnel (ni persos, ni or, ni sacs). Le mainteneur l'importe avec « Importer un fichier… ». Il faut deux joueurs d'accord pour une quête, une chaîne ou un boss. Deux valeurs différentes passent « à vérifier » : un clic sur la ligne pour choisir.
+
 ## 1.9.10 — 21/11/2026
 
 ### Corrections
