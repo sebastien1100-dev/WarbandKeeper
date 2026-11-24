@@ -129,10 +129,9 @@ end
 
 -- Nombre d'objets des sacs qui seraient déposés.
 function M:Plan()
-    return WK.modules.Rules:Plan(self:Store(), function(rule, id, bound)
-        -- objet verrouillé à la main (Modules/ItemLock.lua) : il reste dans les sacs, comme pour le courrier
-        local IL = WK.modules.ItemLock
-        if IL and IL:Manual()[id] then return false end
+    return WK.modules.Rules:Plan(self:Store(), function(rule, _, bound)
+        -- un verrou protège de la vente et de la destruction, pas du rangement (avant : un objet verrouillé à la main
+        -- restait dans les sacs)
         if rule.target == "warband" and bound then return false end
         return true
     end)

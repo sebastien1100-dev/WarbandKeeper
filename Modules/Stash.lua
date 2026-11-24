@@ -320,11 +320,18 @@ local function holdings()
 end
 
 -- Règle d'envoi existante pour cet objet (tes règles passent avant le rangement)
-local function hasMailRule(id, who)
+-- Seulement une règle qui envoie vraiment quelque chose depuis ce perso : un destinataire qui n'est pas lui et plus
+-- que la quantité gardée (avant : toute règle comptait, même vers lui-même ou qui garde tout, et l'objet ne bougeait
+-- plus jamais : « Reste ici : une règle d'envoi s'en occupe »)
+local function hasMailRule(id, who, cnt)
     local Rl, Ml = WK.modules.Rules, WK.modules.Mail
     if not (Rl and Ml) then return false end
     local ok, r = pcall(Rl.Resolve, Rl, Ml:Store(), id, who)
-    return ok and r ~= nil
+    if not (ok and type(r) == "table" and type(r.to) == "string" and r.to ~= "") then return false end
+    local okR, _, toKey = pcall(Ml.Resolve, Ml, r.to)
+    if okR and toKey and toKey == who then return false end
+    if cnt and cnt <= (r.keep or 0) then return false end
+    return true
 end
 
 -- Prix d'un objet : HV (scan), marchand
@@ -384,14 +391,15 @@ function M:Compute()
     for id, byChar in pairs(all) do
         local classID = instant(id)
         local rule = cfg.items[id]
-        local manual = IL and IL:Manual()[id]
         local fam = classID and self:FamilyOf(id)
-        if manual or (rule and rule.never) then -- luacheck: ignore 542
+        -- un verrou protège de la vente et de la destruction, pas du rangement : l'objet verrouillé part au perso
+        -- qui s'en sert comme les autres (avant : un verrou à la main l'empêchait de bouger)
+        if rule and rule.never then -- luacheck: ignore 542
             -- ne bouge jamais
         elseif rule and rule.to and chars[rule.to] then
             -- exception par objet : tout va à ce perso
             for key, cnt in pairs(byChar) do
-                if key ~= rule.to and cnt > 0 and not hasMailRule(id, key) then
+                if key ~= rule.to and cnt > 0 and not hasMailRule(id, key, cnt) then
                     local who = WK:CharName(chars[rule.to], rule.to)
                     send(rule.to, id, cnt, key, string.format(T("exception : toujours à %s"), who), "always")
                 end
@@ -477,7 +485,7 @@ function M:Compute()
             -- « tout » garde tout (il en fera ce qu'il veut) ; un perso qui garde ses récoltes ne cède rien.
             local spare = {}
             for key, cnt in pairs(byChar) do
-                if hasMailRule(id, key) then kept(id, key, T("une règle d'envoi s'en occupe"))
+                if hasMailRule(id, key, cnt) then kept(id, key, T("une règle d'envoi s'en occupe"))
                 elseif keeps(key, fam) then kept(id, key, T("garde ses récoltes"))
                 else
                     local nd = isNeeder[key]
@@ -500,6 +508,15 @@ function M:Compute()
                         spare[from] = sp - mv
                         left[nd.key] = left[nd.key] - mv
                         send(nd.key, id, mv, from, nd.why, nd.exc)
+                    end
+                end
+            end
+            -- personne n'en a besoin et objet verrouillé : jamais vendu, mais rangé chez le perso banque
+            local lockedWhy = #needers == 0 and IL and IL:Reason(id)
+            if lockedWhy and bankKey then
+                for key, sp in pairs(spare) do
+                    if key ~= bankKey and sp > 0 then
+                        send(bankKey, id, sp, key, T("perso banque : verrouillé, gardé au chaud"), "bank")
                     end
                 end
             end
@@ -619,10 +636,20 @@ function M:MyShipments()
     local r = self:Route()
     local c = WK.DB.global.characters[me]
     local inBags = c and c.bags or {}
+    -- objets liés (lié quand ramassé, ou équipé une fois) : le jeu refuse de les poster ; seuls les exemplaires libres
+    -- sont proposés (avant : « Cotte d'anneaux » proposée, puis « Rien à envoyer : objets liés… » au clic)
+    local boundN = {}
+    local Inv = WK.modules.Inventory
+    for _, bag in ipairs(Inv and Inv:BagList() or {}) do
+        for slot = 1, (WK.Container.NumSlots(bag) or 0) do
+            local id, count, _, bound = WK.Container.Info(bag, slot)
+            if id and bound then boundN[id] = (boundN[id] or 0) + (count or 1) end
+        end
+    end
     local out = {}
     local function take(list, to, ah)
         for _, e in ipairs(list) do
-            local n = math.min(e.from[me] or 0, inBags[e.id] or 0)
+            local n = math.min(e.from[me] or 0, (inBags[e.id] or 0) - (boundN[e.id] or 0))
             if n > 0 and to ~= me then
                 table.insert(out, { id = e.id, count = n, to = to, why = e.why, ah = ah, exc = e.exc })
             end

@@ -3004,6 +3004,7 @@ WK.Locales.enUS.text = {
     ["les prix venus des découvertes restent"] = "prices from discoveries are kept",
     ["une règle d'envoi s'en occupe"] = "a mail rule handles it",
     ["Reste ici : %s"] = "Stays here: %s",
+    ["perso banque : verrouillé, gardé au chaud"] = "bank character: locked, kept safe",
     ["Barre d'XP"] = "XP bar",
     ["Avant de partir"] = "Before you go",
     ["Le meilleur objet de chaque sorte pour ton niveau ; rouge : sous le seuil. Seuils x2 en raid ; en JcJ, pas d'élixir et moitié de nourriture."] = "The best item of each kind for your level; red: below threshold. Thresholds x2 in raids; in PvP, no elixir and half the food.",

@@ -50,6 +50,17 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.291 — 24/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Rangement : un objet verrouillé est rangé comme les autres (envoyé au perso qui s'en sert, ou au perso banque si personne n'en veut). Le verrou protège toujours de la vente et de la destruction, mais ne bloque plus le courrier ni le dépôt en banque.
+
+### Corrections
+- Rangement : un objet lié (lié quand ramassé, ou déjà équipé) était proposé à l'envoi, puis refusé au clic (« Rien à envoyer : objets liés… »). Il n'est plus proposé.
+- Rangement : un objet couvert par une règle d'envoi qui ne l'envoyait nulle part (vers le perso lui-même, ou qui garde tout) restait bloqué (« Reste ici : une règle d'envoi s'en occupe »). Seule une règle qui envoie vraiment quelque chose passe maintenant avant le rangement.
+
 ## v1.128.290 — 24/11/2026
 
 _Un /reload suffit._

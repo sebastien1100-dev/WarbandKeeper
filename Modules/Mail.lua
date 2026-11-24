@@ -130,10 +130,9 @@ local function afterSend()
 end
 
 local function plan()
-    return WK.modules.Rules:Plan(M:Store(), function(rule, id, bound)
-        -- objet verrouillé à la main (Modules/ItemLock.lua) : il reste dans les sacs
-        local IL = WK.modules.ItemLock
-        if IL and IL:Manual()[id] then return false end
+    return WK.modules.Rules:Plan(M:Store(), function(rule, _, bound)
+        -- un verrou protège de la vente et de la destruction, pas du rangement (avant : un objet verrouillé à la main
+        -- restait dans les sacs)
         return rule.to and rule.to ~= "" and not bound and not isMe(rule.to)
     end)
 end
@@ -162,9 +161,7 @@ function M:SendWith(store)
     if sending then return false end
     wipe(queue)
     local byRecipient = {}
-    local p = WK.modules.Rules:Plan(store, function(rule, id, bound)
-        local IL = WK.modules.ItemLock
-        if IL and IL:Manual()[id] then return false end
+    local p = WK.modules.Rules:Plan(store, function(rule, _, bound)
         return rule.to and rule.to ~= "" and not bound and not isMe(rule.to)
     end)
     for _, e in ipairs(p) do

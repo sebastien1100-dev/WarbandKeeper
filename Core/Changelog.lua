@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.291", date = "24/11/2026",
+        changed = {
+            "Rangement : un objet verrouillé est rangé comme les autres (envoyé au perso qui s'en sert, ou au perso banque si personne n'en veut). Le verrou protège toujours de la vente et de la destruction, mais ne bloque plus le courrier ni le dépôt en banque.",
+        },
+        fixed = {
+            "Rangement : un objet lié (lié quand ramassé, ou déjà équipé) était proposé à l'envoi, puis refusé au clic (« Rien à envoyer : objets liés… »). Il n'est plus proposé.",
+            "Rangement : un objet couvert par une règle d'envoi qui ne l'envoyait nulle part (vers le perso lui-même, ou qui garde tout) restait bloqué (« Reste ici : une règle d'envoi s'en occupe »). Seule une règle qui envoie vraiment quelque chose passe maintenant avant le rangement.",
+        },
+    },
+    {
         version = "1.128.290", date = "24/11/2026",
         fixed = {
             "Retour au corps : une fois arrivé sur le corps, le bandeau « Retour au corps : cours-y · env. 0:00 » réapparaissait au milieu de l'écran (le guidage s'arrête à l'arrivée). Il ne s'affiche plus près du corps : le jeu propose déjà de revenir à la vie.",
