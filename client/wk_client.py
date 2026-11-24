@@ -33,7 +33,7 @@ from tkinter import filedialog, font as tkfont
 
 import learned  # Découvertes (client/learned.py, partagé avec tools/gen_learned.py)
 
-CLIENT_VERSION = "1.9.17"
+CLIENT_VERSION = "1.9.18"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 DATA_ADDON = "WarbandKeeper_Data"  # grosses bases, chargées à la demande (dossier à côté de l'addon)
@@ -976,6 +976,14 @@ class GitHub:
             if isinstance(e, (urllib.error.URLError, OSError)) and not isinstance(e, NetError):
                 raise NetError("Téléchargement interrompu (%s). Réessaie." % getattr(e, "reason", e))
             raise
+
+
+def client_only(rel):
+    """Vrai pour une version qui ne livre que le client PC : toutes les lignes des notes de l'addon commencent par
+    « Rien ne change en jeu » (Core/Changelog.lua). Pas de notification de l'addon pour elle."""
+    body = ((rel or {}).get("body") or "").split("\n## Client PC")[0]
+    items = [l.strip()[2:] for l in body.splitlines() if l.strip().startswith("- ")]
+    return bool(items) and all(i.startswith("Rien ne change en jeu") for i in items)
 
 
 def parse_client_notes(text):
@@ -3634,8 +3642,10 @@ class App:
 
     @property
     def latest(self):
+        # version de l'addon à proposer : la plus récente qui change l'addon (une version « client seulement »,
+        # notes « Rien ne change en jeu », n'est ni annoncée ni installée d'office pour l'addon)
         for r in self.releases:
-            if addon_asset(r):
+            if addon_asset(r) and not client_only(r):
                 return r
         return None
 
@@ -3648,7 +3658,7 @@ class App:
         inst = self.installed
         if not inst:
             return self.releases[:1]
-        return [r for r in self.releases if vtuple(r["tag_name"]) > vtuple(inst)]
+        return [r for r in self.releases if vtuple(r["tag_name"]) > vtuple(inst) and not client_only(r)]
 
     @staticmethod
     def auto_pick(installs):
