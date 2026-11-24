@@ -19,12 +19,14 @@ local BIG_W, BIG_H = 380, 76
 
 local DEFAULTS = { enabled = true, minQuality = 1, duration = 4, bigQuality = 3, bigValue = 0, bigDuration = 6,
     sound = true, where = "all", noCombat = false, size = "m", maxN = 6, grow = "down", minValue = 0, quest = true,
-    money = false, showPrice = true, showSub = true, showTags = true, bigBis = true }
+    money = true, showPrice = true, showSub = true, showTags = true, bigBis = true }
 function UI.LootToastConfig()
     local g = WK.DB.global
     g.lootToast = g.lootToast or {}
     local c = g.lootToast
     for k, v in pairs(DEFAULTS) do if c[k] == nil then c[k] = v end end
+    -- or ramassé (maquette A) : activé une fois pour tous (il était coupé d'office)
+    if not c.moneyOn then c.money, c.moneyOn = true, true end
     return c
 end
 local function cfg() return UI.LootToastConfig() end
@@ -103,8 +105,19 @@ local function describe(id, link, qty)
     return e
 end
 
+-- pièces du jeu (or, argent, cuivre en icônes) ; repli : texte coloré
+local function coinText(v)
+    local fn = _G.GetCoinTextureString or _G.GetMoneyString
+    if fn then
+        local ok, txt = pcall(fn, v, 12)
+        if ok and type(txt) == "string" and txt ~= "" then return txt end
+    end
+    return UI:GoldText(v)
+end
+UI.LootCoinText = coinText
+
 local function priceText(e)
-    if e.src == "money" then return UI:GoldText(e.value), T("ramassé") end
+    if e.src == "money" then return coinText(e.value), "" end
     if e.value > 0 then return UI:GoldText(e.value), e.src == "ah" and T("HV") or T("marchand") end
     return UI:Hex(C.dim) .. "-|r", T("pas de prix")
 end
@@ -146,8 +159,8 @@ local function newToast(parent)
     end)
     function t:Paint(e)
         self.e = e
-        local col = qcolor(e.q)
-        self.edge:SetColor(col[1], col[2], col[3], 0.6)
+        local col = e.src == "money" and C.gold or qcolor(e.q)
+        self.edge:SetColor(col[1], col[2], col[3], e.src == "money" and 0.9 or 0.6)
         self.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], 0.94)
         self.iconEdge:SetColorTexture(col[1], col[2], col[3], 1)
         self.icon:SetTexture(e.icon or 134400)
@@ -165,8 +178,12 @@ local function newToast(parent)
     return t
 end
 
--- plus récent en haut (« down ») ou en bas (« up ») ; décalages en unités de l'encadré (sa taille s'applique)
+-- plus récent en haut (« down ») ou en bas (« up ») ; décalages en unités de l'encadré (sa taille s'applique) ;
+-- l'encadré de l'argent reste toujours en tête (maquette A)
 local function layoutStack()
+    for i, t in ipairs(toasts) do
+        if i > 1 and t.e and t.e.id == "money" then table.remove(toasts, i); table.insert(toasts, 1, t) break end
+    end
     local y = 0
     local up = cfg().grow == "up"
     for _, t in ipairs(toasts) do
@@ -393,6 +410,7 @@ function UI.LootToastDemo(real)
         e.icon = (C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(e.id)) or 134400
         push(e)
     end
+    UI.LootToastMoney(12345, true)
     if real then
         big = big or buildBig()
         showBig({ id = 0, name = T("Bottes de l'éclaireur fantôme"), q = 4, qty = 1, value = 380000, unit = 380000,
@@ -457,22 +475,37 @@ WK:On("PLAYER_REGEN_ENABLED", function()
 end)
 
 -- Or ramassé (option money) : écart de l'argent du perso pendant qu'une fenêtre de butin est ouverte
-local lootOpen, money0 = false, nil
-WK:On("LOOT_READY", function() lootOpen = true; money0 = _G.GetMoney and _G.GetMoney() end)
+-- (maquette A) : un seul encadré doré en tête de pile, cumulé corps après corps tant qu'il est affiché ;
+-- dessous, le nombre de corps et l'or ramassé depuis la connexion
+local lootOpen, money0, gotHere = false, nil, false
+local moneySession, moneyCorpses = 0, 0
+WK:On("LOOT_READY", function() lootOpen = true; gotHere = false; money0 = _G.GetMoney and _G.GetMoney() end)
 WK:On("LOOT_CLOSED", function() lootOpen = false end)
 WK:On("PLAYER_MONEY", function()
     local now = _G.GetMoney and _G.GetMoney()
     if not (lootOpen and money0 and now) then money0 = now return end
     local d = now - money0
     money0 = now
-    if d <= 0 or not (cfg().money and on() and placeOk()) then return end
+    if d <= 0 then return end
+    moneySession = moneySession + d
+    if not (cfg().money and on() and placeOk()) then return end
     if cfg().noCombat and inCombat() then return end
-    -- argent : cumulé dans un seul encadré tant qu'il est affiché
+    UI.LootToastMoney(d, not gotHere)
+    gotHere = true
+end)
+
+-- d : cuivre ramassé ; newCorpse : premier argent de cette fenêtre de butin
+function UI.LootToastMoney(d, newCorpse)
+    local shown
     for _, t in ipairs(toasts) do
-        if t.e and t.e.id == "money" then d = d + t.e.value end
+        if t.e and t.e.id == "money" then shown = t end
     end
-    local e = { id = "money", name = T("Argent"), q = 1, qty = 1, unit = d, value = d, src = "money",
-        icon = 133784, sub = "", tags = "" }
+    if shown then d = d + shown.e.value else moneyCorpses = 0 end
+    if newCorpse ~= false then moneyCorpses = moneyCorpses + 1 end
+    local who = moneyCorpses > 1 and string.format(T("%d corps"), moneyCorpses) or T("1 corps")
+    local sub = string.format(T("%s · séance %s"), who, "+" .. UI:PlainMoney(math.max(moneySession, d)))
+    local e = { id = "money", name = T("Argent ramassé"), q = 1, qty = 1, unit = d, value = d, src = "money",
+        icon = 133784, sub = sub, tags = "" }
     stack = stack or buildStack()
     for i, t in ipairs(toasts) do
         if t.e and t.e.id == "money" then
@@ -481,7 +514,7 @@ WK:On("PLAYER_MONEY", function()
         end
     end
     push(e)
-end)
+end
 
 ---------------------------------------------------------------------------
 -- Carte de réglages (roue de la page Filtre de loot)
@@ -529,7 +562,9 @@ function UI.BuildLootToastCards(_, parent)
     row(b, "Prix minimal du lot", "En dessous, rien n'est montré (0 : tout).",
         slider(b, "minValue", 0, 100, 1, "%d pa", 100), 230)
     row(b, "Récompenses de quête", "Objets reçus en rendant une quête.", tog(b, "quest"), 80)
-    row(b, "Or ramassé", "Un encadré « + po pa » pour l'argent ramassé sur les corps.", tog(b, "money"), 80)
+    row(b, "Or ramassé", "Un encadré doré en tête de la pile : l'argent ramassé, cumulé corps après corps,"
+        .. " et le total de la séance.",
+        tog(b, "money"), 80)
     local h = UI:Text(b, 10, C.dim); h:SetPoint("TOPLEFT", 16, y - 4); h:SetText(UI:Upper(T("Dans l'encadré")))
     y = y - 22
     row(b, "Prix du lot", "Scan HV, sinon marchand.", tog(b, "showPrice"), 80)

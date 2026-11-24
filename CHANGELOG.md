@@ -49,6 +49,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.275 — 24/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Butin à l'écran : l'or ramassé s'affiche maintenant (l'option « Or ramassé » était coupée d'office). Un encadré doré « Argent ramassé » reste en tête de la pile, avec les pièces du jeu. Il se cumule corps après corps tant qu'il est affiché, et donne dessous le nombre de corps et l'or ramassé depuis ta connexion.
+
 ## v1.128.274 — 24/11/2026
 
 _Un /reload suffit._
