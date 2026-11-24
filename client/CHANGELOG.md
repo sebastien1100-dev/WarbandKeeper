@@ -3,6 +3,11 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.9.17 — 24/11/2026
+
+### Corrections
+- Pastilles en haut des pages : la dernière était coupée quand la place manquait (« /11 11:06 » dans Découvertes). Une pastille qui ne tient pas est maintenant cachée en entier, et celle du dernier envoi s'écrit plus court (« ENVOYÉ 11:06 » le jour même, sinon la date).
+
 ## 1.9.16 — 24/11/2026
 
 ### Corrections

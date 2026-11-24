@@ -33,7 +33,7 @@ from tkinter import filedialog, font as tkfont
 
 import learned  # Découvertes (client/learned.py, partagé avec tools/gen_learned.py)
 
-CLIENT_VERSION = "1.9.16"
+CLIENT_VERSION = "1.9.17"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 DATA_ADDON = "WarbandKeeper_Data"  # grosses bases, chargées à la demande (dossier à côté de l'addon)
@@ -1728,6 +1728,7 @@ class Page(tk.Frame):
             ch.bind("<Button-1>", lambda e: app.show("home"))
         self.pillBox = tk.Frame(head, bg=C["bg"])
         self.pillBox.pack(side="left", fill="x", expand=True)
+        self.pillBox.bind("<Configure>", lambda e: self.fit_pills())
         tk.Frame(self, bg=C["border"], height=1).pack(fill="x", pady=(8, 10))
         self.set_pills(None)
 
@@ -1744,6 +1745,27 @@ class Page(tk.Frame):
             tk.Label(p, text=lab, bg=C["surface"], fg=C["dim"], font=App.fonts["smallb"]).pack(side="left", padx=(8, 5), pady=3)
             tk.Label(p, text=val, bg=C["surface"], fg=C.get(col, col) if col else C["text"],
                      font=App.fonts["bodyb"]).pack(side="left", padx=(0, 8), pady=3)
+        self.after_idle(self.fit_pills)
+
+    def fit_pills(self):
+        """Pastilles qui ne tiennent pas dans la largeur : cachées en entier (avant, la dernière était rognée)."""
+        box = self.pillBox
+        width = box.winfo_width()
+        if width <= 1:
+            return self.after(50, self.fit_pills)
+        x, full = 0, False
+        for p in box.winfo_children():
+            if not isinstance(p, tk.Frame):
+                continue
+            w = p.winfo_reqwidth() + 6
+            if full or x + w > width:
+                full = True
+                if p.winfo_manager():
+                    p.pack_forget()
+            else:
+                if not p.winfo_manager():
+                    p.pack(side="left", padx=(0, 6))
+                x += w
 
     def paint_status(self):
         a = self.app
@@ -2687,13 +2709,14 @@ class LearnedPage(Page):
         src = self.sources()
         look = n.get(learned.CHECK, 0) + n.get(learned.REJECTED, 0) + n.get(learned.PENDING, 0)
         last = self.app.cfg.get("learnedLast") or {}
-        pills = [("NOUVEAU", str(new), "positive" if new else None), ("CONNUES", str(n.get(learned.KNOWN, 0)), None),
-                 ("SOURCES", "ce PC" + (" + %d" % (len(src) - 1) if len(src) > 1 else ""), None)]
+        pills = [("NOUVEAU", str(new), "positive" if new else None), ("CONNUES", str(n.get(learned.KNOWN, 0)), None)]
+        if len(src) > 1:  # seulement s'il y a des fichiers d'autres joueurs (« ce PC » seul n'apprend rien)
+            pills.append(("SOURCES", "ce PC + %d" % (len(src) - 1), None))
         if look:
             pills.append(("À REGARDER", str(look), "warning"))
         if last.get("at"):
-            pills.append(("DERNIER ENVOI", "%s · %d" % (datetime.fromtimestamp(last["at"]).strftime("%d/%m %H:%M"),
-                                                       int(last.get("n") or 0)), "positive"))
+            when = datetime.fromtimestamp(last["at"])
+            pills.append(("ENVOYÉ", when.strftime("%H:%M" if when.date() == datetime.now().date() else "%d/%m"), "positive"))
         self.set_pills(pills)
         # genres : nombre noté sur le PC, nouveautés en vert ; clic = filtre
         for w in self.genres.winfo_children():

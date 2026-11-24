@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.278", date = "24/11/2026",
+        changed = {
+            "Rien ne change en jeu : cette version livre le client PC 1.9.17 (pastilles du haut des pages plus jamais coupées).",
+        },
+    },
+    {
         version = "1.128.277", date = "24/11/2026",
         fixed = {
             "Micro menu > Héritages : le raccourci ouvrait encore les Apparences. Il vérifie maintenant que la page des héritages est vraiment affichée, et sinon essaie les autres onglets du journal des collections jusqu'à la trouver.",
