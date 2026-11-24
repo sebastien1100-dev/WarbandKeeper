@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.296", date = "24/11/2026",
+        added = {
+            "Sacs : « Mode fabrication » dans l'en-tête (maquette A). Allumé, les composants de ta file de fabrication restent dans tes sacs : ils passent en tête (« Pour la file de fabrication », entourés) et ne partent ni au courrier (rangement, règles d'envoi) ni en banque. Un bandeau dit ce qui est en pause, avec un interrupteur pour l'envoi au courrier, un pour le dépôt en banque, et « Se coupe en fermant le métier » (allumé d'office). Fenêtre étroite : le bouton devient un rond « marteau ».",
+        },
+    },
+    {
         version = "1.128.295", date = "24/11/2026",
         added = {
             "Buffer autour de toi : réglage « En ville » (coupé d'office). En ville et à l'auberge, le bouton ne regarde plus tous les joueurs autour, seulement toi, ta cible, ta focalisation et ton groupe : moins de calcul là où il y a le plus de monde.",

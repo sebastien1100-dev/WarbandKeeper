@@ -638,6 +638,9 @@ function M:MyShipments()
     local inBags = c and c.bags or {}
     -- objets liés (lié quand ramassé, ou équipé une fois) : le jeu refuse de les poster ; seuls les exemplaires libres
     -- sont proposés (avant : « Cotte d'anneaux » proposée, puis « Rien à envoyer : objets liés… » au clic)
+    -- mode fabrication des sacs, envoi au courrier en pause : les composants de la file ne sont pas proposés
+    local PH = WK.modules.ProfHelp
+    local keepCraft = PH and PH.CraftKeep and PH:CraftKeep("mail")
     local boundN = {}
     local Inv = WK.modules.Inventory
     for _, bag in ipairs(Inv and Inv:BagList() or {}) do
@@ -650,6 +653,7 @@ function M:MyShipments()
     local function take(list, to, ah)
         for _, e in ipairs(list) do
             local n = math.min(e.from[me] or 0, (inBags[e.id] or 0) - (boundN[e.id] or 0))
+            if keepCraft and keepCraft[e.id] then n = 0 end
             if n > 0 and to ~= me then
                 table.insert(out, { id = e.id, count = n, to = to, why = e.why, ah = ah, exc = e.exc })
             end

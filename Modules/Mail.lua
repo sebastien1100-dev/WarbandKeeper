@@ -129,10 +129,18 @@ local function afterSend()
     if mail.closeAfter ~= false then C_Timer.After(0.3, closeMailbox) end
 end
 
+-- mode fabrication des sacs, envoi au courrier en pause : les composants de la file restent dans les sacs
+local function craftKept(id)
+    local PH = WK.modules.ProfHelp
+    local keep = PH and PH.CraftKeep and PH:CraftKeep("mail")
+    return keep and keep[id] or false
+end
+M.CraftKept = craftKept
 local function plan()
-    return WK.modules.Rules:Plan(M:Store(), function(rule, _, bound)
+    return WK.modules.Rules:Plan(M:Store(), function(rule, id, bound)
         -- un verrou protège de la vente et de la destruction, pas du rangement (avant : un objet verrouillé à la main
         -- restait dans les sacs)
+        if craftKept(id) then return false end
         return rule.to and rule.to ~= "" and not bound and not isMe(rule.to)
     end)
 end
@@ -161,7 +169,8 @@ function M:SendWith(store)
     if sending then return false end
     wipe(queue)
     local byRecipient = {}
-    local p = WK.modules.Rules:Plan(store, function(rule, _, bound)
+    local p = WK.modules.Rules:Plan(store, function(rule, id, bound)
+        if craftKept(id) then return false end
         return rule.to and rule.to ~= "" and not bound and not isMe(rule.to)
     end)
     for _, e in ipairs(p) do

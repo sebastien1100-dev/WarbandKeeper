@@ -129,7 +129,11 @@ end
 
 -- Nombre d'objets des sacs qui seraient déposés.
 function M:Plan()
-    return WK.modules.Rules:Plan(self:Store(), function(rule, _, bound)
+    -- mode fabrication des sacs, dépôt en banque en pause : les composants de la file restent dans les sacs
+    local PH = WK.modules.ProfHelp
+    local keep = PH and PH.CraftKeep and PH:CraftKeep("bank")
+    return WK.modules.Rules:Plan(self:Store(), function(rule, id, bound)
+        if keep and keep[id] then return false end
         -- un verrou protège de la vente et de la destruction, pas du rangement (avant : un objet verrouillé à la main
         -- restait dans les sacs)
         if rule.target == "warband" and bound then return false end

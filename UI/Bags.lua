@@ -63,6 +63,7 @@ end
 -- Classement d'un objet
 ---------------------------------------------------------------------------
 local CATS = {
+    { key = "craft", label = "Pour la file de fabrication", color = "accent" },
     { key = "new", label = "Nouveaux", color = "positive" },
     { key = "equip", label = "Équipement" },
     { key = "mine", label = "Composants de tes métiers" },
@@ -132,6 +133,9 @@ local function context()
     end
     local PH = WK.modules.ProfHelp
     ctx.enchanter = PH and PH.EnchantRank and PH:EnchantRank() ~= nil
+    -- mode fabrication : composants de la file (catégorie en tête, entourés)
+    local okK, keep = pcall(function() return PH and PH.CraftKeep and PH:CraftKeep() end)
+    ctx.craft = okK and keep or nil
     return ctx
 end
 
@@ -159,7 +163,8 @@ local function classify(e, ctx)
         if ok and a and a.advice == "de" then info.de = true end
     end
     -- catégorie
-    if e.new then info.cat = "new"
+    if ctx.craft and ctx.craft[id] then info.cat = "craft"; info.craft = true
+    elseif e.new then info.cat = "new"
     elseif questItem then info.cat = "quest"
     elseif q == 0 or (WK.modules.QoL and WK.modules.QoL:IsJunk(id)) then info.cat = "junk"
     elseif ship then info.cat = "ship"
@@ -232,6 +237,7 @@ local function square(b, inset, sub)
 end
 local EDGE = 2
 local function edgeColor(e)
+    if e and e.info and e.info.craft then return UI:Accent() end
     if e and (e.quality or 1) >= 2 then
         local r, g, b = B.QualityColor(e.quality)
         if r then return r, g, b, 1 end
@@ -259,7 +265,12 @@ local filter, query = "all", ""
 local hovered
 
 -- décalage vertical du contenu quand la barre des sacs est ouverte
-local function topOff() return (win and win.slotBar and win.slotBar:IsShown()) and SLOTS_H or 0 end
+local CRAFT_H = 106 -- hauteur du bandeau du mode fabrication
+local function topOff()
+    local o = (win and win.slotBar and win.slotBar:IsShown()) and SLOTS_H or 0
+    if win and win.craftBanner and win.craftBanner:IsShown() then o = o + CRAFT_H end
+    return o
+end
 
 -- métier qui se sert d'un composant (recettes connues de tes persos, Modules/Recipes.lua)
 local function profOf(id)
@@ -726,6 +737,91 @@ local function build()
     f.layMenu = lm
     f.flatBtn:SetScript("OnClick", function() lm:SetShown(not lm:IsShown()) end)
     f:HookScript("OnHide", function() lm:Hide() end)
+    -- mode fabrication (maquette A) : interrupteur dans l'en-tête, bandeau de ce qui est en pause
+    if not isBank then
+        local PH = WK.modules.ProfHelp
+        -- deux formes, à gauche des icônes de l'en-tête : bouton avec son texte, ou rond « marteau » si la fenêtre
+        -- est étroite (jamais par-dessus le titre ni les icônes)
+        f.craftBtn = UI:Button(f, "Mode fabrication", nil, 22, "secondary", "hammer")
+        f.craftBtn:SetPoint("RIGHT", f.flatBtn, "LEFT", -8, 0)
+        f.craftIcon = UI:IconButton(f, "hammer", 22, "Mode fabrication")
+        f.craftIcon:SetPoint("RIGHT", f.flatBtn, "LEFT", -6, 0); f.craftIcon:Hide()
+        local function toggleCraft()
+            if PH and PH.SetCraftMode then PH:SetCraftMode(not PH:CraftMode().on) end
+        end
+        f.craftBtn:SetScript("OnClick", toggleCraft)
+        f.craftIcon:SetScript("OnClick", toggleCraft)
+        f.craftBtn:SetScript("OnEnter", function(b)
+            UI:TooltipOwner(b, "ANCHOR_BOTTOM")
+            _G.GameTooltip:SetText(T("Mode fabrication"), 1, 1, 1)
+            local tip = T("Les composants de ta file de fabrication restent dans tes sacs : pas envoyés au courrier "
+                .. "ni déposés en banque (réglable dans le bandeau).")
+            _G.GameTooltip:AddLine(tip, 0.8, 0.8, 0.8, true)
+            _G.GameTooltip:Show()
+        end)
+        f.craftBtn:SetScript("OnLeave", function() _G.GameTooltip:Hide() end)
+        local cb = _G.CreateFrame("Frame", nil, f)
+        cb:SetHeight(CRAFT_H - 8)
+        cb.bg = UI:Rounded(cb, 8, 0, "BACKGROUND", 1)
+        cb.title = UI:Text(cb, 12); cb.title:SetPoint("TOPLEFT", 10, -8); cb.title:SetPoint("RIGHT", -10, 0)
+        local function line(y, label, field)
+            local t = UI:Toggle(cb, function() return PH:CraftMode()[field] and true or false end, function(v)
+                PH:CraftMode()[field] = v
+                local St = WK.modules.Stash
+                if St and St.Invalidate then St:Invalidate() end
+                WK:NotifyChanged()
+            end)
+            t:SetScale(0.8); t:SetPoint("TOPLEFT", 10 / 0.8, -y / 0.8)
+            local l = UI:Text(cb, 11); l:SetPoint("LEFT", t, "RIGHT", 6, 0); l:SetText(label)
+            local st = UI:Text(cb, 11, C.muted); st:SetPoint("LEFT", l, "RIGHT", 8, 0)
+            return t, st
+        end
+        cb.mail, cb.mailSt = line(30, T("Envoi au courrier"), "mail")
+        cb.bank, cb.bankSt = line(52, T("Dépôt en banque"), "bank")
+        cb.auto = line(74, T("Se coupe en fermant le métier"), "autoOff")
+        cb:Hide()
+        f.craftBanner = cb
+        function f.PaintCraft()
+            local on = PH and PH:CraftMode().on
+            local was = cb:IsShown()
+            f.craftBtn:SetStyle(on and "primary" or "secondary")
+            -- place libre calculée sur les largeurs (à droite : fermer, recherche et 4 icônes = 320 px) : le
+            -- bouton avec son texte s'il tient entre le titre et les icônes, sinon le rond « marteau »
+            local function tw(fs)
+                return (fs.GetUnboundedStringWidth and fs:GetUnboundedStringWidth()) or fs:GetStringWidth() or 0
+            end
+            local room = (f:GetWidth() or 0) - 320 - (PAD + tw(f.title) + 10 + tw(f.sub) + 16)
+            local full = (f.craftBtn:GetWidth() or 150) + 8
+            local wide = room >= full
+            f.craftBtn:SetShown(wide); f.craftIcon:SetShown(not wide)
+            f.craftIcon:SetActive(on and true or false)
+            -- fenêtre très étroite : « 40 / 64 places » s'arrête avant le marteau (finit par « … »)
+            if not wide then
+                local subRoom = (f:GetWidth() or 0) - 320 - 34 - (PAD + tw(f.title) + 10) - 6
+                if f.sub.SetWordWrap then f.sub:SetWordWrap(false) end
+                f.sub:SetWidth(math.max(30, math.min(tw(f.sub) + 2, subRoom)))
+            else
+                f.sub:SetWidth(tw(f.sub) + 2)
+            end
+            cb:SetShown(on and true or false)
+            if on then
+                local r, g, b = UI:Accent()
+                cb.bg:SetColor(r, g, b, 0.12)
+                cb.title:SetText(T("Les composants de ta file restent dans tes sacs"))
+                cb.title:SetTextColor(r, g, b)
+                local m = PH:CraftMode()
+                for _, x in ipairs({ { cb.mail, cb.mailSt, m.mail }, { cb.bank, cb.bankSt, m.bank } }) do
+                    x[1]:Refresh()
+                    x[2]:SetText(x[3] and T("actif") or T("en pause"))
+                end
+                cb.auto:Refresh()
+                cb:ClearAllPoints()
+                local off = (f.slotBar and f.slotBar:IsShown()) and SLOTS_H or 0
+                cb:SetPoint("TOPLEFT", PAD, -38 - off); cb:SetPoint("TOPRIGHT", -PAD, -38 - off)
+            end
+            if was ~= cb:IsShown() and V.ApplyTop then V.ApplyTop() end
+        end
+    end
     f.slotBar = _G.CreateFrame("Frame", nil, f)
     f.slotBar:SetPoint("TOPLEFT", PAD, -38); f.slotBar:SetPoint("TOPRIGHT", -PAD, -38); f.slotBar:SetHeight(SLOTS_H - 6)
     f.slotBar:SetShown(vcfg().slots and true or false)
@@ -948,6 +1044,7 @@ end
 -- Repeint (et place les cases hors combat). light = seulement filtres / recherche
 function V.Refresh(light, live)
     if not win or not win:IsShown() then return end
+    if win.PaintCraft and not inCombat() then win.PaintCraft() end
     V.ApplyTop()
     V.RefreshSlots()
     local offKey = not isBank and V.viewKey or nil
@@ -979,6 +1076,8 @@ function V.Refresh(light, live)
     else
         win.sub:SetText(string.format(T("%d / %d places"), total - free, total))
     end
+    -- largeurs de l'en-tête refaites avec le nouveau texte (bouton du mode fabrication)
+    if win.PaintCraft and not inCombat() then win.PaintCraft() end
     local counts = { all = 0, new = 0, ship = 0, sell = 0, de = 0, up = 0 }
     for _, e in ipairs(list) do
         if not e.empty then

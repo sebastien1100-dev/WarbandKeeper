@@ -678,3 +678,43 @@ function M:Advice(c, prof)
     end
     return best
 end
+
+---------------------------------------------------------------------------
+-- Mode fabrication (sacs, maquette A) : les composants de la file de fabrication du perso connecté restent dans
+-- ses sacs. Réglages WK.DB.global.craftMode = { on, mail, bank, autoOff } : mail / bank = vrai si l'envoi au
+-- courrier / le dépôt en banque restent actifs pendant le mode (faux d'office : en pause) ; autoOff = le mode se
+-- coupe en fermant la fenêtre du métier.
+---------------------------------------------------------------------------
+function M.CraftMode(_)
+    local g = WK.DB.global
+    g.craftMode = g.craftMode or {}
+    local c = g.craftMode
+    if c.mail == nil then c.mail = false end
+    if c.bank == nil then c.bank = false end
+    if c.autoOff == nil then c.autoOff = true end
+    return c
+end
+-- Composants à garder (n° d'objet » vrai) ; kind = "mail" ou "bank" : nil si cet envoi reste actif ; nil hors mode
+function M:CraftKeep(kind)
+    local c = self:CraftMode()
+    if not c.on then return nil end
+    if kind and c[kind] then return nil end
+    local keep, any = {}, false
+    local ok, q = pcall(self.Queue, self)
+    for _, e in ipairs(ok and q or {}) do
+        if e.mine and e.rec then
+            for _, rg in ipairs(e.rec.reagents or {}) do keep[rg[1]] = true; any = true end
+        end
+    end
+    return any and keep or {}
+end
+function M:SetCraftMode(on)
+    self:CraftMode().on = on and true or nil
+    local St = WK.modules.Stash
+    if St and St.Invalidate then St:Invalidate() end
+    WK:NotifyChanged()
+end
+WK:On("TRADE_SKILL_CLOSE", function()
+    local c = M:CraftMode()
+    if c.on and c.autoOff then M:SetCraftMode(false) end
+end)
