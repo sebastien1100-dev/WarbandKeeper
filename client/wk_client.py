@@ -33,7 +33,7 @@ from tkinter import filedialog, font as tkfont
 
 import learned  # Découvertes (client/learned.py, partagé avec tools/gen_learned.py)
 
-CLIENT_VERSION = "1.9.19"
+CLIENT_VERSION = "1.9.20"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 DATA_ADDON = "WarbandKeeper_Data"  # grosses bases, chargées à la demande (dossier à côté de l'addon)
@@ -1751,11 +1751,11 @@ class Page(tk.Frame):
         fl, fv = App.fonts["smallb"], App.fonts["bodyb"]
         for lab, val, col in items:
             lw, vw = fl.measure(lab), fv.measure(str(val))
-            w, h = 10 + lw + 6 + vw + 11, 26
+            w, h = 10 + lw + 6 + vw + 11, 24
             p = tk.Canvas(self.pillBox, width=w, height=h, bg=C["bg"], highlightthickness=0, bd=0)
             p.pill = True
-            rounded(p, 0, 0, w, h, 13, fill=C["border"], outline="")
-            rounded(p, 1, 1, w - 1, h - 1, 12, fill=C["surface"], outline="")
+            # fond plein sans liseré, comme Chip (le liseré au bord de la zone était rogné par Windows : coins en biais)
+            rounded(p, 0, 0, w, h, 12, fill=C["surface2"], outline="")
             p.create_text(10, h / 2, text=lab, fill=C["dim"], font=fl, anchor="w")
             p.create_text(10 + lw + 6, h / 2, text=str(val), fill=C.get(col, col) if col else C["text"], font=fv, anchor="w")
             p.pack(side="left", padx=(0, 6))

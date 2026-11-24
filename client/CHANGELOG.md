@@ -3,6 +3,11 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.9.20 — 24/11/2026
+
+### Corrections
+- Pastilles du haut des pages : sous Windows, leur liseré était rogné (coins en biais, bord inégal, comme si un bandeau passait dessus). Elles sont maintenant dessinées comme l'état de l'addon et du client à droite : fond arrondi plein, même hauteur.
+
 ## 1.9.19 — 24/11/2026
 
 ### Modifications
