@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.301", date = "24/11/2026",
+        fixed = {
+            "Hôtel des ventes : après un premier clic sur « Acheter », le bouton devenait « Confirmer 20pa 98pc », s'élargissait et recouvrait la quantité et le cumul de la ligne. Il dit maintenant « Confirmer », en couleur pleine, à la même place ; le prix du lot est dans son infobulle.",
+        },
+    },
+    {
         version = "1.128.300", date = "24/11/2026",
         fixed = {
             "Sacs : le bouton « Désenchanter » restait caché quand rien n'était désenchantable tout de suite (Enchantement trop bas, objets qui se vendent mieux). Il est maintenant montré, grisé, et son infobulle dit pourquoi : « 15 objet(s) demandent Enchantement 25 (tu as 1) », ou combien se vendent mieux (« Toujours désenchanter » dans la fiche de l'objet pour le forcer).",

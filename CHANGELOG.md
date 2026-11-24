@@ -50,6 +50,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.301 — 24/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Hôtel des ventes : après un premier clic sur « Acheter », le bouton devenait « Confirmer 20pa 98pc », s'élargissait et recouvrait la quantité et le cumul de la ligne. Il dit maintenant « Confirmer », en couleur pleine, à la même place ; le prix du lot est dans son infobulle.
+
 ## v1.128.300 — 24/11/2026
 
 _Un /reload suffit._

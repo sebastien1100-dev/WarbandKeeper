@@ -1180,8 +1180,11 @@ local function build(host)
                     else row.hl:SetColorTexture(0, 0, 0, 0) end
                     row.act:Show()
                     if x.mine then row.act:SetLabel(T("Annuler"))
-                    elseif b and b.id == id and b.phase == "confirm" and isCommodity(id) and b.qty == x.qty then row.act:SetLabel(string.format(T("Confirmer %s"), money(b.total)))
-                    elseif bidArmed(x) then row.act:SetLabel(string.format(T("Confirmer %s"), money(x.buyout or x.unit * x.qty)))
+                    -- « Confirmer » sans le prix (déjà sur la ligne) : le bouton gardait sa place au lieu de
+                    -- s'élargir sur la quantité et le cumul
+                    elseif b and b.id == id and b.phase == "confirm" and isCommodity(id) and b.qty == x.qty then
+                        row.act:SetLabel(T("Confirmer"))
+                    elseif bidArmed(x) then row.act:SetLabel(T("Confirmer"))
                     else row.act:SetLabel(T("Acheter")) end
                     row:Show()
                 end
@@ -2485,8 +2488,12 @@ local function build(host)
                     row.c:SetText(x.mine and (UI:Hex(C.info) .. T("toi") .. "|r") or tostring(cum))
                     row.hl:SetColorTexture(ar, ag, ab, inQty and 0.12 or 0)
                     row.act:SetShown(not x.mine)
+                    -- « Confirmer » sans le prix (déjà sur la ligne) : avant, le bouton s'élargissait sur la quantité
+                    local armed = not commodity and bidArmed(x)
                     row.act:SetLabel(commodity and string.format(T("Prendre %d"), x.qty)
-                        or (bidArmed(x) and string.format(T("Confirmer %s"), money(x.buyout or x.unit * x.qty))) or T("Acheter"))
+                        or (armed and T("Confirmer")) or T("Acheter"))
+                    row.act:SetStyle(armed and "primary" or "secondary")
+                    row.act.tooltip = armed and string.format(T("Payer %s pour ce lot"), money(x.buyout or x.unit * x.qty)) or nil
                     row:Show()
                 end
             end
