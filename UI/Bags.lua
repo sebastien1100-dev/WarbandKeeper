@@ -811,6 +811,7 @@ local function build()
                 local St = WK.modules.Stash
                 if St and St.Invalidate then St:Invalidate() end
                 WK:NotifyChanged()
+                V.Refresh()
             end)
             t:SetScale(0.8); t:SetPoint("TOPLEFT", 10 / 0.8, -y / 0.8)
             local l = UI:Text(cb, 11); l:SetPoint("LEFT", t, "RIGHT", 6, 0); l:SetText(label)

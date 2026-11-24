@@ -50,6 +50,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.298 — 24/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Sacs : le bouton « Mode fabrication » semblait ne rien faire. Le mode changeait bien, mais les sacs n'étaient pas repeints : ni le bouton, ni le bandeau, ni le tri ne suivaient avant le prochain changement dans les sacs. Ils suivent maintenant tout de suite, aussi pour les interrupteurs du bandeau et quand le mode se coupe en fermant le métier.
+
 ## v1.128.297 — 24/11/2026
 
 _Un /reload suffit._

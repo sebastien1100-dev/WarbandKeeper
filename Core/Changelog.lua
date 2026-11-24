@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.298", date = "24/11/2026",
+        fixed = {
+            "Sacs : le bouton « Mode fabrication » semblait ne rien faire. Le mode changeait bien, mais les sacs n'étaient pas repeints : ni le bouton, ni le bandeau, ni le tri ne suivaient avant le prochain changement dans les sacs. Ils suivent maintenant tout de suite, aussi pour les interrupteurs du bandeau et quand le mode se coupe en fermant le métier.",
+        },
+    },
+    {
         version = "1.128.297", date = "24/11/2026",
         fixed = {
             "Sacs : apprendre une recette d'un clic droit (ou utiliser un objet qui lance un sort) donnait l'erreur « WarbandKeeper a tenté d'appeler la fonction protégée UseContainerItem ». Ces objets passent maintenant par une couche du jeu qui l'utilise comme la case d'origine (vente chez le marchand comprise) ; le clic gauche (glisser, ramasser) ne change pas.",

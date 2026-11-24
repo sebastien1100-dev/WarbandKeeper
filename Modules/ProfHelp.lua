@@ -713,6 +713,9 @@ function M:SetCraftMode(on)
     local St = WK.modules.Stash
     if St and St.Invalidate then St:Invalidate() end
     WK:NotifyChanged()
+    -- les sacs ne suivent pas le rafraîchissement de la fenêtre principale : repeints ici (bouton, bandeau, tri)
+    local Bags = WK.UI and WK.UI.Bags
+    if Bags and Bags.Refresh then Bags.Refresh() end
 end
 WK:On("TRADE_SKILL_CLOSE", function()
     local c = M:CraftMode()
