@@ -3,6 +3,15 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.9.21 — 24/11/2026
+
+### Corrections
+- Découvertes : les deux fichiers de la base sont envoyés dans un seul commit (avant, ils pouvaient se désaccorder si le second envoi échouait). Une base illisible sur GitHub arrête l'envoi au lieu d'être remplacée, et une base de plus d'1 Mo est bien lue.
+- Découvertes : « Lecture… » ne reste plus affiché sans fin quand le jeu n'a pas encore écrit de sauvegarde.
+- Lecture de la sauvegarde plus robuste : nombres écrits par le jeu sous Windows (-nan(ind), 1.#INF), valeur inconnue sautée au lieu de tout rendre illisible.
+- Restauration d'une sauvegarde : en arrière-plan (la fenêtre ne se fige plus) et refusée pendant une installation.
+- Défilement à la molette : plus de liaisons en double à chaque redimensionnement ; pastilles d'une page cachée plus recalculées en boucle.
+
 ## 1.9.20 — 24/11/2026
 
 ### Corrections

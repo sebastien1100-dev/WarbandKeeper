@@ -8,6 +8,31 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.282", date = "24/11/2026",
+        changed = {
+            "Récoltes : un même nœud récolté plusieurs fois ne crée plus un point de plus à chaque passage, son compte augmente. Maintenance > Nettoyage regroupe les doublons déjà notés.",
+            "Maintenance > Nettoyage : deux purges de plus, le butin laissé pas revu depuis 90 jours et les prix des marchands pas revus depuis 180 jours (ceux venus des découvertes restent).",
+            "Historique de l'or et des objets : au-delà d'un an, un point par semaine au lieu d'un par jour.",
+            "Navigation : une fois le plafond des chemins appris atteint, les plus anciens tronçons du continent laissent la place aux nouveaux (avant, plus rien n'était appris).",
+            "Découvertes : une entrée appliquée une fois puis effacée ou purgée ne revient plus avec la base suivante.",
+            "Client PC 1.9.21 : envoi des découvertes plus sûr, lecture de la sauvegarde plus robuste, restauration sans figer la fenêtre.",
+        },
+        fixed = {
+            "Butin à l'écran : survoler l'encadré de l'or provoquait une erreur.",
+            "Carte du donjon > lier le butin d'un boss : le message pouvait dépasser la longueur permise du chat et partir vide ; les objets pas encore connus du jeu sont demandés pour le clic suivant.",
+            "Carte du monde : le menu d'une épingle de donjon passait sous la carte ; il se ferme aussi avec elle.",
+            "Annonces et bilan du donjon : en groupe de recherche, envoyés sur le canal d'instance ; une lettre accentuée n'est plus coupée en deux en fin de message.",
+            "Fenêtre des quêtes du donjon fermée par la croix : elle revient en entrant de nouveau dans le donjon.",
+            "Micro menu > Héritages : en combat, un message au lieu d'une erreur du jeu.",
+            "Bénédictions : les familiers sont suivis à part de leur maître (une bénédiction posée sur le familier n'effaçait plus celle du maître).",
+            "Sacs : plus de tri, de glisser ni de changement de perso en combat ; la vente des objets gris s'arrête si le marchand est fermé.",
+            "Aide des sacs : seul le gris est proposé à la vente quand les sacs sont pleins ; un objet ignoré est reproposé au niveau suivant.",
+            "Kit de camp et buffs perso : l'état à droite d'une ligne ne chevauche plus le texte ; le kit se ferme en entrant en combat ; aucune lecture des buffs en combat.",
+            "Alerte des munitions : ne clignote plus sans raison et ne tourne que pour les classes qui en utilisent.",
+            "/wk dmap : une valeur cachée par le jeu en instance est signalée comme telle au lieu de faire planter le diagnostic.",
+        },
+    },
+    {
         version = "1.128.281", date = "24/11/2026",
         changed = {
             "Rien ne change en jeu : cette version livre le client PC 1.9.20 (pastilles du haut des pages nettes sous Windows).",

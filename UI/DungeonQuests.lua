@@ -464,7 +464,7 @@ function UI:RefreshDungeonQuests(light)
     if cfg.questWin == "off" or not WK:FeatureOn("dungeons") then win:Hide() return end
     if cfg.questWinCombat and InCombatLockdown and InCombatLockdown() then win:Hide() return end
     local d = target()
-    if not d then win:Hide() return end
+    if not d then closedFor = nil; win:Hide() return end
     if closedFor and closedFor ~= d.key then closedFor = nil end
     if closedFor == d.key then win:Hide() return end
     local lock, clock = _G.InCombatLockdown, _G.GetTime
@@ -507,6 +507,8 @@ local function refreshSoon()
     debounce:Show()
 end
 WK:On("QUEST_LOG_UPDATE", function()
+    -- hors donjon et fenêtre jamais construite : rien à relire (évènement très fréquent en monde ouvert)
+    if not win and not (_G.IsInInstance and _G.IsInInstance()) then return end
     local QT = WK.modules.QuestTrack
     local sig = QT and QT.LogSignature and QT.LogSignature()
     if sig and sig == lastSig then return end

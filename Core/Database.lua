@@ -129,16 +129,18 @@ end
 
 -- Allège l'historique : au-delà de `days` jours (30 par défaut), un seul point par jour (le dernier).
 -- Les courbes restent identiques à l'échelle du mois et de l'année, sans grossir sans fin.
+-- Au-delà d'un an, un point par semaine (avant : un par jour sans fin, 365 points de plus chaque année).
 local function compactSeries(series, cutoff)
     if type(series) ~= "table" or #series < 2 then return 0 end
     local out, removed = {}, 0
     local lastDay
+    local yearAgo = _G.time() - 365 * 86400
     for _, p in ipairs(series) do
         if p.t >= cutoff then
             table.insert(out, p)
             lastDay = nil
         else
-            local day = math.floor(p.t / 86400)
+            local day = p.t < yearAgo and ("w" .. math.floor(p.t / (7 * 86400))) or math.floor(p.t / 86400)
             if day == lastDay then
                 out[#out] = p -- remplace : on garde le dernier point du jour
                 removed = removed + 1

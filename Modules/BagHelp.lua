@@ -64,10 +64,13 @@ end
 -- objet gris le moins cher des sacs : { bag, slot, price, id } ou nil (jamais un objet verrouillé)
 function M:CheapestGrey()
     local best
+    -- vrais gris seulement (GreyItems rend toute la camelote : blancs, verts inutilisables, marques à la main ;
+    -- DeleteCheapest ne jette qu'un gris : avant, le clic annoncé sur un blanc ne faisait rien)
     for _, it in ipairs(WK.modules.QoL:GreyItems()) do
-        if not best or it.price < best.price then best = it end
+        local id = it.id or WK.Container.Info(it.bag, it.slot)
+        local q = id and select(3, WK.GetItemInfo(id))
+        if q == 0 and (not best or it.price < best.price) then best = it; best.id = id end
     end
-    if best then best.id = WK.Container.Info(best.bag, best.slot) end
     return best
 end
 -- jette l'objet gris le moins cher (clic du joueur) ; true si fait
@@ -340,6 +343,14 @@ function M:Dismiss(id)
     d[k] = d[k] or {}
     d[k][id] = true
 end
+-- « Pas celui-là » oubliés à chaque niveau gagné (la table grossissait sans fin ; un objet refusé au niveau 20
+-- peut redevenir intéressant plus tard) ; persos supprimés retirés
+WK:On("PLAYER_LEVEL_UP", function()
+    local d = M:Config().dismissed
+    d[WK:CharKey()] = nil
+    local chars = WK.DB.global.characters or {}
+    for k in pairs(d) do if not chars[k] then d[k] = nil end end
+end)
 function M:Dismissed(id)
     local d = self:Config().dismissed[WK:CharKey()]
     return d and d[id] or false

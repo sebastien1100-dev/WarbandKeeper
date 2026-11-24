@@ -6,7 +6,8 @@ local M = WK:NewModule("Learned")
 -- là où rien n'est noté : une installation neuve n'a plus à tout réapprendre, et ce que tu as noté toi-même
 -- n'est jamais remplacé. Appelé par Core/Init.lua juste après DB:Init (avant les OnInit des modules).
 -- Une base déjà appliquée (WK.DB.global.learnedV = WK.LearnedDB.v) ne l'est plus : ce que tu effaces
--- (chemins, récoltes) ne revient pas à chaque connexion.
+-- (chemins, récoltes) ne revient pas à chaque connexion ; et chaque entrée appliquée est notée
+-- (WK.DB.global.learnedDone[genre][clé]) : effacée ou purgée, elle ne revient pas non plus avec la base suivante.
 
 local function sub(t, k)
     t[k] = t[k] or {}
@@ -39,7 +40,16 @@ function M.Fill(_, g, db, force)
     if type(db) ~= "table" or type(g) ~= "table" then return {} end
     if not force and db.v and g.learnedV == db.v then return {} end
     local added = {}
+    -- ce qui a déjà été appliqué une fois n'est plus jamais remis (avant : une purge ou un effacement revenait à la
+    -- base suivante) ; « force » (bouton « tout réappliquer ») passe outre
+    local doneAll = sub(g, "learnedDone")
+    local function seen(genre, k)
+        local d = sub(doneAll, genre)
+        if d[k] and not force then return true end
+        d[k] = true
+    end
     local function put(genre, t, k, v)
+        if seen(genre, k) then return end
         if t[k] == nil then
             t[k] = v
             added[genre] = (added[genre] or 0) + 1
@@ -61,8 +71,8 @@ function M.Fill(_, g, db, force)
     for k, v in pairs(db.flightPaths or {}) do put("flightPaths", sub(fl, "paths"), k, { c = v.c, pts = v.pts }) end
     local nav = sub(g, "nav")
     local st = sub(nav, "tramSt")
-    for _, s in pairs(db.tram or {}) do
-        local near = false
+    for tk, s in pairs(db.tram or {}) do
+        local near = seen("tram", tk) or false
         for _, o in ipairs(st) do
             if o[1] == s[1] and math.abs(o[2] - s[2]) < 40 and math.abs(o[3] - s[3]) < 40 then near = true end
         end
@@ -72,9 +82,9 @@ function M.Fill(_, g, db, force)
         end
     end
     local trails = sub(nav, "trails")
-    for _, t in pairs(db.trails or {}) do
+    for tk, t in pairs(db.trails or {}) do
         local list = sub(trails, t.c)
-        if not sameTrail(list, t.pts) then
+        if not seen("trails", tk) and not sameTrail(list, t.pts) then
             list[#list + 1] = t.pts
             added.trails = (added.trails or 0) + 1
         end
@@ -91,9 +101,9 @@ function M.Fill(_, g, db, force)
         put("vendorPrices", sub(g, "vendorSeen"), id, { p = v.p, npc = v.npc, at = 0 })
     end
     local spots = sub(g, "gatherSpots")
-    for _, e in pairs(db.gather or {}) do
+    for gk, e in pairs(db.gather or {}) do
         local list = sub(spots, e.m)
-        if not nearSpot(list, e) then
+        if not seen("gather", gk) and not nearSpot(list, e) then
             list[#list + 1] = { x = e.x, y = e.y, k = e.k, i = e.i, n = 1, t = 0 }
             added.gather = (added.gather or 0) + 1
         end

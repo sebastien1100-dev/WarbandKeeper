@@ -23,6 +23,33 @@ end
 
 local function cfg() return WK.DB.global.gatherMap end
 local function spots() return WK.DB.global.gatherSpots end
+local NODE = 0.006 -- même nœud (fraction de la carte, ~10 à 20 m ; comme MERGE de Modules/Nodes.lua)
+function M.Round(v) return math.floor(v * 10000 + 0.5) / 10000 end
+function M.FindSpot(list, k, i, x, y)
+    for j = #list, 1, -1 do
+        local p = list[j]
+        if p.k == k and p.i == i and math.abs(p.x - x) < NODE and math.abs(p.y - y) < NODE then return p end
+    end
+end
+-- Points déjà notés : un seul par nœud (purge « Récoltes » de Modules/Maintenance.lua) ; rend le nombre retiré
+function M.Compact(dry)
+    local removed = 0
+    for mapID, list in pairs(spots() or {}) do
+        local out = {}
+        for _, p in ipairs(list) do
+            local q = M.FindSpot(out, p.k, p.i, p.x, p.y)
+            if q then
+                q.c, q.n, q.t = (q.c or 1) + (p.c or 1), (q.n or 0) + (p.n or 0), math.max(q.t or 0, p.t or 0)
+                removed = removed + 1
+            else
+                out[#out + 1] = { x = M.Round(p.x), y = M.Round(p.y), k = p.k, i = p.i, n = p.n, t = p.t, c = p.c }
+            end
+        end
+        if not dry then spots()[mapID] = out end
+    end
+    if not dry then M.rebuild = M.rebuild + 1; M.version = M.version + 1 end
+    return removed
+end
 
 -- Position du joueur sur la carte de sa zone : mapID, x, y (0-1), ou nil.
 local function playerPos()
@@ -64,9 +91,20 @@ local function onLoot()
     lastKey, lastAt = key, GetTime()
     local list = spots()[map] or {}
     spots()[map] = list
+    -- même nœud déjà noté (même genre, même objet, à moins de NODE de la carte) : compté sur ce point (c = récoltes)
+    -- au lieu d'une ligne de plus ; coordonnées arrondies (avant : une ligne de ~190 octets par butin, jusqu'à
+    -- 3000 par carte, presque toutes redondantes)
+    local merged = false
     for _, f in ipairs(found) do
-        table.insert(list, { x = x, y = y, k = f.k, i = f.id, n = f.n, t = time() })
+        local p = M.FindSpot(list, f.k, f.id, x, y)
+        if p then
+            p.c, p.n, p.t = (p.c or 1) + 1, (p.n or 0) + (f.n or 1), _G.time()
+            merged = true
+        else
+            table.insert(list, { x = M.Round(x), y = M.Round(y), k = f.k, i = f.id, n = f.n, t = _G.time() })
+        end
     end
+    if merged then M.rebuild = M.rebuild + 1 end
     -- élagage par lots : redescendu à 90 % du plafond, pour qu'un regroupement complet (Nodes:All) reste rare
     -- (avant, chaque butin d'une carte pleine retirait un point et forçait tout le regroupement)
     if #list > MAX_PER_MAP then

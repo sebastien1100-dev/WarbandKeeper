@@ -124,12 +124,21 @@ local function popMenu()
                 b:ClearAllPoints(); b:SetPoint("TOPLEFT", 12, -(y + 4)); b:SetSize(W - 24, 1); b:Show()
                 y = y + 10
             elseif it.seg then
+                -- cadre réutilisé si les choix sont les mêmes (avant : un cadre neuf à chaque ouverture, jamais libéré)
+                local okeys = {}
+                for _, o in ipairs(it.seg.opts) do okeys[#okeys + 1] = tostring(o[1]) .. "=" .. tostring(o[2]) end
+                local sig = table.concat(okeys, "|")
                 local b = self.items[i]
-                if b then b:Hide() end
-                b = _G.CreateFrame("Frame", nil, self); b.kind = "seg"
-                b.t = UI:Text(b, 11, C.muted); b.t:SetPoint("LEFT", 2, 0); b.t:SetText(it.seg.label)
-                b.s = UI:Segmented(b, it.seg.opts, function(v) it.seg.fn(v) end, 24)
-                b.s:SetPoint("RIGHT", 0, 0); b.s:Select(it.seg.sel)
+                if not (b and b.kind == "seg" and b.sig == sig) then
+                    if b then b:Hide() end
+                    b = _G.CreateFrame("Frame", nil, self); b.kind = "seg"; b.sig = sig
+                    b.t = UI:Text(b, 11, C.muted); b.t:SetPoint("LEFT", 2, 0)
+                    b.s = UI:Segmented(b, it.seg.opts, function(v) if b.cb then b.cb(v) end end, 24)
+                    b.s:SetPoint("RIGHT", 0, 0)
+                end
+                b.cb = nil
+                b.t:SetText(it.seg.label); b.s:Select(it.seg.sel)
+                b.cb = it.seg.fn
                 self.items[i] = b
                 b:ClearAllPoints(); b:SetPoint("TOPLEFT", 14, -y); b:SetSize(W - 28, 28); b:Show()
                 y = y + 32
@@ -146,6 +155,14 @@ local function popMenu()
             end
         end
         self:SetHeight(y + 10)
+        -- ouvert depuis la carte du monde (épingles des donjons) : au-dessus d'elle, et fermé avec elle
+        local wm = _G.WorldMapFrame
+        local strata = (wm and wm:IsShown()) and "FULLSCREEN_DIALOG" or "DIALOG"
+        self:SetFrameStrata(strata); blocker:SetFrameStrata(strata)
+        if wm and not self.wmHooked then
+            self.wmHooked = true
+            wm:HookScript("OnHide", function() if f:IsShown() then f:Hide() end end)
+        end
         self:ClearAllPoints()
         if anchor and side == "RIGHT" then self:SetPoint("TOPLEFT", anchor, "TOPRIGHT", 6, 6)
         elseif anchor then self:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, -4) else self:SetPoint("CENTER") end

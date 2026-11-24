@@ -239,6 +239,57 @@ M.PURGES = {
         end,
     },
     {
+        key = "lootleft", on = true, label = "Butin laissé : objets pas revus depuis 90 jours",
+        scan = function()
+            local d = WK.DB.global.loot
+            local lim, n, bytes = _G.time() - 90 * DAY, 0, 0
+            for _, e in pairs(d and d.left or {}) do
+                if type(e) == "table" and (e.last or 0) < lim then n, bytes = n + 1, bytes + sizeOf(e) + 10 end
+            end
+            return n, bytes, string.format(WK.T("%d objets"), n)
+        end,
+        run = function()
+            local d = WK.DB.global.loot
+            local lim = _G.time() - 90 * DAY
+            for id, e in pairs(d and d.left or {}) do
+                if type(e) == "table" and (e.last or 0) < lim then d.left[id] = nil end
+            end
+        end,
+    },
+    {
+        key = "vendor", on = true, label = "Prix des marchands : pas revus depuis 180 jours",
+        hint = "les prix venus des découvertes restent",
+        scan = function()
+            local lim, n, bytes = _G.time() - 180 * DAY, 0, 0
+            for _, e in pairs(WK.DB.global.vendorSeen or {}) do
+                if type(e) == "table" and e.at and e.at > 0 and e.at < lim then
+                    n, bytes = n + 1, bytes + sizeOf(e) + 10
+                end
+            end
+            return n, bytes, string.format(WK.T("%d objets"), n)
+        end,
+        run = function()
+            local vs = WK.DB.global.vendorSeen or {}
+            local lim = _G.time() - 180 * DAY
+            for id, e in pairs(vs) do
+                if type(e) == "table" and e.at and e.at > 0 and e.at < lim then vs[id] = nil end
+            end
+        end,
+    },
+    {
+        key = "gather", on = true, label = "Récoltes : un seul point par nœud",
+        hint = "les nœuds et leur nombre de récoltes restent",
+        scan = function()
+            local GM = WK.modules.GatherMap
+            local n = GM and GM.Compact and GM.Compact(true) or 0
+            return n, n * 190, string.format(WK.T("%d points en double"), n)
+        end,
+        run = function()
+            local GM = WK.modules.GatherMap
+            if GM and GM.Compact then GM.Compact() end
+        end,
+    },
+    {
         key = "trails", on = false, label = "Chemins appris : tout oublier",
         hint = "la navigation réapprendra en jouant",
         scan = function()

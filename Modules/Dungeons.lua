@@ -115,12 +115,16 @@ function M:Current()
     local ok, iname, itype, _, _, _, _, _, inst = pcall(GetInstanceInfo)
     if not ok or itype ~= "party" and itype ~= "raid" then return nil end
     local d = inst and byInst[inst]
+    -- instance inconnue de la base : la recherche par le nom n'est refaite qu'une fois par instance (avant : à
+    -- chaque appel, plusieurs fois par seconde en donjon)
+    if not d and iname and M.unknownInst == (inst or iname) then return nil end
     if not d and iname then
         local n = norm(iname)
         for _, x in ipairs(WK.DungeonsDB or {}) do
             if norm(x.name) == n or norm(x.en) == n then d = x break end
         end
         if d and inst then self:LearnInstance(inst, d) end
+        if not d then M.unknownInst = inst or iname end
     end
     if d and iname and d.name == d.en then db().names[d.key] = iname end
     return d
@@ -635,6 +639,13 @@ function M:SummaryData(run)
         xp = math.max(0, gained), money = ((_G.GetMoney and _G.GetMoney()) or 0) - st.money, deaths = st.deaths or 0,
         killed = killed, total = total, rep = bestF and { bestF, bestN } or nil }
 end
+-- Annonce dans le canal du groupe (clic du joueur)
+local function groupChannel()
+    if IsInGroup and LE_PARTY_CATEGORY_INSTANCE and IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then return "INSTANCE_CHAT" end
+    if IsInRaid and IsInRaid() then return "RAID" end
+    if IsInGroup and IsInGroup() then return "PARTY" end
+    return nil
+end
 function M:LeaveSummary(run)
     local cfg = self:Config()
     if not run or not run.st or time() - run.start < 120 then return end
@@ -649,7 +660,11 @@ function M:LeaveSummary(run)
     if mode == "group" and IsInGroup and IsInGroup() and SendChatMessage then
         -- message aux autres joueurs : sans codes de couleur
         local plain = txt:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
-        pcall(SendChatMessage, plain:sub(1, 250), IsInRaid and IsInRaid() and "RAID" or "PARTY")
+        -- coupé sur une frontière de caractère (avant : un « é » coupé en deux rendait le texte invalide) ;
+        -- canal du groupe d'instance pris en compte
+        plain = plain:sub(1, 250):gsub("[\192-\255][\128-\191]*$", "")
+        local ch = groupChannel() or "PARTY"
+        pcall(_G.SendChatMessage, plain, ch)
     end
 end
 
@@ -862,13 +877,6 @@ WK:On("CHAT_MSG_LOOT", function(msg)
     WK:NotifyChanged()
 end)
 
--- Annonce dans le canal du groupe (clic du joueur)
-local function groupChannel()
-    if IsInGroup and LE_PARTY_CATEGORY_INSTANCE and IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then return "INSTANCE_CHAT" end
-    if IsInRaid and IsInRaid() then return "RAID" end
-    if IsInGroup and IsInGroup() then return "PARTY" end
-    return nil
-end
 function M:AnnounceText(d)
     if not self:InRun(d) then return nil end
     local main = mainBosses(d)
@@ -1140,12 +1148,24 @@ function M.MapDiag(_)
     add("instance:", tostring(okI and name), tostring(okI and itype), tostring(okI and instID))
     -- ce qui pourrait servir à estimer la position quand le jeu ne donne pas de carte : coordonnées du monde,
     -- orientation, vitesse
+    -- valeurs cachées par le jeu en instance : signalées comme telles au lieu de faire planter le diagnostic
+    local function rd(v)
+        if _G.issecretvalue and _G.issecretvalue(v) then return nil, true end
+        return v
+    end
     local okU, wy, wx, _, wInst = pcall(_G.UnitPosition or function() end, "player")
-    add("monde:", okU and wy and string.format("%.1f, %.1f (instance %s)", wx, wy, tostring(wInst)) or "non donné")
+    local hidden
+    wy, hidden = rd(okU and wy or nil); wx = rd(okU and wx or nil)
+    add("monde:", (type(wy) == "number" and type(wx) == "number") and string.format("%.1f, %.1f (instance %s)", wx, wy,
+        tostring(rd(wInst))) or (hidden and "caché par le jeu" or "non donné"))
     local okD, face = pcall(_G.GetPlayerFacing or function() end)
-    add("direction:", okD and face and string.format("%.2f", face) or "non donnée")
+    face, hidden = rd(okD and face or nil)
+    add("direction:", type(face) == "number" and string.format("%.2f", face)
+        or (hidden and "cachée par le jeu" or "non donnée"))
     local okS, speed = pcall(_G.GetUnitSpeed or function() end, "player")
-    add("vitesse:", okS and speed and string.format("%.1f", speed) or "non donnée")
+    speed, hidden = rd(okS and speed or nil)
+    add("vitesse:", type(speed) == "number" and string.format("%.1f", speed)
+        or (hidden and "cachée par le jeu" or "non donnée"))
     local CM = _G.C_Map
     if not CM then add("C_Map: absent"); return out end
     local okM, mapID = pcall(CM.GetBestMapForUnit, "player")

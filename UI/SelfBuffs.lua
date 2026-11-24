@@ -46,7 +46,7 @@ local function build()
         b.label = UI:Text(f, 11); b.label:SetJustifyH("LEFT")
         b.label:SetPoint("LEFT", b, "RIGHT", 8, 0); b.label:SetPoint("RIGHT", f, "RIGHT", -62, 0)
         b.state = UI:Text(f, 10, C.muted); b.state:SetJustifyH("RIGHT")
-        b.state:SetPoint("RIGHT", f, "RIGHT", -8, 0); b.state:SetPoint("TOP", b, "TOP", 0, -7)
+        b.state:SetPoint("RIGHT", b.label, "RIGHT", 54, 0) -- un seul ancrage (piège connu : RIGHT + TOP mêlés)
         b:SetScript("OnEnter", function(s)
             if not s.r then return end
             UI:TooltipOwner(s, "ANCHOR_RIGHT")

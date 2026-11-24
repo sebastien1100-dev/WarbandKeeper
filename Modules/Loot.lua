@@ -287,6 +287,13 @@ local function recordLeft(id, qty, name, full)
         if zone and zone ~= "" and not (_G.issecretvalue and _G.issecretvalue(zone)) then
             e.zones = e.zones or {}
             e.zones[zone] = (e.zones[zone] or 0) + 1
+            -- 5 zones au plus par objet (les moins fréquentes partent)
+            local nz, minZ = 0, nil
+            for z, c in pairs(e.zones) do
+                nz = nz + 1
+                if z ~= zone and (not minZ or c < e.zones[minZ]) then minZ = z end
+            end
+            if nz > 5 and minZ then e.zones[minZ] = nil end
         end
         local p = M:Effective()
         if p and p.name then

@@ -66,12 +66,12 @@ local function merge(self, list, p)
     if not i then return end
     for _, e in ipairs(list) do
         if e.kind == i.kind and math.abs(e.x - p.x) < MERGE and math.abs(e.y - p.y) < MERGE then
-            e.n = e.n + 1
+            e.n = e.n + (p.c or 1)
             if i.req > e.req then e.req, e.id = i.req, p.i end
             return
         end
     end
-    list[#list + 1] = { x = p.x, y = p.y, id = p.i, kind = i.kind, req = i.req, n = 1 }
+    list[#list + 1] = { x = p.x, y = p.y, id = p.i, kind = i.kind, req = i.req, n = p.c or 1 }
 end
 function M:All(mapID)
     local spots = (WK.DB.global.gatherSpots or {})[mapID] or {}

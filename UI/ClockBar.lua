@@ -221,6 +221,8 @@ local SHORTCUTS = {
     { key = "heirloom", label = "Héritages", icon = function() return UI.MEDIA .. "crown" end, tint = true,
       -- onglet des héritages du journal des collections (pas de bouton du jeu pour un onglet précis)
       run = function()
+          -- le journal des collections est protégé en combat (ouverture et changement d'onglet refusés)
+          if _G.InCombatLockdown and _G.InCombatLockdown() then WK:Print(WK.T("Après le combat.")) return end
           if CollectionsJournal_LoadUI and not CollectionsJournal then pcall(CollectionsJournal_LoadUI) end
           -- (pas de COLLECTIONS_JOURNAL_TAB_INDEX_HEIRLOOMS : sur WoW Forever ce n° n'est pas un onglet et la
           -- fenêtre du jeu plantait ; l'ancienne recherche par le nom ratait « Objets en héritage » et ouvrait les

@@ -141,6 +141,12 @@ local function petOf(unit)
     if kind == "party" or kind == "raid" then return kind .. "pet" .. n end
 end
 M.PetOf = petOf
+-- clé des relevés d'effets : le nom pour un joueur ; l'unité pour un familier (deux « Loup » de deux chasseurs
+-- partageaient leurs temps restants)
+local function memberKey(unit)
+    if type(unit) == "string" and unit:find("pet", 1, true) then return "pet:" .. unit end
+    return fullName(unit)
+end
 local function isLeader(name)
     if not name then return false end
     for _, u in ipairs(groupUnits()) do
@@ -178,6 +184,9 @@ local function prune()
     local present = {}
     for _, u in ipairs(groupUnits()) do
         if UnitExists(u) then local n = fullName(u); if n then present[n] = select(2, UnitClass(u)) end end
+        -- familiers présents : leurs relevés sont gardés (avant, effacés à chaque changement de groupe)
+        local pu = petOf(u)
+        if pu and _G.UnitExists(pu) then present["pet:" .. pu] = true end
     end
     for name, e in pairs(pallys) do if not present[name] and not e.demo then pallys[name] = nil end end
     -- relevés des effets : seulement les membres présents (les tables ne grossissent plus sur toute la séance)
@@ -370,12 +379,12 @@ WK:On("UNIT_AURA", function(unit)
     if type(unit) ~= "string" then return end
     if not (unit == "player" or unit == "pet" or unit:find("^party") or unit:find("^raid")) then return end
     if not M:On() then return end
-    local n = fullName(unit)
+    local n = memberKey(unit)
     -- compteur (pas l'heure) : un changement reçu dans la même image que la lecture n'est plus ignoré
     if n then auraGen = auraGen + 1; auraDirty[n] = auraGen end
 end)
 function M:Left(unit, b)
-    local name = fullName(unit)
+    local name = memberKey(unit)
     if not name then return nil end
     local key = name .. ":" .. b
     if not inCombat() and UnitIsVisible and UnitIsVisible(unit) then

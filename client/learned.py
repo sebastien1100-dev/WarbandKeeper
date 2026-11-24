@@ -66,6 +66,9 @@ def parse_lua(text):
         while i < n:
             c = text[i]
             if c == "\\":
+                if i + 1 >= n:  # fichier coupé juste après une barre oblique
+                    i = n
+                    break
                 nx = text[i + 1]
                 if nx == "n":
                     out.append("\n"); i += 2
@@ -86,7 +89,9 @@ def parse_lua(text):
             pass
         return s
 
-    num = re.compile(r"-?(?:0x[0-9a-fA-F]+|\d+\.?\d*(?:[eE][-+]?\d+)?|inf|nan)")
+    # nombres, y compris les formes écrites par le jeu sous Windows : -nan(ind), 1.#INF, 1.#QNAN
+    num = re.compile(r"-?(?:0x[0-9a-fA-F]+|\d+\.#(?:INF|IND|QNAN|SNAN)\d*|\d+\.?\d*(?:[eE][-+]?\d+)?"
+                     r"|inf|nan(?:\(ind\))?)")
 
     def value():
         nonlocal i
@@ -100,6 +105,8 @@ def parse_lua(text):
         if m and m.group():
             i = m.end()
             s = m.group()
+            if "#" in s or "(" in s:
+                return 0.0
             try:
                 return int(s, 0) if re.fullmatch(r"-?(0x[0-9a-fA-F]+|\d+)", s) else float(s)
             except ValueError:
@@ -108,7 +115,12 @@ def parse_lua(text):
             if text.startswith(w, i):
                 i += len(w)
                 return v
-        raise ValueError("valeur illisible à %d" % i)
+        # jeton inconnu : sauté jusqu'au séparateur suivant (avant : toute la sauvegarde devenait illisible)
+        m = re.compile(r"[^,;}\n]*").match(text, i)
+        if m.end() == i:
+            raise ValueError("valeur illisible à %d" % i)
+        i = m.end()
+        return None
 
     def table():
         nonlocal i

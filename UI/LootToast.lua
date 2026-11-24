@@ -149,8 +149,14 @@ local function newToast(parent)
         s.hover = true
         if not s.e then return end
         UI:TooltipOwner(s, "ANCHOR_LEFT")
-        if s.e.link then _G.GameTooltip:SetHyperlink(s.e.link)
-        elseif _G.GameTooltip.SetItemByID then _G.GameTooltip:SetItemByID(s.e.id) end
+        -- argent ramassé : pas d'objet (avant, SetItemByID("money") : erreur à chaque survol)
+        if s.e.src == "money" then
+            _G.GameTooltip:SetText(s.e.name or "", 1, 1, 1)
+            if (s.e.sub or "") ~= "" then _G.GameTooltip:AddLine(s.e.sub, 0.8, 0.8, 0.8) end
+        elseif s.e.link then _G.GameTooltip:SetHyperlink(s.e.link)
+        elseif type(s.e.id) == "number" and s.e.id > 0 and _G.GameTooltip.SetItemByID then
+            _G.GameTooltip:SetItemByID(s.e.id)
+        end
         _G.GameTooltip:Show()
     end)
     t:SetScript("OnLeave", function(s) s.hover = false; _G.GameTooltip:Hide() end)
@@ -301,7 +307,9 @@ local function buildBig()
         if not s.e then return end
         UI:TooltipOwner(s, "ANCHOR_BOTTOM")
         if s.e.link then _G.GameTooltip:SetHyperlink(s.e.link)
-        elseif _G.GameTooltip.SetItemByID then _G.GameTooltip:SetItemByID(s.e.id) end
+        elseif type(s.e.id) == "number" and s.e.id > 0 and _G.GameTooltip.SetItemByID then
+            _G.GameTooltip:SetItemByID(s.e.id)
+        end
         _G.GameTooltip:Show()
     end)
     f:SetScript("OnLeave", function(s) s.hover = false; _G.GameTooltip:Hide() end)

@@ -125,6 +125,8 @@ end
 -- Buff du joueur qui annule l'effet de l'objet (nom), ou nil
 local function playerBuffs()
     local out = {}
+    -- jamais en combat (le jeu y cache les effets ; règle des effets lus hors combat)
+    if _G.InCombatLockdown and _G.InCombatLockdown() then return out end
     if C_UnitAuras and C_UnitAuras.GetAuraDataByIndex then
         for i = 1, 40 do
             local ok, a = pcall(C_UnitAuras.GetAuraDataByIndex, "player", i, "HELPFUL")
@@ -480,7 +482,8 @@ local wasSitting = false
 function M:Update()
     -- en combat, le jeu peut masquer les effets : on garde l'état d'avant (relu à la sortie du combat) ; avant,
     -- un monstre près du feu faisait disparaître l'encart, l'icône et le kit jusqu'au prochain changement d'effet
-    if _G.InCombatLockdown and _G.InCombatLockdown() and self.auras then return end
+    -- (sans lecture d'avant, rien n'est lu non plus : relu à la sortie du combat)
+    if _G.InCombatLockdown and _G.InCombatLockdown() then return end
     local cfg = self:Config()
     local a = scan()
     self.auras = a

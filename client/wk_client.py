@@ -33,7 +33,7 @@ from tkinter import filedialog, font as tkfont
 
 import learned  # Découvertes (client/learned.py, partagé avec tools/gen_learned.py)
 
-CLIENT_VERSION = "1.9.20"
+CLIENT_VERSION = "1.9.21"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 DATA_ADDON = "WarbandKeeper_Data"  # grosses bases, chargées à la demande (dossier à côté de l'addon)
@@ -873,32 +873,45 @@ class GitHub:
         def get(path):
             try:
                 r = self.api("GET", "/contents/%s?ref=main" % path)
-                return base64.b64decode(r["content"]).decode("utf-8"), r["sha"]
             except NetError:
                 return None, None
+            raw = r.get("content") or ""
+            # fichier de plus d'1 Mo : l'API ne donne pas son contenu ici, il se lit par son blob
+            if not raw.strip() and r.get("sha"):
+                raw = self.api("GET", "/git/blobs/" + r["sha"]).get("content") or ""
+            return base64.b64decode(raw).decode("utf-8"), r["sha"]
         text, jsha = get(LEARNED_JSON)
+        # base présente mais vide ou illisible : on s'arrête (avant, elle était remplacée par les seules sources,
+        # tout le reste était effacé sur main)
+        if jsha:
+            try:
+                json.loads(text or "")
+            except ValueError:
+                raise RuntimeError("base des découvertes illisible sur GitHub : rien n'a été envoyé")
         base = learned.from_json(text) if text else {}
         rows = learned.merge(sources, base, choices)
         added = [r for r in rows if r["status"] == learned.INTEGRATED]
         if not added:
             return None
         new = learned.build(base, rows)
-        _, lsha = get(LEARNED_LUA)
         branch = "main"
+        head = self.api("GET", "/git/ref/heads/main")["object"]["sha"]
         if not direct:
-            head = self.api("GET", "/git/ref/heads/main")["object"]["sha"]
             branch = "decouvertes-" + datetime.now().strftime("%Y%m%d-%H%M%S")
             self.api("POST", "/git/refs", {"ref": "refs/heads/" + branch, "sha": head})
         per = {}
         for r in added:
             per[r["genre"]] = per.get(r["genre"], 0) + 1
         what = ", ".join("%s %d" % (learned.LABEL[g].lower(), n) for g, n in per.items())
-        for path, content, sha in ((LEARNED_JSON, learned.to_json(new), jsha), (LEARNED_LUA, learned.to_lua(new), lsha)):
-            body = {"message": "Découvertes : %s (client PC)" % what, "branch": branch,
-                    "content": base64.b64encode(content.encode("utf-8")).decode("ascii")}
-            if sha:
-                body["sha"] = sha
-            self.api("PUT", "/contents/" + path, body)
+        # les deux fichiers dans un seul commit (avant : deux écritures, la base et le .lua pouvaient se
+        # désaccorder si la seconde échouait) ; main a bougé entre-temps : la mise à jour est refusée, rien n'est écrit
+        tree_base = self.api("GET", "/git/commits/" + head)["tree"]["sha"]
+        tree = self.api("POST", "/git/trees", {"base_tree": tree_base, "tree": [
+            {"path": LEARNED_JSON, "mode": "100644", "type": "blob", "content": learned.to_json(new)},
+            {"path": LEARNED_LUA, "mode": "100644", "type": "blob", "content": learned.to_lua(new)}]})["sha"]
+        commit = self.api("POST", "/git/commits", {"message": "Découvertes : %s (client PC)" % what,
+                                                   "tree": tree, "parents": [head]})["sha"]
+        self.api("PATCH", "/git/refs/heads/" + branch, {"sha": commit, "force": False})
         if direct:
             return {"n": len(added), "base": new, "what": what,
                     "items": [learned.short(r["genre"], r["key"], r["value"]) for r in added][:60]}
@@ -1654,9 +1667,12 @@ class ScrollArea(tk.Frame):
             self.sb.pack_forget()
         if not over:
             self.cv.yview_moveto(0)
-        self.bind_all("<MouseWheel>", self._wheel, add="+")
-        self.bind_all("<Button-4>", lambda e: self._scroll(-1), add="+")
-        self.bind_all("<Button-5>", lambda e: self._scroll(1), add="+")
+        # molette liée une seule fois (avant : à chaque redimensionnement, des centaines de liaisons en double)
+        if not getattr(self, "_wheelBound", False):
+            self._wheelBound = True
+            self.bind_all("<MouseWheel>", self._wheel, add="+")
+            self.bind_all("<Button-4>", lambda e: self._scroll(-1), add="+")
+            self.bind_all("<Button-5>", lambda e: self._scroll(1), add="+")
 
     def _scroll(self, n):
         if self.winfo_ismapped():
@@ -1764,6 +1780,9 @@ class Page(tk.Frame):
     def fit_pills(self):
         """Pastilles qui ne tiennent pas dans la largeur : cachées en entier (avant, la dernière était rognée)."""
         box = self.pillBox
+        # page cachée : rien à mesurer, <Configure> rappellera à l'affichage (avant : relance toutes les 50 ms)
+        if not box.winfo_ismapped():
+            return
         width = box.winfo_width()
         if width <= 1:
             return self.after(50, self.fit_pills)
@@ -2476,14 +2495,25 @@ class HomePage(Page):
         if not a.confirm("Restaurer la sauvegarde du %s ?\nTes réglages actuels sont d'abord sauvegardés." %
                          datetime.fromtimestamp(b["time"]).strftime("%d/%m/%Y %H:%M")):
             return
-        try:
-            backup_saved_variables(a.addons, a.installed, a.cfg["keepBackups"] + 1, "avant restauration")
-            restore_backup(a.addons, b["path"])
-        except Exception as e:  # zip tronqué (zlib, EOFError), fichier bloqué… : toujours un message
-            a.toast("Restauration impossible : %s (rien n'a été changé)." % e, "negative")
-            return
-        a.toast("Sauvegarde restaurée.", "positive")
+        if a.busy:
+            return a.toast("Une installation est en cours : réessaie dans un instant.", "warning")
+        a.busy = True
         a.state_changed()
+        addons, inst, keep = a.addons, a.installed, a.cfg["keepBackups"] + 1
+
+        # en arrière-plan (avant : la fenêtre se figeait pendant la décompression)
+        def job():
+            backup_saved_variables(addons, inst, keep, "avant restauration")
+            restore_backup(addons, b["path"])
+
+        def done(_res, err):
+            a.busy = False
+            if err:  # zip tronqué (zlib, EOFError), fichier bloqué… : toujours un message
+                a.toast("Restauration impossible : %s (rien n'a été changé)." % err, "negative")
+            else:
+                a.toast("Sauvegarde restaurée.", "positive")
+            a.state_changed()
+        a.run(job, done)
 
     def rollback(self):
         a = self.app
@@ -2541,20 +2571,23 @@ def learned_files():
 
 
 _learn_cache = {}
+_learn_lock = threading.Lock()
 
 
 def read_learned(addons):
     """Ce que ta sauvegarde a appris ({ genre: { clé: valeur } }), lu une fois par version du fichier.
-    Lecture bloquante (le fichier fait plusieurs Mo) : jamais sur le thread Tk."""
-    path, mt = _save_file(addons)
-    if path is None:
-        return None
-    if _learn_cache.get("path") == path and _learn_cache.get("mt") == mt:
-        return _learn_cache["data"]
-    with open(path, encoding="utf-8", errors="replace") as f:
-        data = learned.extract(learned.read_save(f.read()))
-    _learn_cache.update(path=path, mt=mt, data=data)
-    return data
+    Lecture bloquante (le fichier fait plusieurs Mo) : jamais sur le thread Tk. Une lecture à la fois (deux
+    threads lisaient le même fichier en même temps et se croisaient dans le cache)."""
+    with _learn_lock:
+        path, mt = _save_file(addons)
+        if path is None:
+            return None
+        if _learn_cache.get("path") == path and _learn_cache.get("mt") == mt:
+            return _learn_cache["data"]
+        with open(path, encoding="utf-8", errors="replace") as f:
+            data = learned.extract(learned.read_save(f.read()))
+        _learn_cache.update(path=path, mt=mt, data=data)
+        return data
 
 
 def installed_learned(addons):
@@ -2687,7 +2720,8 @@ class LearnedPage(Page):
             self.note.configure(text="Choisis d'abord le dossier AddOns dans Réglages.")
             return
         if force:
-            _learn_cache.clear()
+            with _learn_lock:
+                _learn_cache.clear()
         self.loading = True
         self.note.configure(text="Lecture de ta sauvegarde…")
         addons = a.addons
@@ -2698,6 +2732,10 @@ class LearnedPage(Page):
                 self.note.configure(text="Sauvegarde illisible : %s" % err)
                 return
             self.mine, self.base = res
+            # pas encore de sauvegarde (jeu jamais lancé avec l'addon) : liste vide au lieu de « Lecture… » sans fin
+            if self.mine is None:
+                self.mine = {}
+                self.note.configure(text="Pas encore de sauvegarde : lance le jeu une fois avec l'addon.")
             self.fill()
         a.run(lambda: (read_learned(addons), known_learned(addons)), done)
 

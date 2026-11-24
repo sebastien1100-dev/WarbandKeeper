@@ -39,6 +39,9 @@ end
 -- position) ou l'annoncer au groupe. Le texte va dans la barre de saisie (Entrée pour envoyer) ; seul
 -- « Annoncer au groupe » envoie, au groupe ou au raid (jamais un canal public).
 local function groupChannel()
+    -- groupe d'instance (recherche de groupe) : son propre canal, comme Modules/Blessings.lua
+    local inst = _G.LE_PARTY_CATEGORY_INSTANCE
+    if inst and _G.IsInGroup and _G.IsInGroup(inst) then return "INSTANCE_CHAT" end
     if _G.IsInRaid and _G.IsInRaid() then return "RAID" end
     if _G.IsInGroup and _G.IsInGroup() then return "PARTY" end
 end
@@ -50,10 +53,20 @@ function UI.DungeonBossLootText(b, key)
     if #ids == 0 then ids = b.loot or {} end
     local out = UI.DungeonBossChat(b):gsub("%s$", "")
     local links = {}
+    -- longueur cumulée (avant : chaque lien comparé seul, trois liens dépassaient les 255 du chat), et ce qui est
+    -- déjà écrit dans la barre de saisie ; un objet pas encore chargé est demandé au jeu pour le clic suivant
+    local eb = _G.ChatEdit_GetActiveWindow and _G.ChatEdit_GetActiveWindow()
+    local typed = eb and eb.GetText and #(eb:GetText() or "") or 0
+    local len = typed + #out + 3
     for _, id in ipairs(ids) do
         if #links >= 3 then break end
         local _, link = WK.GetItemInfo(id)
-        if type(link) == "string" and #out + #link + 3 < 250 then links[#links + 1] = link end
+        local CI = _G.C_Item
+        if not link and CI and CI.RequestLoadItemDataByID then pcall(CI.RequestLoadItemDataByID, id) end
+        if type(link) == "string" and len + #link + 1 <= 250 then
+            links[#links + 1] = link
+            len = len + #link + 1
+        end
     end
     if #links > 0 then out = out .. " : " .. table.concat(links, " ") end
     return out .. " "

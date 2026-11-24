@@ -196,8 +196,8 @@ local function build()
                     if not nm and e.kind == "object" and e.o then nm = M:Name(e.o, e.tier) end
                     if not nm and e.kind == "fire" and e.fire then nm = M:FireName(e.fire) end
                     b.label:SetText(nm or "…")
-                    b.state:ClearAllPoints(); b.state:SetPoint("RIGHT", self, "RIGHT", -8, 0)
-                    b.state:SetPoint("TOP", b, "TOP", 0, -7)
+                    -- un seul ancrage (avant : RIGHT du cadre + TOP de l'icône mêlés sur le même texte, piège connu)
+                    b.state:ClearAllPoints(); b.state:SetPoint("RIGHT", b.label, "RIGHT", 56, 0)
                     b.label:Show(); b.state:Show()
                 elseif barMode then
                     b.label:Hide()
@@ -307,6 +307,7 @@ function UI:RefreshCampKit()
         if l then
             local down = WK.modules.BagHelp:Config().dir ~= "up"
             local x = (l + w / 2) * sc - LW / 2
+            kit:SetScale(1) -- (l'échelle de l'ancien élément « campKit » du mode édition décalait la liste)
             kit:ClearAllPoints()
             if down then kit:SetPoint("TOPLEFT", _G.UIParent, "BOTTOMLEFT", x, b * sc - 4)
             else kit:SetPoint("BOTTOMLEFT", _G.UIParent, "BOTTOMLEFT", x, (b + h) * sc + 4) end
@@ -348,7 +349,8 @@ function UI.CampKitOpen() return kit and kit.open and kit:IsShown() or false end
 WK:On("PLAYER_REGEN_ENABLED", function() if pending then UI:RefreshCampKit() end end)
 -- la barre de la flamme se referme à l'entrée en combat (encore permis à cet instant)
 WK:On("PLAYER_REGEN_DISABLED", function()
-    if kit and kit.flameOpen then kit.flameOpen = false; kit.bar = false; kit:Hide() end
+    -- (la liste de la barre aussi : sinon elle restait affichée sans sa case si la barre était repliée en combat)
+    if kit and (kit.flameOpen or kit.open) then kit.flameOpen = false; kit.open = false; kit.bar = false; kit:Hide() end
 end)
 WK:On("BAG_UPDATE_DELAYED", function() C_Timer.After(0.3, function() UI:RefreshCampKit(); if UI.RefreshCampChips then UI:RefreshCampChips() end end) end)
 

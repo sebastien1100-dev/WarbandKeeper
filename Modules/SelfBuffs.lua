@@ -240,7 +240,12 @@ end
 local lastStatus, lastCtx
 function M:Status()
     -- en combat, le jeu cache les effets : la dernière lecture faite hors combat sert telle quelle
-    if _G.InCombatLockdown and _G.InCombatLockdown() and lastStatus then return lastStatus, lastCtx end
+    if _G.InCombatLockdown and _G.InCombatLockdown() then
+        -- sans lecture d'avant (/reload en combat) : rien, relu à la sortie du combat
+        if lastStatus then return lastStatus, lastCtx end
+        M.dirty = true
+        return {}, self:Context()
+    end
     -- lecture gardée 1 s tant que les effets du perso n'ont pas changé (la barre des sacs la demandait toutes les
     -- 2 s, la liste et la case aussi : jusqu'à 3,8 ms par lecture)
     local now = _G.GetTime and _G.GetTime() or 0

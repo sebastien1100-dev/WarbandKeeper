@@ -1006,10 +1006,15 @@ local function buildAmmo()
         self.flash:SetVertexColor(C.bg[1], C.bg[2], C.bg[3], 0.95)
         -- vitesse de la pulsation : lente (orange), moyenne (rouge), rapide (vide) ; aucune quand tout va bien
         self.period = (st.level == "low" and 1.4) or (st.level == "red" and 0.8) or (st.level == "empty" and 0.5) or nil
+        -- pas de pulsation : état fixe et plus d'OnUpdate à chaque image (avant : il tournait pour rien)
+        if not self.period then
+            self.cd:SetAlpha(1); self.red:SetVertexColor(C.negative[1], C.negative[2], C.negative[3], 0)
+        end
+        self:SetScript("OnUpdate", self.period and self.pulse or nil)
     end
     -- pulsation : anneau qui respire, voile rouge sur l'icône à zéro
     local t = 0
-    f:SetScript("OnUpdate", function(s, el)
+    f.pulse = function(s, el)
         t = t + el
         local p = s.period
         if not p then s.cd:SetAlpha(1); s.red:SetVertexColor(C.negative[1], C.negative[2], C.negative[3], 0) return end
@@ -1017,7 +1022,7 @@ local function buildAmmo()
         s.cd:SetAlpha(0.45 + 0.55 * k)
         local empty = s.st and s.st.level == "empty"
         s.red:SetVertexColor(C.negative[1], C.negative[2], C.negative[3], empty and (0.65 * k) or 0)
-    end)
+    end
     f:Hide()
     UI:RegisterHUD("ammoAlert", f, {
         label = T("Alerte munitions"), default = { 0, -120 },
@@ -1045,4 +1050,11 @@ function UI.RefreshAmmoAlert(_)
     ammo:Show()
 end
 -- relu toutes les secondes (tirs, achats, flèches ramassées) : lecture légère des chiffres déjà relevés
-if C_Timer.NewTicker then C_Timer.NewTicker(1, function() UI:RefreshAmmoAlert() end) end
+-- (seulement pour les classes qui tirent : guerrier, voleur, chasseur ; avant, pour toutes, toute la séance)
+WK:On("PLAYER_LOGIN", function()
+    local cls = select(2, _G.UnitClass("player"))
+    local Q = WK.modules.QoL
+    if C_Timer.NewTicker and Q and Q.AMMO and Q.AMMO[cls] then
+        C_Timer.NewTicker(1, function() UI:RefreshAmmoAlert() end)
+    end
+end)

@@ -987,6 +987,14 @@ function M:EndTrail()
         d.trails[t.cont] = d.trails[t.cont] or {}
         table.insert(d.trails[t.cont], t.pts)
         nLearned = learnedPoints() + #t.pts / 2
+        -- plafond atteint : les tronçons les plus anciens de ce continent partent (avant : on n'apprenait plus rien,
+        -- même là où le joueur va maintenant) ; le graphe du continent est refait au prochain calcul
+        local list, dropped = d.trails[t.cont], false
+        while nLearned > MAX_LEARN and #list > 1 do
+            nLearned = nLearned - #table.remove(list, 1) / 2
+            dropped = true
+        end
+        if dropped then graphs[t.cont] = nil; graphGen = graphGen + 1 end
         M.sessionLearned = (M.sessionLearned or 0) + lineLen(t.pts)
         M.sessionTrails = (M.sessionTrails or 0) + 1
         M.lastTrailAt = GetTime and GetTime() or 0
@@ -1021,7 +1029,6 @@ local function learnTick()
     x, y = floor(x + 0.5), floor(y + 0.5)
     if cur and (cur.cont ~= cont or dist(x, y, cur.lastX, cur.lastY) > 90) then M:EndTrail() end -- téléport, bateau…
     if cur and dist(x, y, cur.lastX, cur.lastY) < STEP then return end
-    if learnedPoints() > MAX_LEARN then return end
     if novel(cont, x, y) then
         if not cur then
             cur = { cont = cont, pts = {} }

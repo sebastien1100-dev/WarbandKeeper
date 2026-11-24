@@ -623,7 +623,8 @@ local function build()
     f:SetToplevel(true)
     f:SetClampedToScreen(true)
     f:EnableMouse(true); f:SetMovable(true); f:RegisterForDrag("LeftButton")
-    f:SetScript("OnDragStart", f.StartMoving)
+    -- pas de déplacement en combat : les cases protégées sont ancrées à la fenêtre
+    f:SetScript("OnDragStart", function(s) if not inCombat() then s:StartMoving() end end)
     f:SetScript("OnDragStop", function(s)
         s:StopMovingOrSizing()
         local p, _, rp, x, y = s:GetPoint()
@@ -633,6 +634,11 @@ local function build()
     if not isBank then
         -- tout le compte : choix du perso dont on regarde les sacs et la banque (derniers relevés)
         f.who = UI:Dropdown(f, FICHE_W, 26, {}, function(v)
+            if inCombat() then
+                WK:Print(T("Après le combat."))
+                if f.who.Select then f.who:Select(V.viewKey or "me") end
+                return
+            end
             V.viewKey = (v ~= "me") and v or nil
             hovered = nil
             V.Refresh()
@@ -1054,11 +1060,16 @@ function V.Refresh(light, live)
         win.coin:SetShown(showMoney); win.money:SetShown(showMoney); win.moneyBtn:SetShown(showMoney)
     end
     -- disposition : par catégorie, cases vides à la fin
-    if inCombat() and not offKey then
+    -- en combat : jamais de mise en page (nos cases sont des boutons protégés : les cacher ou bouger leur cadre
+    -- est bloqué) ; repeintes seulement pour ses propres sacs, le reste attend la fin du combat (avant, la vue
+    -- d'un autre perso ou de tout le compte refaisait toute la disposition en combat : ADDON_ACTION_BLOCKED)
+    if inCombat() then
         pending = true
-        for _, e in ipairs(list) do
-            local b = buttons[e.bag] and buttons[e.bag][e.slot]
-            if b then paintButton(b, not e.empty and e or nil); b:SetAlpha(dimmed(e) and 0.25 or 1) end
+        if not offKey then
+            for _, e in ipairs(list) do
+                local b = buttons[e.bag] and buttons[e.bag][e.slot]
+                if b then paintButton(b, not e.empty and e or nil); b:SetAlpha(dimmed(e) and 0.25 or 1) end
+            end
         end
         return
     end
@@ -1575,6 +1586,9 @@ function V.SellJunk()
     local list = Q:GreyItems()
     local i = 0
     local function step()
+        -- marchand fermé ou combat entre deux paquets : on arrête (avant, la suite des objets était « utilisée » :
+        -- équipée, ouverte, ou bloquée en combat)
+        if not (_G.MerchantFrame and _G.MerchantFrame:IsShown()) or inCombat() then V.Refresh() return end
         for _ = 1, 8 do
             i = i + 1
             local it = list[i]
