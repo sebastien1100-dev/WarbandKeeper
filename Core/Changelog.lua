@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.262", date = "24/11/2026",
+        added = {
+            "Infobulles : l'option devient « Numéro de l'objet ou du sort » : le numéro s'affiche aussi en bas de l'infobulle d'un sort (grimoire, barres d'action) et d'un effet (buff, débuff) : « ID du sort : … ».",
+        },
+    },
+    {
         version = "1.128.261", date = "24/11/2026",
         added = {
             "Infobulles : option « Numéro de l'objet » (Options > Infobulles, carte Objets, coupée d'office) : le numéro (ID) de l'objet s'affiche en bas de son infobulle.",

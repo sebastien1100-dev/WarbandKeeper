@@ -599,8 +599,9 @@ UI:RegisterPage({
                     function() return PHc().craftTip end, function(v) PHc().craftTip = v end },
                 { "Butin observé", "Dans l'infobulle d'un objet : les monstres qui le lâchent et à quelle fréquence, d'après les butins relevés par les joueurs (Everloot).",
                     function() return cfg.tooltipDrops ~= false end, function(v) cfg.tooltipDrops = v end },
-                { "Numéro de l'objet",
-                    "En bas de l'infobulle d'un objet : son numéro (ID), utile pour signaler un objet mal reconnu.",
+                { "Numéro de l'objet ou du sort",
+                    "En bas de l'infobulle d'un objet, d'un sort ou d'un effet : son numéro (ID),"
+                        .. " pour signaler un souci.",
                     function() return cfg.tooltipItemId end, function(v) cfg.tooltipItemId = v end },
             })
             ttCard("PNJ et apparence", "au survol d'un personnage, style des infobulles", {

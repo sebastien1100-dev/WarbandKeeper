@@ -406,7 +406,8 @@ local function onTooltip(tooltip, data)
     if any then tooltip:Show() end
 end
 
--- Numéro de l'objet en bas de l'infobulle (Options > Infobulles > Objets, « Numéro de l'objet », coupé d'office)
+-- Numéro de l'objet (et du sort, plus bas) en bas de l'infobulle (Options > Infobulles > Objets,
+-- « Numéro de l'objet ou du sort », coupé d'office)
 local function onTooltipId(tooltip, data)
     if tooltip ~= _G.GameTooltip and tooltip ~= _G.ItemRefTooltip then return end
     if not WK.DB.global.settings.ui.tooltipItemId then return end
@@ -420,6 +421,19 @@ if TooltipDataProcessor and Enum and Enum.TooltipDataType then
     TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item, onTooltip)
     _G.TooltipDataProcessor.AddTooltipPostCall(_G.Enum.TooltipDataType.Item,
         function(tt, d) pcall(onTooltipId, tt, d) end)
+    -- même option pour les sorts et les effets (buffs) : « ID du sort »
+    local function onSpellId(tooltip, data)
+        if tooltip ~= _G.GameTooltip and tooltip ~= _G.ItemRefTooltip then return end
+        if not WK.DB.global.settings.ui.tooltipItemId then return end
+        local id = data and data.id
+        if type(id) ~= "number" or (_G.issecretvalue and _G.issecretvalue(id)) then return end
+        tooltip:AddLine(DIM .. WK.T("ID du sort : ") .. id .. "|r")
+        tooltip:Show()
+    end
+    local TT = _G.Enum.TooltipDataType
+    for _, k in ipairs({ "Spell", "UnitAura" }) do
+        if TT[k] then _G.TooltipDataProcessor.AddTooltipPostCall(TT[k], function(tt, d) pcall(onSpellId, tt, d) end) end
+    end
 else
     GameTooltip:HookScript("OnTooltipSetItem", onTooltip)
     if ItemRefTooltip then ItemRefTooltip:HookScript("OnTooltipSetItem", onTooltip) end
