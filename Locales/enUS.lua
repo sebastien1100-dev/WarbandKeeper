@@ -2978,6 +2978,7 @@ WK.Locales.enUS.text = {
     ["ID du sort : "] = "Spell ID: ",
     ["Numéro de l'objet ou du sort"] = "Item or spell ID",
     ["En bas de l'infobulle d'un objet, d'un sort ou d'un effet : son numéro (ID), pour signaler un souci."] = "At the bottom of an item, spell or effect tooltip: its number (ID), to report an issue.",
+    ["%s libres"] = "%s free",
     ["Barre d'XP"] = "XP bar",
     ["Avant de partir"] = "Before you go",
     ["Le meilleur objet de chaque sorte pour ton niveau ; rouge : sous le seuil. Seuils x2 en raid ; en JcJ, pas d'élixir et moitié de nourriture."] = "The best item of each kind for your level; red: below threshold. Thresholds x2 in raids; in PvP, no elixir and half the food.",

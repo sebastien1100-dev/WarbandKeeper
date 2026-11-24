@@ -49,6 +49,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.263 — 24/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Sacs, chez le marchand : le bouton « Vendre les inutiles » passait sur l'or en bas de la fenêtre. Quand la place manque, le texte des places devient « 12 libres », puis l'or s'efface tant que les boutons sont affichés.
+
 ## v1.128.262 — 24/11/2026
 
 _Un /reload suffit._

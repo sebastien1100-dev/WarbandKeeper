@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.263", date = "24/11/2026",
+        fixed = {
+            "Sacs, chez le marchand : le bouton « Vendre les inutiles » passait sur l'or en bas de la fenêtre. Quand la place manque, le texte des places devient « 12 libres », puis l'or s'efface tant que les boutons sont affichés.",
+        },
+    },
+    {
         version = "1.128.262", date = "24/11/2026",
         added = {
             "Infobulles : l'option devient « Numéro de l'objet ou du sort » : le numéro s'affiche aussi en bas de l'infobulle d'un sort (grimoire, barres d'action) et d'un effet (buff, débuff) : « ID du sort : … ».",

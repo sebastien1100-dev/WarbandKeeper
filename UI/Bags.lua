@@ -1033,6 +1033,26 @@ function V.Refresh(light, live)
             anchor = b
         end
     end
+    -- pied trop étroit pour les boutons (chez le marchand) : texte des places raccourci (« 12 libres »),
+    -- puis l'or caché tant que les boutons sont là (avant, « Vendre les inutiles » passait sur l'or)
+    do
+        local right = PAD + (B.Config().fiche and FICHE_W + 10 or 0)
+        local bw = 0
+        for _, b in ipairs({ isBank and win.tidy or win.sell, win.sellMore, win.merge }) do
+            if b and b:IsShown() then bw = bw + (b:GetWidth() or 0) + 8 end
+        end
+        local W = win:GetWidth() or 0
+        local function need()
+            return PAD + (win.foot:GetStringWidth() or 0) + 18 + 16 + 6 + (win.money:GetStringWidth() or 0) + 12
+                + bw + right
+        end
+        local showMoney = true
+        if bw > 0 and need() > W then
+            win.foot:SetText(string.format(T("%s libres"), UI:Hex(normal == 0 and C.negative or ac) .. normal .. "|r"))
+            if need() > W then showMoney = false end
+        end
+        win.coin:SetShown(showMoney); win.money:SetShown(showMoney); win.moneyBtn:SetShown(showMoney)
+    end
     -- disposition : par catégorie, cases vides à la fin
     if inCombat() and not offKey then
         pending = true
