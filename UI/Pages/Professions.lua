@@ -190,14 +190,36 @@ local function showGuideTip(owner, st, n, title, extra, char)
         lines[#lines + 1] = string.format("%s %s%d %s|r%s", verb, UI:Hex(C.text), t.made or t.n, nm, times)
     end
     if #plan.find > 0 then
-        local bits = {}
+        -- vendu par un marchand (prix vu par un perso, sinon marchand vu dans Forever : ForeverDB) : ligne à part,
+        -- avec le marchand le plus proche ; le reste à trouver ou à acheter à l'HV
+        local Vd = WK.modules.Vendors
+        local bits, credit = {}, false
         for _, fd in ipairs(plan.find) do
-            bits[#bits + 1] = UI:Hex(C.negative) .. fd.n .. " " .. (UI:ItemInfo(fd.id)) .. "|r"
+            local p, src, who = nil, nil, nil
+            if Vd then p, src, who = Vd:BuyPrice(fd.id) end
+            if p then
+                local where = (src == "fdb" and Vd:Where(fd.id)) or who
+                credit = credit or src == "fdb"
+                local nm = (UI:ItemInfo(fd.id))
+                lines[#lines + 1] = string.format("%s %s%d %s|r %s", T("Acheter"), UI:Hex(C.text), fd.n, nm,
+                    UI:Hex(C.muted) .. (where and (T("chez") .. " " .. where .. " · ") or "") .. "|r"
+                    .. UI:Hex(C.gold) .. WK:FormatMoney(p * fd.n) .. "|r")
+            else
+                bits[#bits + 1] = UI:Hex(C.negative) .. fd.n .. " " .. (UI:ItemInfo(fd.id)) .. "|r"
+            end
         end
-        local l = T("Trouver") .. " " .. table.concat(bits, ", ")
-        if plan.cost then l = l .. " " .. UI:Hex(C.muted) .. T("ou") .. "|r " .. UI:Hex(C.gold) .. T("env.") .. " "
-            .. WK:FormatMoney(plan.cost) .. " " .. T("à l'HV") .. "|r" end
-        lines[#lines + 1] = l
+        if #bits > 0 then
+            local l = T("Trouver") .. " " .. table.concat(bits, ", ")
+            if plan.cost then l = l .. " " .. UI:Hex(C.muted) .. T("ou") .. "|r " .. UI:Hex(C.gold) .. T("env.") .. " "
+                .. WK:FormatMoney(plan.cost) .. " " .. T("à l'HV") .. "|r" end
+            lines[#lines + 1] = l
+        end
+        if credit then -- copie : la liste de l'appelant n'est pas modifiée
+            local e2 = {}
+            for _, x in ipairs(extra or {}) do e2[#e2 + 1] = x end
+            e2[#e2 + 1] = { T("Marchands : ") .. Vd.CREDIT, C.muted }
+            extra = e2
+        end
     end
     if #lines > 0 and n > 0 then
         y = tipSep(f, y)

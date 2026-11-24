@@ -377,6 +377,12 @@ local function onTooltip(tooltip, data)
                 1, 1, 1, 1, 1, 1)
         end
     end
+    -- marchands qui le vendent dans WoW Forever (Modules/Vendors.lua, données ForeverDB)
+    local Vd = WK.modules.Vendors
+    if Vd and Vd.AddTooltip and ui.tooltipVendors ~= false and #Vd:Sources(itemID) > 0 then
+        if not any then tooltip:AddLine(" "); tooltip:AddLine(WK:Tag()); any = true end
+        Vd:AddTooltip(tooltip, itemID)
+    end
     -- prix relevés par notre scan de l'HV (Modules/AHScan.lua)
     local S = WK.modules.AHScan
     local scanned = false

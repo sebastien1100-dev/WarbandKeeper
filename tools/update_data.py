@@ -32,7 +32,7 @@ CACHE = os.path.join(HERE, ".cache")
 QUESTIE_URL = "https://github.com/Questie/QuestieDB"
 WOWTBC = "https://wowtbc.gg/page-data/warcraftforever"
 UA = "WarbandKeeper-data-update"
-TARGETS = ["PlacesDB", "RoadsDB", "RaresDB", "QuestsDB", "QuestObjDB", "DungeonsDB", "Guides", "RecipeDB", "EverlootDB", "ItemsDB", "BoatLinesDB", "MapRevealDB", "ClassSpellsDB", "DataLogDB", "WayZonesDB", "ClassPricesDB"]
+TARGETS = ["PlacesDB", "RoadsDB", "RaresDB", "QuestsDB", "QuestObjDB", "DungeonsDB", "Guides", "RecipeDB", "EverlootDB", "ItemsDB", "BoatLinesDB", "MapRevealDB", "ClassSpellsDB", "DataLogDB", "WayZonesDB", "ClassPricesDB", "ForeverVendorsDB"]
 KEEP = [os.path.join(HERE, "guides"), os.path.join(HERE, "dungeons")]  # données importées, versionnées
 DROP_LIMIT = 0.20
 
@@ -202,6 +202,9 @@ def metrics():
             out["Guides de métiers"] = size(WK.Guides)
         elif name == "RecipeDB":
             out["Recettes"] = count(WK.RecipeDB)
+        elif name == "ForeverVendorsDB":
+            out["Marchands vus dans Forever (ForeverDB)"] = size(WK.FVendorNpc)
+            out["Objets vendus par ces marchands"] = size(WK.FVendorSells)
         elif name == "EverlootDB":
             out["Objets avec taux de drop observé"] = size(WK.EverDrops)
             out["Trajets de vol (fichiers du jeu)"] = size(WK.FlightGame.paths) if WK.FlightGame else 0
@@ -332,6 +335,16 @@ def main():
                 sources.append("Everloot (taux de drop, vols)")
             except subprocess.CalledProcessError as e:
                 log("  ! Everloot indisponible, fichier gardé tel quel :", e)
+            # marchands vus dans Forever (API ForeverDB, clé FOREVERDB_KEY ; sans clé : fichier gardé tel quel)
+            if os.environ.get("FOREVERDB_KEY"):
+                try:
+                    run(os.path.join(HERE, "gen_foreverdb.py"), "--fetch")
+                    run(os.path.join(HERE, "gen_foreverdb.py"), qpath)
+                    sources.append("ForeverDB (marchands)")
+                except subprocess.CalledProcessError as e:
+                    log("  ! ForeverDB indisponible, fichier gardé tel quel :", e)
+            else:
+                log("  · ForeverDB : pas de clé (secret FOREVERDB_KEY), marchands gardés tels quels")
         # prix de base des sorts de classe chez le maître (What's Training, licence MIT)
         try:
             run(os.path.join(HERE, "gen_trainprices.py"))

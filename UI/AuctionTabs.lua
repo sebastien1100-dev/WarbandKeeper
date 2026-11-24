@@ -1333,7 +1333,17 @@ local function build(host)
             if not s.id then return end
             UI:TooltipOwner(s, "ANCHOR_RIGHT")
             if GameTooltip.SetItemByID then GameTooltip:SetItemByID(s.id) end
-            if s.vendor then GameTooltip:AddLine(string.format(T("Vu chez %s à %s"), s.vendor.npc or "?", money(s.vendor.p or 0)), C.rule[1], C.rule[2], C.rule[3]) end
+            if s.vendor and s.vendor.fdb then
+                local Vd = WK.modules.Vendors
+                local where = Vd and Vd:Where(s.id)
+                local tt = _G.GameTooltip
+                local line = string.format(T("Vendu par %s à %s"), where or s.vendor.npc or "?", money(s.vendor.p or 0))
+                tt:AddLine(line, C.rule[1], C.rule[2], C.rule[3])
+                tt:AddLine(T("Clic : guider vers ce marchand") .. "  ·  " .. (Vd and Vd.CREDIT or ""), 0.6, 0.6, 0.6)
+            elseif s.vendor then
+                local line = string.format(T("Vu chez %s à %s"), s.vendor.npc or "?", money(s.vendor.p or 0))
+                _G.GameTooltip:AddLine(line, C.rule[1], C.rule[2], C.rule[3])
+            end
             if s.watch then GameTooltip:AddLine(T("Clic droit : ne plus surveiller"), 0.6, 0.6, 0.6) end
             GameTooltip:Show()
         end)
@@ -1342,6 +1352,10 @@ local function build(host)
             if button == "RightButton" and s.watch and s.id then
                 A.Config().alerts[s.id] = nil
                 bv:Refresh()
+            end
+            -- objet à acheter chez un marchand de ForeverDB : guidage vers le plus proche
+            if button ~= "RightButton" and s.vendor and s.vendor.fdb and s.id and WK.modules.Vendors then
+                WK.modules.Vendors:GuideTo(s.id)
             end
         end)
         r.btn:SetScript("OnClick", function(s)
@@ -1529,7 +1543,14 @@ local function build(host)
                 local none = results[id] ~= nil and not lowestOther(id)
                 r.c:SetText(none and (UI:Hex(C.negative) .. T("aucun") .. "|r") or (low and money(low) or "-"))
                 r.d:SetText(av and tostring(av) or "")
+                -- prix vu par un de tes persos, sinon marchand vu dans WoW Forever (ForeverDB, Modules/Vendors.lua)
                 local v = vseen[id]
+                if not v then
+                    local Vd = WK.modules.Vendors
+                    local fp, src, fname = nil, nil, nil
+                    if Vd then fp, src, fname = Vd:BuyPrice(id) end
+                    if fp and src == "fdb" then v = { p = fp, npc = fname, fdb = true } end
+                end
                 r.vendor = v
                 local alt, altN = nil, nil
                 if need > 0 then alt, altN = altWith(id, need) end

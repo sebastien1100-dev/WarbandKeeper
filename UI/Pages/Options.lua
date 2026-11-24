@@ -599,6 +599,9 @@ UI:RegisterPage({
                     function() return PHc().craftTip end, function(v) PHc().craftTip = v end },
                 { "Butin observé", "Dans l'infobulle d'un objet : les monstres qui le lâchent et à quelle fréquence, d'après les butins relevés par les joueurs (Everloot).",
                     function() return cfg.tooltipDrops ~= false end, function(v) cfg.tooltipDrops = v end },
+                { "Vendu par", "Dans l'infobulle d'un objet : le marchand le plus proche qui le vend dans WoW Forever"
+                    .. " et son prix, d'après les marchands vus par les joueurs (ForeverDB.net).",
+                    function() return cfg.tooltipVendors ~= false end, function(v) cfg.tooltipVendors = v end },
                 { "Numéro de l'objet ou du sort",
                     "En bas de l'infobulle d'un objet, d'un sort ou d'un effet : son numéro (ID),"
                         .. " pour signaler un souci.",
@@ -880,6 +883,9 @@ UI:RegisterPage({
                 "Noms français des donjons et des boss, numéros d'instance et de rencontre : tables du client WoW Forever (données du jeu, lues sur wago.tools)." },
             { "chart", "Trajets de vol, taux de drop observés", "Everloot · everloot.app", "CC BY-SA 4.0", "info",
                 "Trajets de vol (fichiers du jeu) et taux de drop observés par les joueurs : Everloot (everloot.app ; taux de drop sous licence CC BY-SA 4.0)." },
+            { "coin", "Marchands et leurs prix", "ForeverDB · foreverdb.net", "crédit", "info",
+                "Marchands vus dans WoW Forever par les joueurs, avec leur place et le prix de ce qu'ils vendent :"
+                    .. " Data from ForeverDB.net (https://foreverdb.net)." },
             { "fire", "Objets de camp, objets de la liste BiS", "wowlayerup-forever/opendata", "CC BY 4.0", "info",
                 "Objets de camp et objets portables de la liste BiS (n° d'objet, emplacement, caractéristiques, effet selon le niveau) : wowlayerup-forever/opendata (github.com/wowlayerup-forever/opendata, licence CC BY 4.0), données reprises et traduites." },
             { "skull", "Cartes des donjons, boss, taux de drop", "Naowh Forever · Dungeon Journal", "accord", "positive",

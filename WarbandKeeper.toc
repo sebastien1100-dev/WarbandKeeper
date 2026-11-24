@@ -41,6 +41,7 @@ Modules\Stash.lua
 Modules\BankDeposit.lua
 Modules\Farm.lua
 Modules\Value.lua
+Modules\Vendors.lua
 Modules\Goals.lua
 Modules\Recipes.lua
 Modules\Gathering.lua
@@ -92,6 +93,7 @@ Modules\CharGoals.lua
 Modules\DungeonsDB.lua
 Modules\DungeonMapsDB.lua
 Modules\EverlootDB.lua
+Modules\ForeverVendorsDB.lua
 Modules\Dungeons.lua
 Modules\BiS.lua
 Modules\LFG.lua
