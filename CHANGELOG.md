@@ -50,6 +50,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.283 — 24/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Quêtes apprises en jeu : une quête entrée depuis dans la base de l'addon est retirée de ta sauvegarde (la base la connaît mieux, la copie ne faisait que grossir le fichier).
+- Client PC 1.9.22 : envoi automatique des découvertes reprogrammé au lieu d'être perdu, et choix des valeurs à vérifier gardés par leur valeur.
+
 ## v1.128.282 — 24/11/2026
 
 _Un /reload suffit._

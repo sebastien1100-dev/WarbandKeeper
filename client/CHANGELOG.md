@@ -3,6 +3,12 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.9.22 — 24/11/2026
+
+### Corrections
+- Découvertes : un envoi automatique qui tombait moins de 10 min après le précédent, ou pendant un autre envoi, était perdu jusqu'à la déconnexion suivante. Il est maintenant reprogrammé ; un envoi raté (réseau, GitHub) est réessayé 15 min plus tard.
+- Découvertes > lignes « à vérifier » : ton choix est gardé par sa valeur (avant : par sa position dans la liste, qui pouvait désigner une autre valeur quand l'ordre des sources changeait). Un choix qui ne correspond plus à aucune valeur est signalé et la ligne revient « à vérifier ».
+
 ## 1.9.21 — 24/11/2026
 
 ### Corrections

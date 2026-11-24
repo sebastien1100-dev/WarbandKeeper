@@ -33,7 +33,7 @@ from tkinter import filedialog, font as tkfont
 
 import learned  # Découvertes (client/learned.py, partagé avec tools/gen_learned.py)
 
-CLIENT_VERSION = "1.9.21"
+CLIENT_VERSION = "1.9.22"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 DATA_ADDON = "WarbandKeeper_Data"  # grosses bases, chargées à la demande (dossier à côté de l'addon)
@@ -2883,6 +2883,8 @@ class LearnedPage(Page):
             ch = dict(self.app.cfg.get("learnedChoices") or {})
             if i is None:
                 ch.pop(key, None)
+            elif r["status"] == learned.CHECK:
+                ch[key] = {"v": r["values"][i]}  # la valeur, pas sa position dans la liste
             else:
                 ch[key] = i
             self.app.cfg["learnedChoices"] = ch
@@ -3841,12 +3843,17 @@ class App:
         (déconnexion du jeu, /reload) : réglage learnedAuto (oui d'office), jeton en écriture. Au plus une fois
         toutes les 10 min, sauf « Envoyer »."""
         cfg, addons = self.cfg, self.addons
-        if not (addons and cfg.get("token")) or getattr(self, "learnSending", False):
+        if not (addons and cfg.get("token")):
             return
         if not manual and not cfg.get("learnedAuto", True):
             return
-        if not force and time.time() - getattr(self, "learnAt", 0) < 600:
-            return
+        # envoi déjà en cours ou trop récent : reprogrammé au lieu d'être perdu (avant, une déconnexion moins de
+        # 10 min après un envoi n'était jamais envoyée avant la suivante)
+        if getattr(self, "learnSending", False):
+            return self.learn_retry(60)
+        wait = 600 - (time.time() - getattr(self, "learnAt", 0))
+        if not force and wait > 0:
+            return self.learn_retry(wait + 1)
         self.learnSending, self.learnAt = True, time.time()
         token = cfg["token"]
         choices = learned_choices(cfg)
@@ -3864,6 +3871,8 @@ class App:
                     self.toast("Envoi impossible : %s" % err, "negative")
                 else:
                     print("découvertes : envoi impossible :", err)
+                    self.learnAt = 0
+                    self.learn_retry(900)  # réseau coupé, GitHub occupé… : nouvel essai dans 15 min
             elif res:
                 save_sent_learned(res["base"])
                 cfg["learnedLast"] = {"at": int(time.time()), "n": res["n"], "items": res.get("items") or []}
@@ -3877,6 +3886,23 @@ class App:
             elif p and manual:
                 p.fill()
         self.run(job, done)
+
+    def learn_retry(self, delay):
+        """Un seul envoi automatique en attente à la fois (le plus proche gardé)."""
+        due = time.time() + delay
+        if getattr(self, "learnRetryAt", 0) and self.learnRetryAt <= due:
+            return
+        if getattr(self, "learnRetryJob", None):
+            try:
+                self.root.after_cancel(self.learnRetryJob)
+            except tk.TclError:
+                pass
+        self.learnRetryAt = due
+
+        def fire():
+            self.learnRetryJob, self.learnRetryAt = None, 0
+            self.auto_learned()
+        self.learnRetryJob = self.root.after(int(delay * 1000), fire)
 
     def ui(self, fn, *a):
         self.q.put(("call", fn, a, None))

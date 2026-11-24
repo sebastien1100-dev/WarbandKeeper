@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.283", date = "24/11/2026",
+        changed = {
+            "Quêtes apprises en jeu : une quête entrée depuis dans la base de l'addon est retirée de ta sauvegarde (la base la connaît mieux, la copie ne faisait que grossir le fichier).",
+            "Client PC 1.9.22 : envoi automatique des découvertes reprogrammé au lieu d'être perdu, et choix des valeurs à vérifier gardés par leur valeur.",
+        },
+    },
+    {
         version = "1.128.282", date = "24/11/2026",
         changed = {
             "Récoltes : un même nœud récolté plusieurs fois ne crée plus un point de plus à chaque passage, son compte augmente. Maintenance > Nettoyage regroupe les doublons déjà notés.",

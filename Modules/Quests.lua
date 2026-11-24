@@ -439,8 +439,11 @@ local learnedRows = {}
 function M.AddLearned(byID_, byStarter_, mapOf_, meta)
     local learned = learnStore()
     -- répétables notées par erreur avant cette correction : retirées
+    -- quêtes entrées depuis dans la base générée : la base les connaît mieux (rendu, objectifs), la copie apprise
+    -- ne servait plus qu'à grossir la sauvegarde (avant : gardée pour toujours)
     for id in pairs(learned) do
-        if M:IsRepeatable(id) then learned[id] = nil end
+        local b = byID_[id]
+        if M:IsRepeatable(id) or (b and not b.learned) then learned[id] = nil end
     end
     -- quête apprise supprimée depuis (répétable, purge) : sa ligne sort aussi de la liste de sa zone (avant, elle
     -- restait affichée jusqu'au /reload)

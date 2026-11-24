@@ -396,12 +396,24 @@ def merge(sources, base=None, choices=None):
             row["value"] = groups[0][0]
         known = (base.get(g) or {}).get(k)
         if len(groups) > 1:
-            pick = choices.get((g, k))
-            if pick is None:
-                row.update(status=CHECK, reason="%d valeurs différentes" % len(groups))
+            # choix enregistré par sa valeur ({"v": valeur}) ; un ancien choix par position est encore lu.
+            # Avant : seulement la position, qui désignait une autre valeur dès que l'ordre des sources changeait.
+            pick, chosen = choices.get((g, k)), None
+            if isinstance(pick, dict) and "v" in pick:
+                for v in row["values"]:
+                    if _same(g, v, pick["v"]):
+                        chosen = v
+                        break
+            elif isinstance(pick, int) and not isinstance(pick, bool) and 0 <= pick < len(row["values"]):
+                chosen = row["values"][pick]
+            if chosen is None:
+                reason = "%d valeurs différentes" % len(groups)
+                if pick is not None:
+                    reason += " (ton choix ne correspond plus)"
+                row.update(status=CHECK, reason=reason)
                 rows.append(row)
                 continue
-            row["value"] = row["values"][pick]
+            row["value"] = chosen
         if known is not None and _same(g, known, row["value"]):
             row["status"] = KNOWN
         elif e["trusted"] or g in SAFE or len(e["srcs"]) >= 2 or (g, k) in choices:
