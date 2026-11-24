@@ -103,7 +103,8 @@ local function build()
             for _, m in ipairs(s.data.members) do
                 local txt = m.dead and T("mort ou absent") or (m.left and (m.left == math.huge and T("sans fin") or short(m.left)) or T("sans"))
                 local col = m.dead and C.dim or (m.left and (m.left < 300 and C.warning or C.positive) or C.negative)
-                GameTooltip:AddDoubleLine(firstName(m.name), txt, 0.85, 0.85, 0.85, col[1], col[2], col[3])
+                local who = firstName(m.name) .. (m.pet and (" (" .. T("familier") .. ")") or "")
+                GameTooltip:AddDoubleLine(who, txt, 0.85, 0.85, 0.85, col[1], col[2], col[3])
             end
             GameTooltip:AddLine(T("Clic : bénir le suivant · clic droit : répartition"), 0.6, 0.6, 0.6)
             GameTooltip:AddLine(T("En groupe, le bouton « Buffer le suivant » bénit tout le monde selon cette répartition."), 0.6, 0.6, 0.6, true)

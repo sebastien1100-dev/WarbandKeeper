@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.265", date = "24/11/2026",
+        fixed = {
+            "Bénédictions : les familiers du groupe (démon du démoniste, familier du chasseur) étaient oubliés : impossible de les bénir depuis la barre. Ils comptent maintenant dans la ligne de la classe de leur maître, avec la même bénédiction : le clic sur la ligne et « Buffer le suivant » les bénissent aussi, et l'infobulle les marque « (familier) ».",
+        },
+    },
+    {
         version = "1.128.264", date = "24/11/2026", restart = true,
         added = {
             "Découvertes intégrées : ce que l'addon apprend en jeu (quêtes de WoW Forever, boss, durées et tracés des vols, tram, chemins, feu de camp, prix des maîtres et des marchands, points de récolte) peut maintenant être intégré à l'addon. Une installation neuve le reçoit d'office, sans tout réapprendre. Au démarrage, seul ce qui manque est ajouté : ce que tu as noté toi-même n'est jamais remplacé, et ce que tu effaces ne revient pas.",

@@ -49,6 +49,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.265 — 24/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Bénédictions : les familiers du groupe (démon du démoniste, familier du chasseur) étaient oubliés : impossible de les bénir depuis la barre. Ils comptent maintenant dans la ligne de la classe de leur maître, avec la même bénédiction : le clic sur la ligne et « Buffer le suivant » les bénissent aussi, et l'infobulle les marque « (familier) ».
+
 ## v1.128.264 — 24/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

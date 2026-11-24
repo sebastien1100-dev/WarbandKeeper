@@ -134,6 +134,13 @@ local function groupUnits()
     return out
 end
 M.GroupUnits = groupUnits
+-- familier d'un membre du groupe : player » pet, party2 » partypet2, raid7 » raidpet7
+local function petOf(unit)
+    if unit == "player" then return "pet" end
+    local kind, n = unit:match("^(%a+)(%d+)$")
+    if kind == "party" or kind == "raid" then return kind .. "pet" .. n end
+end
+M.PetOf = petOf
 local function isLeader(name)
     if not name then return false end
     for _, u in ipairs(groupUnits()) do
@@ -358,9 +365,10 @@ end
 -- paladin seulement, et membres du groupe seulement (pas les plaques de nom ni la cible) : avant, chaque
 -- effet de chaque unité vue passait ici, pour toutes les classes
 WK:On("UNIT_AURA", function(unit)
-    -- (familiers exclus : « partypet1 », « raidpet3 » commencent aussi par party / raid et remplissaient les tables)
-    if type(unit) ~= "string" or not (unit == "player" or unit:find("^party") or unit:find("^raid")) then return end
-    if unit:find("pet", 1, true) then return end
+    -- familiers du groupe compris (« pet », « partypet1 », « raidpet3 ») : ils reçoivent la bénédiction de la
+    -- classe de leur maître ; jamais les plaques de nom ni la cible
+    if type(unit) ~= "string" then return end
+    if not (unit == "player" or unit == "pet" or unit:find("^party") or unit:find("^raid")) then return end
     if not M:On() then return end
     local n = fullName(unit)
     -- compteur (pas l'heure) : un changement reçu dans la même image que la lecture n'est plus ignoré
@@ -426,6 +434,24 @@ function M:StatusNow()
                 local dead = UnitIsDeadOrGhost(u) or not UnitIsConnected(u)
                 local left = (not dead) and self:Left(u, b) or nil
                 table.insert(r.members, { unit = u, name = name, left = left, dead = dead })
+                if not dead and not left then r.missing = r.missing + 1 end
+                if left and (not r.min or left < r.min) then r.min = left end
+            end
+            -- familier (démon, familier du chasseur) : la bénédiction de la classe de son maître, dans la même ligne
+            local pu = petOf(u)
+            local pb = cl and self:ForClass(cl)
+            local pn = pu and _G.UnitExists(pu) and fullName(pu)
+            if pn and pb then
+                local key = cl .. ":" .. pb
+                local r = byClass[key]
+                if not r then
+                    r = { class = cl, b = pb, members = {}, missing = 0 }
+                    byClass[key] = r
+                    table.insert(rows, r)
+                end
+                local dead = _G.UnitIsDeadOrGhost(pu)
+                local left = (not dead) and self:Left(pu, pb) or nil
+                table.insert(r.members, { unit = pu, name = pn, left = left, dead = dead, pet = true })
                 if not dead and not left then r.missing = r.missing + 1 end
                 if left and (not r.min or left < r.min) then r.min = left end
             end
