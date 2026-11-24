@@ -191,7 +191,9 @@ UI:RegisterPage({
             end)
             b:SetScript("OnClick", function(s)
                 self.sel = (self.sel == s.act) and nil or s.act
-                self:Refresh()
+                -- recherche lancée tout de suite (groupes et joueurs de ce donjon) ; avant, il fallait cliquer
+                -- Actualiser ; un 2e clic (rien de choisi) cherche tous les donjons
+                self:DoSearch()
             end)
             return b
         end)
@@ -683,7 +685,7 @@ UI:RegisterPage({
 
     -- Lance la recherche : l'activité choisie, ou toutes celles de la catégorie.
     DoSearch = function(self)
-        if not LFG:Available() then return end
+        if not LFG:Available() then self:Refresh() return end
         local acts = self.sel and { self.sel } or nil
         LFG:Search(self.category, acts)
         self:Refresh()
@@ -1058,7 +1060,7 @@ UI:RegisterPage({
             self.empty:ClearAllPoints(); self.empty:SetPoint("TOPLEFT", 0, -(cy + 4)); self.empty:SetWidth(W - 14)
             self.empty:SetText(LFG.searching and T("Recherche en cours…")
                 or LFG.failed and T("La recherche a échoué (le jeu n'a pas répondu). Clique Actualiser pour réessayer.")
-                or T("Choisis un donjon à gauche (ou aucun pour tous), puis clique Actualiser."))
+                or T("Choisis un donjon à gauche : ses groupes et les joueurs qui le cherchent s'affichent ici."))
             cy = cy + 40
         elseif cfg.mode == "players" then
             head(T("Joueurs seuls"), string.format(T("%d pour %s"), #solos, where))

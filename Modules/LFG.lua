@@ -160,7 +160,9 @@ function M:FiltersActive()
 end
 
 function M:Search(categoryID, activityIDs)
-    if not self:Available() or self.searching or not categoryID then return false end
+    if not self:Available() or not categoryID then return false end
+    -- recherche déjà en cours (un autre donjon cliqué entre-temps) : la dernière demandée part juste après
+    if self.searching then self.queued = { categoryID, activityIDs }; return false end
     if not activityIDs or #activityIDs == 0 then
         activityIDs = {}
         for _, a in ipairs(self:Activities(categoryID)) do table.insert(activityIDs, a.id) end
@@ -177,7 +179,10 @@ function M:Search(categoryID, activityIDs)
     local tok = {}
     self.searchTok = tok
     C_Timer.After(10, function()
-        if M.searching and M.searchTok == tok then M.searching = false; WK:NotifyChanged() end
+        if M.searching and M.searchTok == tok then
+            M.searching = false; WK:NotifyChanged()
+            if M.RunQueued then M.RunQueued() end
+        end
     end)
     WK:NotifyChanged()
     return true
@@ -637,17 +642,26 @@ end)
 ---------------------------------------------------------------------------
 -- Évènements de la recherche
 ---------------------------------------------------------------------------
+local function runQueued()
+    local q = M.queued
+    if not q then return end
+    M.queued = nil
+    if q then M:Search(q[1], q[2]) end
+end
+M.RunQueued = runQueued
 WK:On("LFG_LIST_SEARCH_RESULTS_RECEIVED", function()
     M.searching = false
     M.failed = nil
     M.searchedAt = time()
     M:ReadResults()
     WK:NotifyChanged()
+    runQueued()
 end)
 WK:On("LFG_LIST_SEARCH_FAILED", function()
     M.searching = false
     M.failed = true
     WK:NotifyChanged()
+    runQueued()
 end)
 WK:On("LFG_LIST_SEARCH_RESULT_UPDATED", function(id)
     for i, r in ipairs(M.results) do

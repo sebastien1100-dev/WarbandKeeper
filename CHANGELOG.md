@@ -50,6 +50,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.293 — 24/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Métiers : le « + » d'une recette et « Ajouter à la file » ouvrent une petite fenêtre. Tu y choisis le nombre (-, +, 1, 5, 10 ou tout ce qui est faisable), et tu vois ce qu'il y a déjà dans la file de fabrication, avec -, + et retirer sur chaque ligne (et « Vider »).
+- LFG : un clic sur un donjon lance tout de suite la recherche, et affiche ses groupes et les joueurs qui le cherchent (avant, il fallait cliquer Actualiser). Un donjon cliqué pendant une recherche est cherché juste après.
+
 ## v1.128.292 — 24/11/2026
 
 _Un /reload suffit._

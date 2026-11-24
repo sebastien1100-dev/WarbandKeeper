@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.293", date = "24/11/2026",
+        changed = {
+            "Métiers : le « + » d'une recette et « Ajouter à la file » ouvrent une petite fenêtre. Tu y choisis le nombre (-, +, 1, 5, 10 ou tout ce qui est faisable), et tu vois ce qu'il y a déjà dans la file de fabrication, avec -, + et retirer sur chaque ligne (et « Vider »).",
+            "LFG : un clic sur un donjon lance tout de suite la recherche, et affiche ses groupes et les joueurs qui le cherchent (avant, il fallait cliquer Actualiser). Un donjon cliqué pendant une recherche est cherché juste après.",
+        },
+    },
+    {
         version = "1.128.292", date = "24/11/2026",
         changed = {
             "Métiers > Guide : l'infobulle d'une étape est refaite (maquette B). Icônes des objets, une jauge par composant, puis les matières premières de ce qui manque (barres et minerai comptés ensemble : 1 barre de bronze = 1 barre de cuivre + 1 barre d'étain, une barre = un minerai…), une liste « À faire » (fondre, fabriquer, trouver ou acheter à l'HV avec le prix) et le nombre de fabrications faisables tout de suite.",

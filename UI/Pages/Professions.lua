@@ -231,6 +231,149 @@ end
 UI.ShowGuideStepTip = showGuideTip
 UI.HideGuideStepTip = function() if guideTip then guideTip:Hide() end end
 
+-- Ajouter à la file de fabrication (clic sur « + » ou « Ajouter à la file ») : choix du nombre (−, +, 1, 5, 10, tout ce
+-- qui est faisable), puis ce que contient déjà la file, chaque ligne avec −, + et retirer. Un clic ailleurs ferme.
+local queuePop
+local QP_W, QP_ROWS = 330, 8
+local function recipeIndex()
+    local _, index = WK.modules.Recipes:All()
+    return index or {}
+end
+local function buildQueuePop()
+    local blocker = _G.CreateFrame("Button", nil, _G.UIParent)
+    blocker:SetAllPoints(_G.UIParent); blocker:SetFrameStrata("DIALOG"); blocker:SetFrameLevel(1)
+    blocker:RegisterForClicks("AnyUp"); blocker:Hide()
+    local f = _G.CreateFrame("Frame", "WarbandKeeperQueuePop", _G.UIParent)
+    f:SetFrameStrata("DIALOG"); f:SetFrameLevel(20); f:SetWidth(QP_W); f:EnableMouse(true); f:SetClampedToScreen(true)
+    f:Hide()
+    UI:HudBackground(f, "window", 10)
+    blocker:SetScript("OnClick", function() f:Hide() end)
+    f:SetScript("OnShow", function() blocker:Show() end)
+    f:SetScript("OnHide", function() blocker:Hide() end)
+    if _G.UISpecialFrames then table.insert(_G.UISpecialFrames, "WarbandKeeperQueuePop") end
+    f.icon = f:CreateTexture(nil, "ARTWORK"); f.icon:SetSize(26, 26); f.icon:SetPoint("TOPLEFT", 14, -14)
+    f.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+    f.title = UI:Text(f, 13); f.title:SetPoint("TOPLEFT", f.icon, "TOPRIGHT", 10, 1); f.title:SetPoint("RIGHT", -14, 0)
+    f.sub = UI:Text(f, 11, C.muted); f.sub:SetPoint("TOPLEFT", f.title, "BOTTOMLEFT", 0, -3)
+    -- nombre : − [n] +
+    f.minus = UI:IconButton(f, "minus", 26, "Un de moins"); f.minus:SetPoint("TOPLEFT", 14, -54)
+    f.num = UI:Text(f, 16); f.num:SetPoint("LEFT", f.minus, "RIGHT", 6, 0); f.num:SetWidth(40)
+    f.num:SetJustifyH("CENTER")
+    f.plus = UI:IconButton(f, "plus", 26, "Un de plus"); f.plus:SetPoint("LEFT", f.num, "RIGHT", 6, 0)
+    f.minus:SetScript("OnClick", function() f:SetN(f.n - 1) end)
+    f.plus:SetScript("OnClick", function() f:SetN(f.n + 1) end)
+    f.quick = {}
+    for i, q in ipairs({ 1, 5, 10, "max" }) do
+        local b = UI:Button(f, q == "max" and T("Tout") or tostring(q), nil, 22, "ghost")
+        b.q = q
+        b:SetScript("OnClick", function(s) f:SetN(s.q == "max" and math.max(1, f.can or 1) or s.q) end)
+        if i == 1 then b:SetPoint("LEFT", f.plus, "RIGHT", 12, 0)
+        else b:SetPoint("LEFT", f.quick[i - 1], "RIGHT", 4, 0) end
+        f.quick[i] = b
+    end
+    f.add = UI:Button(f, "Ajouter", nil, 28, "primary", "plus")
+    f.add:SetPoint("TOPLEFT", 14, -90); f.add:SetPoint("TOPRIGHT", -14, -90)
+    f.add:SetScript("OnClick", function()
+        if f.key and f.n > 0 then
+            WK.modules.Recipes:AddToList(f.key, f.n)
+            WK:Print(string.format(T("%d x %s ajouté(s) à la file de fabrication."), f.n, f.recName or "?"))
+            f:Fill()
+        end
+    end)
+    f.sep = f:CreateTexture(nil, "ARTWORK"); f.sep:SetColorTexture(1, 1, 1, 1)
+    f.sep:SetVertexColor(C.border[1], C.border[2], C.border[3], 1)
+    f.sep:SetPoint("TOPLEFT", 14, -128); f.sep:SetPoint("TOPRIGHT", -14, -128); f.sep:SetHeight(1)
+    f.head = UI:Text(f, 10, C.muted); f.head:SetPoint("TOPLEFT", 14, -138)
+    f.clear = UI:Button(f, "Vider", nil, 20, "ghost")
+    f.clear:SetPoint("TOPRIGHT", -14, -134)
+    f.clear:SetScript("OnClick", function() WK.modules.Recipes:ClearList(); f:Fill() end)
+    f.rows = {}
+    for i = 1, QP_ROWS do
+        local r = _G.CreateFrame("Frame", nil, f); r:SetHeight(26)
+        r:SetPoint("TOPLEFT", 14, -(156 + (i - 1) * 28)); r:SetPoint("TOPRIGHT", -14, -(156 + (i - 1) * 28))
+        r.ic = r:CreateTexture(nil, "ARTWORK"); r.ic:SetSize(18, 18); r.ic:SetPoint("LEFT", 0, 0)
+        r.ic:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+        r.del = UI:IconButton(r, "close", 20, "Retirer de la file", true); r.del:SetPoint("RIGHT", 0, 0)
+        r.p = UI:IconButton(r, "plus", 20, "Un de plus"); r.p:SetPoint("RIGHT", r.del, "LEFT", -4, 0)
+        r.q = UI:Text(r, 12); r.q:SetPoint("RIGHT", r.p, "LEFT", -6, 0); r.q:SetWidth(34); r.q:SetJustifyH("CENTER")
+        r.m = UI:IconButton(r, "minus", 20, "Un de moins"); r.m:SetPoint("RIGHT", r.q, "LEFT", -6, 0)
+        r.name = UI:Text(r, 12); r.name:SetPoint("LEFT", r.ic, "RIGHT", 8, 0)
+        r.name:SetPoint("RIGHT", r.m, "LEFT", -6, 0)
+        r.m:SetScript("OnClick", function(b) WK.modules.Recipes:AddToList(b:GetParent().key, -1); f:Fill() end)
+        r.p:SetScript("OnClick", function(b) WK.modules.Recipes:AddToList(b:GetParent().key, 1); f:Fill() end)
+        r.del:SetScript("OnClick", function(b)
+            local k = b:GetParent().key
+            WK.modules.Recipes:AddToList(k, -(WK.DB.global.shopping[k] or 0)); f:Fill()
+        end)
+        f.rows[i] = r
+    end
+    f.more = UI:Text(f, 11, C.muted)
+    function f:SetN(n)
+        self.n = math.max(1, math.min(999, n or 1))
+        self.num:SetText(tostring(self.n))
+        self.add:SetLabel(string.format(T("Ajouter %d à la file"), self.n))
+    end
+    function f:Fill()
+        local idx = recipeIndex()
+        local list = {}
+        for k, q in pairs(WK.DB.global.shopping) do
+            local rec = idx[k]
+            list[#list + 1] = { key = k, q = q, name = rec and rec.name or k, icon = rec and rec.icon }
+        end
+        table.sort(list, function(a, b) return a.name < b.name end)
+        self.head:SetText(UI:Upper(string.format(T("Dans la file · %d"), #list)))
+        self.clear:SetShown(#list > 0)
+        local y = 156
+        for i, r in ipairs(self.rows) do
+            local e = list[i]
+            r:SetShown(e ~= nil)
+            if e then
+                r.key = e.key
+                r.ic:SetTexture(e.icon or "Interface\\Icons\\INV_Misc_QuestionMark")
+                r.name:SetText(e.name); r.q:SetText("x" .. e.q)
+                if e.key == self.key then r.name:SetTextColor(UI:Accent())
+                else r.name:SetTextColor(C.text[1], C.text[2], C.text[3]) end
+                y = 156 + i * 28
+            end
+        end
+        if #list == 0 then
+            self.more:SetText(T("La file est vide.")); self.more:ClearAllPoints()
+            self.more:SetPoint("TOPLEFT", 14, -158)
+            self.more:Show(); y = 180
+        elseif #list > QP_ROWS then
+            self.more:SetText(string.format(T("et %d autres (page Métiers > File de fabrication)"), #list - QP_ROWS))
+            self.more:ClearAllPoints(); self.more:SetPoint("TOPLEFT", 14, -(y + 2)); self.more:Show(); y = y + 20
+        else
+            self.more:Hide()
+        end
+        self:SetHeight(y + 12)
+    end
+    return f
+end
+-- anchor : bouton cliqué ; key : recette ; n : nombre proposé (sinon 1)
+local function openQueuePop(anchor, key, recName, n)
+    if not key then return end
+    queuePop = queuePop or buildQueuePop()
+    local f = queuePop
+    local rec = recipeIndex()[key]
+    f.key, f.recName = key, recName or (rec and rec.name) or "?"
+    f.icon:SetTexture(rec and rec.icon or "Interface\\Icons\\INV_Misc_QuestionMark")
+    f.title:SetText(f.recName)
+    local can = rec and select(1, WK.modules.Recipes:CraftStock(rec)) or 0
+    f.can = can
+    local inQ = WK.DB.global.shopping[key] or 0
+    local already = inQ > 0 and ("  ·  " .. string.format(T("déjà %d dans la file"), inQ)) or ""
+    f.sub:SetText(string.format(T("faisable : %d"), can) .. already)
+    f:SetN((n and n > 0) and n or 1)
+    f:Fill()
+    f:ClearAllPoints()
+    local right = anchor:GetRight() or 0
+    if right + QP_W + 12 < (_G.UIParent:GetRight() or 1920) then f:SetPoint("TOPLEFT", anchor, "TOPRIGHT", 6, 0)
+    else f:SetPoint("TOPRIGHT", anchor, "TOPLEFT", -6, 0) end
+    f:Show()
+end
+UI.OpenQueuePop = openQueuePop
+
 local function colored(key)
     local c = WK.DB.global.characters[key]
     local name = WK:CharName(c, key)
@@ -443,7 +586,7 @@ end
 ---------------------------------------------------------------------------
 -- Onglet Recettes : qui peut fabriquer quoi, et combien avec le stock du compte.
 ---------------------------------------------------------------------------
-local function Recipes(page, parent)
+local function Recipes(_, parent)
     local tab = { query = "", sort = "name" }
     local search = UI:Input(parent, 240, 34, "Rechercher une recette...", "search")
     search:SetPoint("TOPLEFT", 0, TOP)
@@ -492,7 +635,7 @@ local function Recipes(page, parent)
         r.eco:SetJustifyH("RIGHT")
         r.add = UI:IconButton(r, "plus", 28, "Ajouter à la liste de courses")
         r.add:SetPoint("RIGHT", -10, 0)
-        r.add:SetScript("OnClick", function(b) WK.modules.Recipes:AddToList(b.recipeKey, 1); page:Refresh() end)
+        r.add:SetScript("OnClick", function(b) openQueuePop(b, b.recipeKey, nil, 1) end)
         r:SetScript("OnEnter", function(row)
             row.bg:SetColor(unpack(C.surface2))
             recipeTooltip(row)
@@ -883,10 +1026,7 @@ local function Detail(page, parent)
     adv.add = UI:Button(adv, "Ajouter à la file", nil, 26, "primary", "plus")
     adv.add:SetPoint("RIGHT", -8, 0)
     adv.add:SetScript("OnClick", function(b)
-        if b.key then
-            WK.modules.Recipes:AddToList(b.key, math.max(1, b.n or 1))
-            WK:Print(string.format(T("%d x %s ajouté(s) à la file de fabrication."), math.max(1, b.n or 1), b.recName or "?"))
-        end
+        if b.key then openQueuePop(b, b.key, b.recName, math.max(1, b.n or 1)) end
     end)
     function tab:RefreshAdvice(c, prof)
         local a = WK.modules.ProfHelp:Advice(c, prof)
@@ -1136,7 +1276,7 @@ local function Detail(page, parent)
         r.eco:SetJustifyH("RIGHT")
         r.add = UI:IconButton(r, "plus", 28, "Ajouter à la liste de courses")
         r.add:SetPoint("RIGHT", -10, 0)
-        r.add:SetScript("OnClick", function(b) WK.modules.Recipes:AddToList(b.recipeKey, 1); page:Refresh() end)
+        r.add:SetScript("OnClick", function(b) openQueuePop(b, b.recipeKey, nil, 1) end)
         r:SetScript("OnEnter", function(row) row.bg:SetColor(unpack(C.surface2)); recipeTooltip(row) end)
         r:SetScript("OnLeave", function(row) row.bg:SetColor(unpack(C.surface)); GameTooltip:Hide() end)
         r:SetScript("OnClick", function(row) if IsShiftKeyDown() and row.rec then WK.modules.Recipes:LinkRecipe(row.rec) end end)
@@ -2056,10 +2196,7 @@ local function CraftSell(page, parent)
         r.add = UI:Button(r, "File", nil, 24, "primary", "plus")
         r.add:SetPoint("RIGHT", -10, 0)
         r.add:SetScript("OnClick", function(b)
-            if b.key and b.n and b.n > 0 then
-                WK.modules.Recipes:AddToList(b.key, b.n)
-                WK:Print(string.format(T("%d x %s ajouté(s) à la file de fabrication."), b.n, b.recName or "?"))
-            end
+            if b.key then openQueuePop(b, b.key, b.recName, b.n) end
         end)
         return r
     end)
@@ -2394,10 +2531,7 @@ local function WhoCraft(_, parent)
         r.add = UI:Button(r, "File", nil, 24, "secondary", "plus")
         r.add:SetPoint("TOPRIGHT", -8, -6)
         r.add:SetScript("OnClick", function(b)
-            if b.key then
-                R:AddToList(b.key, 1)
-                WK:Print(string.format(T("%d x %s ajouté(s) à la file de fabrication."), 1, b.recName or "?"))
-            end
+            if b.key then openQueuePop(b, b.key, b.recName, 1) end
         end)
         return r
     end)
