@@ -33,7 +33,7 @@ from tkinter import filedialog, font as tkfont
 
 import learned  # Découvertes (client/learned.py, partagé avec tools/gen_learned.py)
 
-CLIENT_VERSION = "1.9.14"
+CLIENT_VERSION = "1.9.15"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 DATA_ADDON = "WarbandKeeper_Data"  # grosses bases, chargées à la demande (dossier à côté de l'addon)
@@ -1978,32 +1978,45 @@ class DashPage(Page):
             cv.create_line(*xy, fill=C["gold"], width=2, smooth=True)
         cv.bind("<Configure>", draw)
 
-    # -- persos : niveau, or, repos, dernière connexion
+    # -- persos : niveau, or, repos, dernière connexion (grille : colonnes alignées)
     def chars_card(self, parent, chars, dash):
         pc = Card(parent)
         pc.pack(fill="both", expand=True, pady=(10, 0))
-        card_title(pc.body, "Persos", "repos plein en vert")
+        card_title(pc.body, "Persos")
         rest = {r.get("char"): r for r in lua_list(dash.get("rest")) if isinstance(r, dict)}
         if not chars:
             label(pc.body, "Aucun perso lu.", fg="dim", font="small").pack(anchor="w")
-        for c in chars[:6]:
-            row = thin_row(pc.body)
+            return
+        grid = tk.Frame(pc.body, bg=C["surface"])
+        grid.pack(fill="x")
+        grid.columnconfigure(1, weight=1)
+        f = App.fonts["small"]
+
+        def cell(r, c, text, fg, anchor="e", **kw):
+            w = tk.Label(grid, text=text, bg=C["surface"], fg=fg, font=f, anchor=anchor, **kw)
+            w.grid(row=r, column=c, sticky="ew", padx=(0 if c < 2 else 8, 0), pady=3)
+            return w
+        for c, t in ((2, "NIV."), (3, "OR"), (4, "REPOS")):
+            tk.Label(grid, text=t, bg=C["surface"], fg=C["dim"], font=App.fonts["smallb"], anchor="e").grid(
+                row=0, column=c, sticky="ew", padx=(8, 0))
+        for i, c in enumerate(chars[:6]):
+            r = 2 * i + 2
+            tk.Frame(grid, bg=C["border"], height=1).grid(row=r - 1, column=0, columnspan=5, sticky="ew")
             col = CLASS_COLORS.get(str(c.get("cls") or "").upper(), C["text"])
-            dot = tk.Canvas(row, width=8, height=8, bg=C["surface"], highlightthickness=0)
+            dot = tk.Canvas(grid, width=8, height=8, bg=C["surface"], highlightthickness=0)
             dot.create_oval(1, 1, 7, 7, fill=col, outline="")
-            dot.pack(side="left", padx=(0, 6))
-            r = rest.get(c.get("name"))
-            if r and r.get("full"):
-                rt, rc = "repos plein", "positive"
-            elif r and (r.get("at") or 0) > time.time():
-                rt, rc = "repos plein " + short_until(r.get("at")), "muted"
+            dot.grid(row=r, column=0, padx=(0, 6))
+            cell(r, 1, c.get("name") or "?", col, anchor="w")
+            cell(r, 2, str(c.get("level") or "?"), C["muted"], width=3)
+            cell(r, 3, money_text(int(c.get("money") or 0)), C["gold"], width=7)
+            rr = rest.get(c.get("name"))
+            if rr and rr.get("full"):
+                rt, rc = "plein", C["positive"]
+            elif rr and (rr.get("at") or 0) > time.time():
+                rt, rc = "plein dans " + short_until(rr.get("at")), C["muted"]
             else:
-                rt, rc = ago_text(c.get("seen")) if c.get("seen") else "", "dim"
-            label(row, rt, fg=rc, font="small").pack(side="right")
-            label(row, money_text(int(c.get("money") or 0)), fg="gold", font="small").pack(side="right", padx=(6, 8))
-            label(row, "niv. %s" % (c.get("level") or "?"), fg="muted", font="small").pack(side="right")
-            tk.Label(row, text=c.get("name") or "?", bg=C["surface"], fg=col, font=App.fonts["small"], anchor="w").pack(
-                side="left", fill="x", expand=True)
+                rt, rc = (ago_text(c.get("seen")) if c.get("seen") else ""), C["dim"]
+            cell(r, 4, rt.replace("plein dans ", "dans "), rc, width=8)
         if len(chars) > 6:
             label(pc.body, "+ %d de plus" % (len(chars) - 6), fg="dim", font="small").pack(anchor="w", pady=(3, 0))
 

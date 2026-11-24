@@ -3,6 +3,11 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.9.15 — 24/11/2026
+
+### Corrections
+- Accueil, carte Persos : niveau, or et repos sont maintenant alignés en colonnes. Sous « REPOS » : « dans 39 j » jusqu'au repos plein, ou « plein » en vert.
+
 ## 1.9.14 — 24/11/2026
 
 ### Corrections

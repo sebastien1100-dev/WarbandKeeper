@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.274", date = "24/11/2026",
+        changed = {
+            "Rien ne change en jeu : cette version livre le client PC 1.9.15 (carte Persos de l'Accueil alignée en colonnes).",
+        },
+    },
+    {
         version = "1.128.273", date = "24/11/2026",
         changed = {
             "Rien ne change en jeu : cette version livre le client PC 1.9.14 (bouton « Installer » de l'Accueil qui ne cache plus le texte).",
