@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.261", date = "24/11/2026",
+        added = {
+            "Infobulles : option « Numéro de l'objet » (Options > Infobulles, carte Objets, coupée d'office) : le numéro (ID) de l'objet s'affiche en bas de son infobulle.",
+        },
+    },
+    {
         version = "1.128.260", date = "23/11/2026",
         fixed = {
             "Kit de camp : le sac de couchage n'apparaissait pas s'il n'avait pas le n° d'objet attendu. Il est maintenant trouvé aussi par son nom dans tes sacs (« Sac de couchage… »), ou parmi tes jouets s'il en est un.",

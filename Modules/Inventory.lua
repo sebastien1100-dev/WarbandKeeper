@@ -406,8 +406,20 @@ local function onTooltip(tooltip, data)
     if any then tooltip:Show() end
 end
 
+-- Numéro de l'objet en bas de l'infobulle (Options > Infobulles > Objets, « Numéro de l'objet », coupé d'office)
+local function onTooltipId(tooltip, data)
+    if tooltip ~= _G.GameTooltip and tooltip ~= _G.ItemRefTooltip then return end
+    if not WK.DB.global.settings.ui.tooltipItemId then return end
+    local itemID = tooltipItemID(tooltip, data)
+    if not itemID then return end
+    tooltip:AddLine(DIM .. "ID : " .. itemID .. "|r")
+    tooltip:Show()
+end
+
 if TooltipDataProcessor and Enum and Enum.TooltipDataType then
     TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item, onTooltip)
+    _G.TooltipDataProcessor.AddTooltipPostCall(_G.Enum.TooltipDataType.Item,
+        function(tt, d) pcall(onTooltipId, tt, d) end)
 else
     GameTooltip:HookScript("OnTooltipSetItem", onTooltip)
     if ItemRefTooltip then ItemRefTooltip:HookScript("OnTooltipSetItem", onTooltip) end
