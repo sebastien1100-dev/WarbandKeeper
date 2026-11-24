@@ -3,6 +3,11 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.9.16 — 24/11/2026
+
+### Corrections
+- Découvertes : quand tout est déjà envoyé, la liste affichait « Rien ici », comme si le dernier envoi avait disparu. Elle montre maintenant « Rien de nouveau depuis le dernier envoi », puis ce qu'il contenait, chaque ligne marquée « envoyée ». Le détail est gardé à partir du prochain envoi.
+
 ## 1.9.15 — 24/11/2026
 
 ### Corrections

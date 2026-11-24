@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.276", date = "24/11/2026",
+        changed = {
+            "Rien ne change en jeu : cette version livre le client PC 1.9.16 (page Découvertes : le contenu du dernier envoi reste visible).",
+        },
+    },
+    {
         version = "1.128.275", date = "24/11/2026",
         changed = {
             "Butin à l'écran : l'or ramassé s'affiche maintenant (l'option « Or ramassé » était coupée d'office). Un encadré doré « Argent ramassé » reste en tête de la pile, avec les pièces du jeu. Il se cumule corps après corps tant qu'il est affiché, et donne dessous le nombre de corps et l'or ramassé depuis ta connexion.",

@@ -33,7 +33,7 @@ from tkinter import filedialog, font as tkfont
 
 import learned  # Découvertes (client/learned.py, partagé avec tools/gen_learned.py)
 
-CLIENT_VERSION = "1.9.15"
+CLIENT_VERSION = "1.9.16"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 DATA_ADDON = "WarbandKeeper_Data"  # grosses bases, chargées à la demande (dossier à côté de l'addon)
@@ -900,7 +900,8 @@ class GitHub:
                 body["sha"] = sha
             self.api("PUT", "/contents/" + path, body)
         if direct:
-            return {"n": len(added), "base": new, "what": what}
+            return {"n": len(added), "base": new, "what": what,
+                    "items": [learned.short(r["genre"], r["key"], r["value"]) for r in added][:60]}
         pr = self.api("POST", "/pulls", {
             "title": "Découvertes : %d ajout%s" % (len(added), "s" if len(added) > 1 else ""), "head": branch, "base": "main",
             "body": "Découvertes intégrées à l'addon, envoyées par le client PC (page Découvertes).\n\n"
@@ -2729,8 +2730,24 @@ class LearnedPage(Page):
             label(self.list.inner, "… et %d autres (choisis un genre à gauche)" % (len(shown) - self.MAX_ROWS),
                   fg="dim", font="small").pack(anchor="w", pady=4)
         if not shown:
-            label(self.list.inner, "Rien ici." if self.mine is not None else "Lecture de ta sauvegarde…",
-                  fg="dim", font="small").pack(anchor="w", pady=6)
+            last = self.app.cfg.get("learnedLast") or {}
+            if self.mine is None:
+                label(self.list.inner, "Lecture de ta sauvegarde…", fg="dim", font="small").pack(anchor="w", pady=6)
+            elif self.status == "all" and last.get("at"):
+                # rien de nouveau : ce que contenait le dernier envoi (avant, « Rien ici » faisait croire à une perte)
+                label(self.list.inner, "Rien de nouveau depuis le dernier envoi (%s, %s) :" % (
+                    datetime.fromtimestamp(last["at"]).strftime("%d/%m %H:%M"), plural(int(last.get("n") or 0), "ajout")),
+                    fg="muted", font="small").pack(anchor="w", pady=(2, 4))
+                items = last.get("items") or []
+                for t in items[:self.MAX_ROWS]:
+                    row = tk.Frame(self.list.inner, bg=C["surface"])
+                    row.pack(fill="x", pady=1)
+                    label(row, "envoyée", fg="positive", font="small", width=12).pack(side="right")
+                    label(row, t if len(t) < 60 else t[:59] + "…", font="small").pack(side="left")
+                if not items:
+                    label(self.list.inner, "(détail gardé à partir du prochain envoi)", fg="dim", font="small").pack(anchor="w")
+            else:
+                label(self.list.inner, "Rien ici.", fg="dim", font="small").pack(anchor="w", pady=6)
         can = bool(new and self.app.cfg.get("token"))
         self.prBtn.set(text="Envoyer (%d)" % new if new else "Envoyer", enabled=can)
         files = len(learned_files())
@@ -3753,7 +3770,7 @@ class App:
                     print("découvertes : envoi impossible :", err)
             elif res:
                 save_sent_learned(res["base"])
-                cfg["learnedLast"] = {"at": int(time.time()), "n": res["n"]}
+                cfg["learnedLast"] = {"at": int(time.time()), "n": res["n"], "items": res.get("items") or []}
                 save_config(cfg)
                 self.toast("Découvertes envoyées sur GitHub : %s." % res["what"], "positive")
             elif manual:
