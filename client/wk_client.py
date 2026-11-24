@@ -33,7 +33,7 @@ from tkinter import filedialog, font as tkfont
 
 import learned  # Découvertes (client/learned.py, partagé avec tools/gen_learned.py)
 
-CLIENT_VERSION = "1.9.23"
+CLIENT_VERSION = "1.9.24"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 DATA_ADDON = "WarbandKeeper_Data"  # grosses bases, chargées à la demande (dossier à côté de l'addon)
@@ -4062,6 +4062,7 @@ class App:
                 print("état", p.key, e)
 
     def update_client(self, asset):
+        asset = dict(asset)  # copie : remplacée par l'exe du moment si celui-ci a changé sur GitHub
         dest = sys.executable + ".new"
         self.toast("Téléchargement du client…")
 
@@ -4077,7 +4078,23 @@ class App:
                 return self.toast("Échec du téléchargement du client : %s" % err, "negative")
             self_update(dest)  # seulement un exe complet : rien n'est remplacé sinon
             self.root.destroy()
-        self.run(lambda: GitHub(self.cfg["token"]).download(asset, dest), done)
+        token = self.cfg["token"]
+
+        def job():
+            gh = GitHub(token)
+            try:
+                gh.download(asset, dest)
+            except NetError:
+                # l'exe vu à la dernière vérification a été remplacé entre-temps (nouvelle Release : l'ancien est
+                # retiré, ou reconstruit) : son adresse ne mène plus nulle part. Releases relues, nouvel essai
+                # avec le client qui y est joint maintenant.
+                fresh, ver = best_client(gh.releases())
+                if not fresh or fresh.get("url") == asset.get("url") or vtuple(ver) <= vtuple(CLIENT_VERSION):
+                    raise NetError("le client est en cours de publication sur GitHub : réessaie dans quelques minutes")
+                asset.clear()
+                asset.update(fresh)  # taille attendue du nouveau fichier, pour la vérification de done
+                gh.download(fresh, dest)
+        self.run(job, done)
 
     def mainloop(self):
         self.root.mainloop()

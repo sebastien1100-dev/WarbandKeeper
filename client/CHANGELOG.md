@@ -3,6 +3,11 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.9.24 — 24/11/2026
+
+### Corrections
+- « Installer » le client : « Échec du téléchargement du client : Rien de publié pour l'instant sur GitHub » quand une nouvelle version était sortie depuis la dernière vérification (l'ancien fichier est retiré de GitHub). Le client relit maintenant les versions publiées et télécharge le fichier du moment ; si le nouveau client est encore en construction, un message demande de réessayer dans quelques minutes.
+
 ## 1.9.23 — 24/11/2026
 
 ### Corrections
