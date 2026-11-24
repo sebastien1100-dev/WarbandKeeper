@@ -3030,6 +3030,7 @@ WK.Locales.enUS.text = {
     ["Envoi au courrier"] = "Sending by mail",
     ["Se coupe en fermant le métier"] = "Turns off when the profession closes",
     ["Les composants de ta file restent dans tes sacs"] = "Your queue's reagents stay in your bags",
+    ["à apprendre chez le maître"] = "learn it from the trainer",
     ["Barre d'XP"] = "XP bar",
     ["Avant de partir"] = "Before you go",
     ["Le meilleur objet de chaque sorte pour ton niveau ; rouge : sous le seuil. Seuils x2 en raid ; en JcJ, pas d'élixir et moitié de nourriture."] = "The best item of each kind for your level; red: below threshold. Thresholds x2 in raids; in PvP, no elixir and half the food.",

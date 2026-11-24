@@ -1614,7 +1614,7 @@ local function Detail(page, parent)
         r.make = UI:Button(r, "", nil, 20, "primary")
         r.make:SetPoint("BOTTOMRIGHT", -10, 6)
         r.make:SetScript("OnClick", function(b)
-            if not b.key then return end
+            if not b.st then return end
             -- fenêtre du métier fermée : on l'ouvre d'abord ; la série se lance au clic suivant (action du joueur)
             if not UI.tradeWinOpen then
                 if WK.modules.Professions:OpenDirect(b.prof) then
@@ -1625,7 +1625,9 @@ local function Detail(page, parent)
                 end
                 return
             end
-            if not WK.modules.ProfHelp:Craft(b.key, b.n) then
+            -- recette apprise depuis le dernier passage dans le métier : la fenêtre ouverte l'a relue
+            b.key = b.key or tab:StepRecipeKey(WK.DB:Me(), b.st)
+            if not b.key or not WK.modules.ProfHelp:Craft(b.key, b.n) then
                 WK:Print(string.format(T("Fabrication : ouvre d'abord la fenêtre du métier (%s)."), b.prof or ""))
             end
         end)
@@ -1666,11 +1668,24 @@ local function Detail(page, parent)
     end)
 
     -- recette du perso qui fait l'étape : même objet fabriqué, sinon même nom de sort
+    -- Recette du perso pour une étape : même sort, même objet fabriqué, ou même nom (sort ou objet,
+    -- sans tenir compte des majuscules : les noms du guide et du métier diffèrent parfois)
     function tab.StepRecipeKey(_, c, st)
+        local names = {}
         local spell = st.spell and WK.SpellInfo(st.spell)
+        if spell then names[spell:lower()] = true end
+        local item = st.out and UI:ItemInfo(st.out)
+        if item then names[item:lower()] = true end
         for k, rc in pairs(c.recipes or {}) do
-            if (st.out and rc.out == st.out) or (spell and (rc.name or k) == spell) then return k end
+            if (st.spell and rc.spell == st.spell) or (st.out and rc.out == st.out)
+                or names[tostring(rc.name or k):lower()] then return k end
         end
+    end
+    -- Sort appris d'après le livre de sorts (recette apprise chez le maître, métier pas encore rouvert)
+    local function spellLearned(id)
+        if not id then return false end
+        if _G.IsPlayerSpell and _G.IsPlayerSpell(id) then return true end
+        return _G.IsSpellKnown and _G.IsSpellKnown(id) and true or false
     end
     function tab:RefreshGuide(c, pr)
         local R = WK.modules.Recipes
@@ -1767,9 +1782,13 @@ local function Detail(page, parent)
             r.sub:SetText(src .. "  ·  " .. table.concat(reag, ", "))
             -- bouton « Fabriquer xN » : perso connecté, étape pas finie, recette connue
             local key
-            if e.status ~= "done" and c == WK.DB:Me() then key = self:StepRecipeKey(c, st) end
-            r.make.key, r.make.n, r.make.prof = key, n, self.prof
-            if key and n > 0 then
+            local learned = false
+            if e.status ~= "done" and c == WK.DB:Me() then
+                key = self:StepRecipeKey(c, st)
+                learned = key ~= nil or spellLearned(st.spell)
+            end
+            r.make.key, r.make.n, r.make.prof, r.make.st = key, n, self.prof, st
+            if learned and n > 0 then
                 r.make.label:SetText(string.format(T("Fabriquer x%d"), n))
                 r.make:SetWidth(math.max(90, r.make.label:GetStringWidth() + 24))
                 r.make:Show()
@@ -1792,7 +1811,11 @@ local function Detail(page, parent)
                 r:SetAlpha(0.5)
                 r.bg:SetColor(unpack(C.surface)); r.border:SetColor(unpack(C.border))
             elseif e.status == "current" then
-                r.state:SetText(UI:Hex(C.gold) .. T("en cours") .. "|r" .. costTxt)
+                local stTxt = UI:Hex(C.gold) .. T("en cours") .. "|r"
+                if c == WK.DB:Me() and not r.make:IsShown() and st.src ~= "recipe" then
+                    stTxt = UI:Hex(C.warning) .. T("à apprendre chez le maître") .. "|r"
+                end
+                r.state:SetText(stTxt .. costTxt)
                 r:SetAlpha(1)
                 r.bg:SetColor(unpack(C.surface2)); r.border:SetColor(UI:Accent())
             else

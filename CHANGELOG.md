@@ -50,6 +50,15 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.297 — 24/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Sacs : apprendre une recette d'un clic droit (ou utiliser un objet qui lance un sort) donnait l'erreur « WarbandKeeper a tenté d'appeler la fonction protégée UseContainerItem ». Ces objets passent maintenant par une couche du jeu qui l'utilise comme la case d'origine (vente chez le marchand comprise) ; le clic gauche (glisser, ramasser) ne change pas.
+- Métiers > Guide : l'étape en cours affichait « en cours » sans le bouton « Fabriquer xN » quand la recette venait d'être apprise chez le maître (fenêtre du métier pas encore rouverte) ou quand son nom différait de celui du guide. La recette est maintenant reconnue par son sort, son objet ou son nom ; le bouton ouvre le métier au besoin. Recette pas encore apprise : « à apprendre chez le maître ».
+- Boutons trop étroits pour leur texte (« Liste d'achat », « Envoyer à ce perso » dans une carte étroite) : l'icône s'efface, le texte est centré et rapetisse au besoin au lieu d'être coupé.
+
 ## v1.128.296 — 24/11/2026
 
 _Un /reload suffit._

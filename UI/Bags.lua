@@ -301,6 +301,21 @@ local function lootable(bag, slot)
         if ok and canLoot then return itemID end
     end
 end
+-- recette (classe 9) ou objet qui lance un sort quand on l'utilise
+local function spellItem(id)
+    local CI = _G.C_Item
+    local gs = (CI and CI.GetItemSpell) or _G.GetItemSpell
+    if gs then
+        local ok, sp = pcall(gs, id)
+        if ok and sp then return true end
+    end
+    local gi = (CI and CI.GetItemInfoInstant) or _G.GetItemInfoInstant
+    if gi then
+        local ok, _, _, _, _, _, classID = pcall(gi, id)
+        if ok and classID == 9 then return true end
+    end
+    return false
+end
 -- fenêtre du jeu ouverte où le clic droit fait autre chose (vendre, déposer, poster, échanger)
 local BUSY = { "MerchantFrame", "MailFrame", "TradeFrame", "AuctionHouseFrame", "GuildBankFrame" }
 local function busyWindow()
@@ -349,6 +364,26 @@ local function newButton(bag, slot)
     op:SetScript("OnLeave", function() local fn = b:GetScript("OnLeave"); if fn then fn(b) end end)
     op:Hide()
     b.wkOpen = op -- infobulle allégée (Modules/Inventory.lua)
+    -- Recette ou objet qui lance un sort (apprendre une recette, parchemin…) : même refus que plus haut, et
+    -- l'addon ne peut pas le faire à la place du joueur. Une couche du jeu (SecureActionButtonTemplate) prend le
+    -- clic droit et utilise l'objet « sac case » comme le ferait la case (vente chez le marchand comprise). Montrée,
+    -- cachée et réglée hors combat seulement ; clic gauche (glisser, ramasser) toujours laissé à la case.
+    if not isBank and op.SetPassThroughButtons then
+        local okS, sec = pcall(_G.CreateFrame, "Button", nil, b, "SecureActionButtonTemplate")
+        if okS and sec then
+            sec:SetAllPoints()
+            sec:SetFrameLevel(b:GetFrameLevel() + 5)
+            sec:RegisterForClicks("RightButtonUp")
+            pcall(sec.SetPassThroughButtons, sec, "LeftButton")
+            sec:SetAttribute("useOnKeyDown", false)
+            sec:SetAttribute("type2", "item")
+            sec:SetAttribute("item2", bag .. " " .. slot)
+            sec:SetScript("OnEnter", function() local fn = b:GetScript("OnEnter"); if fn then fn(b) end end)
+            sec:SetScript("OnLeave", function() local fn = b:GetScript("OnLeave"); if fn then fn(b) end end)
+            sec:Hide()
+            b.wkUse = sec
+        end
+    end
     -- case à notre style : carré, bord de 2 px à la couleur de la qualité (le cadre brillant du jeu est masqué)
     b.wkEdge = square(b, 0, -8)
     b.wkFill = square(b, EDGE, -7)
@@ -491,6 +526,12 @@ local function paintButton(b, e)
     -- couche du clic droit : seulement sur un objet à ouvrir, hors marchand, banque, courrier, échange, HV
     if b.wkOpen then
         b.wkOpen:SetShown(e ~= nil and e.bag ~= nil and not busyWindow() and lootable(e.bag, e.slot) ~= nil)
+    end
+    -- couche sûre du clic droit : recettes et objets qui lancent un sort (hors combat : cadre protégé)
+    if b.wkUse and not inCombat() then
+        local id = e and e.bag and not e.offline and e.id
+        local spell = id and (lootable(e.bag, e.slot) == nil) and spellItem(id)
+        b.wkUse:SetShown(spell and true or false)
     end
     if UI.ItemLockPaint then pcall(UI.ItemLockPaint, b) end
 end

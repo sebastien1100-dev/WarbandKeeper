@@ -77,6 +77,31 @@ function UI:Button(parent, text, width, height, style, icon)
 
     function b:SetStyle(st) self.style = st; self:Refresh() end
     function b:SetLabel(t) self.label:SetText(t) end
+    -- bouton étiré par ses ancres plus étroit que son libellé (carte étroite, textes agrandis) : on retire
+    -- l'icône et on recentre le texte, puis on le rapetisse au besoin (avant : texte décalé et coupé au bord)
+    local font, fsize, fflags = b.label:GetFont()
+    local function fit(btn)
+        local w = btn:GetWidth() or 0
+        if w <= 0 then return end
+        -- libellé ou icône placés autrement par la page (menus, barre latérale) : on n'y touche pas
+        local lp = btn.label.GetNumPoints and btn.label:GetNumPoints()
+        local pt = btn.label.GetPoint and btn.label:GetPoint(1)
+        if (lp and lp > 1) or (pt and pt ~= "CENTER") then return end
+        local ico = btn.icon
+        local rel = ico and ico.GetPoint and select(2, ico:GetPoint(1))
+        if rel and rel ~= btn.label then ico = nil end
+        if fsize then btn.label:SetFont(font, fsize, fflags) end
+        local tw = btn.label:GetStringWidth() or 0
+        local withIcon = ico and tw + 20 + 16 <= w
+        if ico then ico:SetShown(withIcon and true or false) end
+        btn.label:ClearAllPoints()
+        btn.label:SetPoint("CENTER", withIcon and 9 or 0, 0)
+        if fsize and tw + 12 > w and tw > 0 then
+            btn.label:SetFont(font, math.max(9, math.floor(fsize * (w - 12) / tw)), fflags)
+        end
+    end
+    b:SetScript("OnSizeChanged", fit)
+    _G.hooksecurefunc(b.label, "SetText", function() fit(b) end)
 
     b:SetScript("OnEnter", function(self)
         self.hover = true; self:Refresh()
