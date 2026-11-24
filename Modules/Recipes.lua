@@ -872,3 +872,109 @@ function M:AddCraftTooltip(tooltip, itemID, header)
     end
     return any
 end
+
+---------------------------------------------------------------------------
+-- Étape d'un guide de montée : ce qu'il faut, ce qui manque, jusqu'aux matières premières (maquette B de
+-- l'infobulle). Transformations connues : fonte des barres (écrite à la main, données du jeu) et objets
+-- fabriqués par une étape d'un guide (même objet `out`, quantité `qty`).
+---------------------------------------------------------------------------
+-- objet » { qty = quantité obtenue, verb = verbe, r = { { composant, nombre } } }
+M.MATS = {
+    [2840] = { qty = 1, verb = "Fondre", r = { { 2770, 1 } } },             -- Barre de cuivre < Minerai de cuivre
+    [3576] = { qty = 1, verb = "Fondre", r = { { 2771, 1 } } },             -- Barre d'étain < Minerai d'étain
+    [2841] = { qty = 2, verb = "Fondre", r = { { 2840, 1 }, { 3576, 1 } } }, -- Barre de bronze < cuivre + étain
+    [2842] = { qty = 1, verb = "Fondre", r = { { 2775, 1 } } },             -- Barre d'argent < Minerai d'argent
+    [3575] = { qty = 1, verb = "Fondre", r = { { 2772, 1 } } },             -- Barre de fer < Minerai de fer
+    [3577] = { qty = 1, verb = "Fondre", r = { { 2776, 1 } } },             -- Barre d'or < Minerai d'or
+    [3859] = { qty = 1, verb = "Fondre", r = { { 3575, 1 }, { 3857, 1 } } }, -- Barre d'acier < fer + charbon
+    [3860] = { qty = 1, verb = "Fondre", r = { { 3858, 1 } } },             -- Barre de mithril < Minerai de mithril
+    [6037] = { qty = 1, verb = "Fondre", r = { { 7911, 1 } } },             -- Barre de vrai-argent < minerai
+    [12359] = { qty = 1, verb = "Fondre", r = { { 10620, 1 } } },           -- Barre de thorium < minerai
+    [2996] = { qty = 1, verb = "Fabriquer", r = { { 2589, 2 } } },          -- Rouleau d'étoffe de lin
+    [2997] = { qty = 1, verb = "Fabriquer", r = { { 2592, 3 } } },          -- Rouleau d'étoffe de laine
+    [4305] = { qty = 1, verb = "Fabriquer", r = { { 4306, 4 } } },          -- Rouleau d'étoffe de soie
+    [4339] = { qty = 1, verb = "Fabriquer", r = { { 4338, 4 } } },          -- Rouleau de tisse-mage
+    [14048] = { qty = 1, verb = "Fabriquer", r = { { 14047, 5 } } },        -- Rouleau d'étoffe runique
+}
+local guideOut
+local function sourceOf(id)
+    if M.MATS[id] then return M.MATS[id] end
+    if not guideOut then
+        guideOut = {}
+        for _, g in pairs(WK.Guides or {}) do
+            for _, st in ipairs(type(g) == "table" and g.steps or {}) do
+                if type(st) == "table" and st.out and st.reagents and not guideOut[st.out] then
+                    guideOut[st.out] = { qty = st.qty or 1, verb = "Fabriquer", r = st.reagents }
+                end
+            end
+        end
+    end
+    return guideOut[id]
+end
+M.SourceOf = function(_, id) return sourceOf(id) end
+
+-- Plan d'une étape faite n fois : comps = { { id, have, need } }, raw = { { id, have, need, base } } (matières
+-- premières pour ce qui manque : barres + minerai), todo = { { verb, n, id } } (dans l'ordre), find = { { id, n } }
+-- (à récolter ou acheter), cost (prix HV de find, ou nil), can = fabrications faisables maintenant.
+function M.StepPlan(_, st, n, countFn)
+    local Inv = WK.modules.Inventory
+    local count = countFn or function(id) return Inv and Inv.AccountCount and Inv:AccountCount(id) or 0 end
+    n = math.max(0, n or 0)
+    local plan = { comps = {}, raw = {}, todo = {}, find = {}, can = n }
+    local first, later = {}, {}
+    local findBy, rawBy = {}, {}
+    local function addFind(id, k)
+        if k <= 0 then return end
+        if findBy[id] then findBy[id].n = findBy[id].n + k
+        else findBy[id] = { id = id, n = k }; table.insert(plan.find, findBy[id]) end
+    end
+    for _, rg in ipairs(st.reagents or {}) do
+        local id, per = rg[1], rg[2] or 1
+        local have, need = count(id), per * n
+        table.insert(plan.comps, { id = id, have = have, need = need })
+        plan.can = math.min(plan.can, math.floor(have / math.max(1, per)))
+        local miss = need - have
+        local src = miss > 0 and sourceOf(id)
+        if miss > 0 and not src then addFind(id, miss) end
+        if src then
+            local batches = math.ceil(miss / math.max(1, src.qty or 1))
+            table.insert(later, { verb = src.verb, n = batches, id = id, made = batches * (src.qty or 1) })
+            for _, s in ipairs(src.r) do
+                local sid, scnt = s[1], s[2] or 1
+                local sneed, shave = batches * scnt, count(sid)
+                local sub = sourceOf(sid)
+                local base = sub and #sub.r == 1 and sub.r[1]
+                local conv = base and math.floor(count(base[1]) / math.max(1, base[2] or 1)) * (sub.qty or 1) or 0
+                local row = rawBy[sid]
+                if row then row.need = row.need + sneed
+                else
+                    row = { id = sid, have = shave + conv, need = sneed, base = base and base[1] }
+                    rawBy[sid] = row; table.insert(plan.raw, row)
+                end
+                local short = sneed - shave
+                if short > 0 and base then
+                    local use = math.min(short, conv)
+                    if use > 0 then
+                        table.insert(first, { verb = sub.verb, n = math.ceil(use / math.max(1, sub.qty or 1))
+                            * (base[2] or 1), id = base[1] })
+                    end
+                    local still = short - use
+                    if still > 0 then
+                        addFind(base[1], math.ceil(still / math.max(1, sub.qty or 1)) * (base[2] or 1))
+                    end
+                elseif short > 0 then
+                    addFind(sid, short)
+                end
+            end
+        end
+    end
+    for _, t in ipairs(first) do table.insert(plan.todo, t) end
+    for _, t in ipairs(later) do table.insert(plan.todo, t) end
+    local V, cost = WK.modules.Value, 0
+    for _, f in ipairs(plan.find) do
+        local p = V and V.Price and V:Price(f.id) or 0
+        if p and p > 0 then cost = cost + p * f.n else cost = nil break end
+    end
+    plan.cost = (#plan.find > 0 and cost and cost > 0) and cost or nil
+    return plan
+end

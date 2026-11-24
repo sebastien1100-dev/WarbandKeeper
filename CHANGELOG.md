@@ -50,6 +50,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.292 — 24/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Métiers > Guide : l'infobulle d'une étape est refaite (maquette B). Icônes des objets, une jauge par composant, puis les matières premières de ce qui manque (barres et minerai comptés ensemble : 1 barre de bronze = 1 barre de cuivre + 1 barre d'étain, une barre = un minerai…), une liste « À faire » (fondre, fabriquer, trouver ou acheter à l'HV avec le prix) et le nombre de fabrications faisables tout de suite.
+
 ## v1.128.291 — 24/11/2026
 
 _Un /reload suffit._

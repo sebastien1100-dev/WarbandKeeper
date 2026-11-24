@@ -25,6 +25,212 @@ local function stepInfo(st)
     return name or "?", icon, 1, 1, 1
 end
 
+-- Infobulle d'une étape du guide (maquette B) : composants avec jauges, matières premières pour ce qui manque
+-- (barres + minerai), liste « À faire », fabrications faisables tout de suite. Cadre à nous (icônes, jauges) à la
+-- place du GameTooltip ; calcul par Recipes:StepPlan.
+local guideTip
+local TIP_W, TIP_PAD = 340, 14
+local function buildGuideTip()
+    local f = _G.CreateFrame("Frame", "WarbandKeeperGuideTip", _G.UIParent)
+    f:SetFrameStrata("TOOLTIP"); f:SetClampedToScreen(true); f:SetWidth(TIP_W); f:Hide()
+    UI:HudBackground(f, "hud", 10)
+    f.icon = f:CreateTexture(nil, "ARTWORK"); f.icon:SetSize(30, 30)
+    f.icon:SetPoint("TOPLEFT", TIP_PAD, -TIP_PAD); f.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+    f.title = UI:Text(f, 14); f.title:SetPoint("TOPLEFT", f.icon, "TOPRIGHT", 10, 0)
+    f.title:SetPoint("RIGHT", f, "RIGHT", -TIP_PAD, 0)
+    f.sub = UI:Text(f, 11, C.muted); f.sub:SetPoint("TOPLEFT", f.title, "BOTTOMLEFT", 0, -3)
+    f.sub:SetPoint("RIGHT", f, "RIGHT", -TIP_PAD, 0)
+    if f.sub.SetWordWrap then f.sub:SetWordWrap(true) end
+    f.pools = { sep = {}, lbl = {}, row = {}, txt = {}, blbl = {}, btxt = {} }
+    f.used = {}
+    function f:Take(kind, make)
+        local pool = self.pools[kind]
+        self.used[kind] = (self.used[kind] or 0) + 1
+        local w = pool[self.used[kind]]
+        if not w then w = make(); pool[self.used[kind]] = w end
+        w:ClearAllPoints(); w:Show()
+        return w
+    end
+    function f:Reset()
+        for kind, pool in pairs(self.pools) do
+            for _, w in ipairs(pool) do w:Hide() end
+            self.used[kind] = 0
+        end
+    end
+    -- boîte « À faire » et pastille du bas
+    f.box = _G.CreateFrame("Frame", nil, f)
+    f.boxBg = UI:Rounded(f.box, 8, 0, "BACKGROUND", 1)
+    f.boxBg:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], 1)
+    f.pill = _G.CreateFrame("Frame", nil, f); f.pill:SetSize(54, 18)
+    f.pillBg = UI:Rounded(f.pill, 9, 0, "BACKGROUND", 1)
+    f.pillT = UI:Text(f.pill, 11); f.pillT:SetPoint("CENTER")
+    f.foot = UI:Text(f, 11, C.muted)
+    return f
+end
+local function tipSep(f, y)
+    local t = f:Take("sep", function()
+        local x = f:CreateTexture(nil, "ARTWORK"); x:SetColorTexture(1, 1, 1, 1)
+        return x
+    end)
+    t:SetVertexColor(C.border[1], C.border[2], C.border[3], 1)
+    t:SetPoint("TOPLEFT", TIP_PAD, -y); t:SetPoint("TOPRIGHT", -TIP_PAD, -y); t:SetHeight(1)
+    return y + 9
+end
+-- majuscules sans casser les accents (string.upper ne touche qu'aux lettres sans accent)
+local UPPER = { ["é"] = "É", ["è"] = "È", ["ê"] = "Ê", ["à"] = "À", ["â"] = "Â", ["ç"] = "Ç", ["ô"] = "Ô", ["î"] = "Î",
+    ["û"] = "Û", ["ù"] = "Ù", ["ë"] = "Ë", ["ï"] = "Ï" }
+local function upper(t)
+    return (string.upper(t):gsub("\195[\160-\191]", function(c) return UPPER[c] or c end))
+end
+-- textes posés dans l'encadré « À faire » : créés sur lui (un texte d'un autre cadre ne s'y affichait pas)
+local function tipLabel(f, y, text, col, parent, x)
+    local inBox = parent and parent ~= f
+    local t = f:Take(inBox and "blbl" or "lbl", function() return UI:Text(inBox and parent or f, 10, C.muted) end)
+    t:SetText(upper(text))
+    local c = col or C.muted
+    t:SetTextColor(c[1], c[2], c[3])
+    t:SetPoint("TOPLEFT", x or TIP_PAD, -y)
+    return y + 16
+end
+local function tipText(f, y, text, col, parent, x, size)
+    local inBox = parent and parent ~= f
+    local t = f:Take(inBox and "btxt" or "txt", function()
+        local fs = UI:Text(inBox and parent or f, 11)
+        if fs.SetWordWrap then fs:SetWordWrap(true) end
+        return fs
+    end)
+    t:SetText(text)
+    local c = col or C.text
+    t:SetTextColor(c[1], c[2], c[3])
+    local left = x or TIP_PAD
+    t:SetPoint("TOPLEFT", parent or f, "TOPLEFT", left, -y)
+    t:SetWidth((parent and parent ~= f) and (TIP_W - 2 * TIP_PAD - 2 * left) or (TIP_W - left - TIP_PAD))
+    if size then t:SetFont(UI.FONT, size, "") end
+    return y + math.max(14, t:GetStringHeight() or 14) + 3
+end
+-- ligne d'objet : icône, nom, « a / b », jauge dessous (small = matières premières, plus petite)
+local function tipItem(f, y, id, have, need, note, small)
+    local r = f:Take("row", function()
+        local w = _G.CreateFrame("Frame", nil, f)
+        w.ic = w:CreateTexture(nil, "ARTWORK"); w.ic:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+        w.name = UI:Text(w, 12); w.cnt = UI:Text(w, 12)
+        w.cnt:SetJustifyH("RIGHT")
+        w.track = w:CreateTexture(nil, "BACKGROUND"); w.track:SetColorTexture(1, 1, 1, 1)
+        w.fill = w:CreateTexture(nil, "ARTWORK"); w.fill:SetColorTexture(1, 1, 1, 1)
+        return w
+    end)
+    local isz = small and 16 or 20
+    local name, icon, qr, qg, qb = UI:ItemInfo(id)
+    r:SetPoint("TOPLEFT", TIP_PAD, -y); r:SetPoint("TOPRIGHT", -TIP_PAD, -y); r:SetHeight(isz + 8)
+    r.ic:SetSize(isz, isz); r.ic:SetPoint("TOPLEFT", 0, 0); r.ic:SetTexture(icon)
+    r.name:SetFont(UI.FONT, small and 11 or 12, ""); r.cnt:SetFont(UI.FONT, small and 11 or 12, "")
+    r.name:SetText((name or "?") .. (note and (" " .. UI:Hex(C.muted) .. note .. "|r") or ""))
+    if small then r.name:SetTextColor(C.text[1], C.text[2], C.text[3]) else r.name:SetTextColor(qr, qg, qb) end
+    r.name:SetPoint("LEFT", r.ic, "RIGHT", 8, 0); r.name:SetPoint("RIGHT", r.cnt, "LEFT", -6, 0)
+    local ok = have >= need
+    local col = ok and C.positive or (have * 2 >= need and C.gold or C.negative)
+    r.cnt:SetText(have .. " / " .. need); r.cnt:SetTextColor((ok and C.positive or C.negative)[1],
+        (ok and C.positive or C.negative)[2], (ok and C.positive or C.negative)[3])
+    r.cnt:SetPoint("RIGHT", r, "TOPRIGHT", 0, -isz / 2)
+    r.track:SetVertexColor(C.border[1], C.border[2], C.border[3], 1)
+    r.track:ClearAllPoints(); r.track:SetPoint("TOPLEFT", isz + 8, -(isz + 3))
+    r.track:SetPoint("TOPRIGHT", 0, -(isz + 3))
+    r.track:SetHeight(3)
+    local pct = need > 0 and math.min(1, have / need) or 1
+    local fw = math.max(1, (TIP_W - 2 * TIP_PAD - isz - 8) * pct)
+    r.fill:ClearAllPoints(); r.fill:SetPoint("TOPLEFT", r.track, "TOPLEFT"); r.fill:SetSize(fw, 3)
+    r.fill:SetVertexColor(col[1], col[2], col[3], 1)
+    return y + isz + 12
+end
+local function showGuideTip(owner, st, n, title, extra)
+    guideTip = guideTip or buildGuideTip()
+    local f = guideTip
+    f:Reset()
+    local R = WK.modules.Recipes
+    local plan = R:StepPlan(st, n)
+    local name, icon, qr, qg, qb = stepInfo(st)
+    f.icon:SetTexture(icon)
+    f.title:SetText(title or name or "?"); f.title:SetTextColor(qr or 1, qg or 1, qb or 1)
+    local sub = { string.format(T("%d à %d · %d fabrications"), st.from, st.to, n) }
+    for _, tool in ipairs(st.tools or {}) do
+        local have = WK.modules.Inventory:AccountCount(tool) > 0
+        local st8 = have and (UI:Hex(C.positive) .. T("ok")) or (UI:Hex(C.negative) .. T("manque"))
+        sub[#sub + 1] = (UI:ItemInfo(tool)) .. " " .. st8 .. "|r"
+    end
+    f.sub:SetText(table.concat(sub, " · "))
+    local y = TIP_PAD + math.max(30, 18 + (f.sub:GetStringHeight() or 12)) + 8
+    y = tipSep(f, y)
+    for _, fs in ipairs(st.first or {}) do
+        y = tipText(f, y, string.format(T("D'abord : %d x %s"), fs.crafts, (stepInfo(fs))), C.info)
+    end
+    if #plan.comps > 0 then
+        y = tipLabel(f, y, T("Composants"))
+        for _, c in ipairs(plan.comps) do y = tipItem(f, y, c.id, c.have, c.need) end
+    end
+    if #plan.raw > 0 then
+        y = tipSep(f, y)
+        y = tipLabel(f, y, T("Matières premières pour ce qui manque"))
+        for _, rw in ipairs(plan.raw) do
+            y = tipItem(f, y, rw.id, rw.have, rw.need, rw.base and T("(+ minerai)") or nil, true)
+        end
+    end
+    -- À faire
+    local lines = {}
+    for _, t in ipairs(plan.todo) do
+        local verb = t.verb == "Fondre" and T("Fondre") or T("Fabriquer")
+        -- fonte qui donne plus d'une barre (bronze : 2) : le nombre obtenu, et le nombre de fois entre parenthèses
+        local times = ""
+        if t.made and t.made ~= t.n then times = " " .. UI:Hex(C.muted) .. string.format(T("(%d fois)"), t.n) end
+        local nm = (UI:ItemInfo(t.id))
+        lines[#lines + 1] = string.format("%s %s%d %s|r%s", verb, UI:Hex(C.text), t.made or t.n, nm, times)
+    end
+    if #plan.find > 0 then
+        local bits = {}
+        for _, fd in ipairs(plan.find) do
+            bits[#bits + 1] = UI:Hex(C.negative) .. fd.n .. " " .. (UI:ItemInfo(fd.id)) .. "|r"
+        end
+        local l = T("Trouver") .. " " .. table.concat(bits, ", ")
+        if plan.cost then l = l .. " " .. UI:Hex(C.muted) .. T("ou") .. "|r " .. UI:Hex(C.gold) .. T("env.") .. " "
+            .. WK:FormatMoney(plan.cost) .. " " .. T("à l'HV") .. "|r" end
+        lines[#lines + 1] = l
+    end
+    if #lines > 0 and n > 0 then
+        y = tipSep(f, y)
+        f.box:ClearAllPoints(); f.box:SetPoint("TOPLEFT", TIP_PAD, -y); f.box:SetPoint("TOPRIGHT", -TIP_PAD, -y)
+        local by = tipLabel(f, 8, T("À faire"), { UI:Accent() }, f.box, 10)
+        for i, l in ipairs(lines) do by = tipText(f, by, i .. ". " .. l, C.muted, f.box, 10) end
+        f.box:SetHeight(by + 6); f.box:Show()
+        y = y + by + 6 + 8
+    else
+        f.box:Hide()
+    end
+    -- faisable maintenant
+    if n > 0 and #plan.comps > 0 then
+        f.foot:ClearAllPoints(); f.foot:SetPoint("TOPLEFT", TIP_PAD, -(y + 2)); f.foot:SetText(T("Faisable maintenant"))
+        f.foot:Show()
+        local ok = plan.can >= n
+        local pc = ok and C.positive or (plan.can > 0 and C.gold or C.negative)
+        f.pillT:SetText(math.min(plan.can, n) .. " / " .. n); f.pillT:SetTextColor(pc[1], pc[2], pc[3])
+        f.pillBg:SetColor(pc[1], pc[2], pc[3], 0.16)
+        f.pill:SetWidth((f.pillT:GetStringWidth() or 30) + 16)
+        f.pill:ClearAllPoints(); f.pill:SetPoint("TOPRIGHT", -TIP_PAD, -y); f.pill:Show()
+        y = y + 22
+    else
+        f.foot:Hide(); f.pill:Hide()
+    end
+    for _, e in ipairs(extra or {}) do
+        if e == "sep" then y = tipSep(f, y) else y = tipText(f, y, e[1], e[2]) end
+    end
+    f:SetHeight(y + TIP_PAD - 4)
+    f:ClearAllPoints()
+    local right = owner:GetRight() or 0
+    if right + TIP_W + 12 < (_G.UIParent:GetRight() or 1920) then f:SetPoint("TOPLEFT", owner, "TOPRIGHT", 8, 0)
+    else f:SetPoint("TOPRIGHT", owner, "TOPLEFT", -8, 0) end
+    f:Show()
+end
+UI.ShowGuideStepTip = showGuideTip
+UI.HideGuideStepTip = function() if guideTip then guideTip:Hide() end end
+
 local function colored(key)
     local c = WK.DB.global.characters[key]
     local name = WK:CharName(c, key)
@@ -1290,38 +1496,27 @@ local function Detail(page, parent)
         r:SetScript("OnEnter", function(s)
             if not s.e then return end
             local st = s.e.step
-            WK.UI:TooltipOwner(s, "ANCHOR_RIGHT")
-            GameTooltip:SetText(s.title or "", 1, 1, 1)
-            GameTooltip:AddLine(string.format(T("Niveaux %d à %d · %d fabrications"), st.from, st.to, st.crafts), 0.8, 0.8, 0.8)
-            for _, f in ipairs(st.first or {}) do
-                GameTooltip:AddLine(string.format(T("D'abord : %d x %s"), f.crafts, (stepInfo(f))), 0.6, 0.8, 1)
-            end
-            if st.tools then
-                local names = {}
-                for _, tool in ipairs(st.tools) do table.insert(names, (UI:ItemInfo(tool)) or "?") end
-                GameTooltip:AddLine(T("Outils : ") .. table.concat(names, ", "), 0.8, 0.8, 0.8, true)
-            end
-            for _, rg in ipairs(st.reagents or {}) do
-                local have = WK.modules.Inventory:AccountCount(rg[1])
-                local need = rg[2] * math.max(s.e.left, 0)
-                GameTooltip:AddDoubleLine((UI:ItemInfo(rg[1])) or "?", string.format("%d / %d", have, need),
-                    0.85, 0.85, 0.85, have >= need and 0.6 or 1, have >= need and 1 or 0.5, have >= need and 0.5 or 0.4)
-            end
+            local n = s.e.status == "current" and math.max(s.e.left or 0, 0)
+                or (s.e.status == "done" and 0 or st.crafts)
+            -- recette à trouver : nom, prix à l'HV, vendeurs, sous le reste
+            local extra = {}
             if st.src == "recipe" then
-                GameTooltip:AddLine(" ")
-                GameTooltip:AddLine(string.format(T("Recette : %s"), (st.learn and UI:ItemInfo(st.learn)) or "?"), 1, 0.82, 0)
+                extra[#extra + 1] = "sep"
+                local rname = (st.learn and UI:ItemInfo(st.learn)) or "?"
+                extra[#extra + 1] = { string.format(T("Recette : %s"), rname), C.gold }
                 local ahText, ahCol = recipeAH(st.learn)
-                if ahText then GameTooltip:AddLine(ahText, ahCol[1], ahCol[2], ahCol[3]) end
+                if ahText then extra[#extra + 1] = { ahText, ahCol } end
                 if st.vendors then
-                    GameTooltip:AddLine(T("Vendeurs :"), 0.8, 0.8, 0.8)
+                    local vs = {}
                     for _, v in ipairs(st.vendors) do
-                        GameTooltip:AddDoubleLine("  " .. v[1], v[2] and T(v[2]) or "", 1, 1, 1, 0.7, 0.7, 0.7)
+                        vs[#vs + 1] = v[1] .. (v[2] and (" (" .. T(v[2]) .. ")") or "")
                     end
+                    extra[#extra + 1] = { T("Vendeurs : ") .. table.concat(vs, ", "), C.muted }
                 end
             end
-            GameTooltip:Show()
+            showGuideTip(s, st, n, s.title, extra)
         end)
-        r:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        r:SetScript("OnLeave", function() UI.HideGuideStepTip() end)
         return r
     end)
 
