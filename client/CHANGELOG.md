@@ -3,6 +3,11 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.9.12 — 24/11/2026
+
+### Changements
+- Découvertes : plus de clic à faire. Ce que l'addon a appris est envoyé tout seul sur GitHub quand tu quittes le jeu (ou après un /reload), directement dans l'addon, sans demande de fusion à valider. Il arrive chez tout le monde à la version suivante. Le bouton « Envoi auto » le coupe ; « Envoyer » le fait tout de suite. Le jeton n'a besoin que de « Contents : Read and write ».
+
 ## 1.9.11 — 24/11/2026
 
 ### Nouveautés

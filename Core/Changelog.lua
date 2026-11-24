@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.271", date = "24/11/2026",
+        changed = {
+            "Rien ne change en jeu : cette version livre le client PC 1.9.12 (découvertes envoyées toutes seules quand tu quittes le jeu, sans clic).",
+        },
+    },
+    {
         version = "1.128.270", date = "24/11/2026",
         changed = {
             "Fin de donjon : plus de ligne « Bilan du donjon » dans le chat quand le bilan s'affiche à l'écran. Elle revient si tu coupes « Bilan à l'écran » ; « Au groupe » envoie toujours le résumé au groupe.",

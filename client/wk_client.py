@@ -33,7 +33,7 @@ from tkinter import filedialog, font as tkfont
 
 import learned  # Découvertes (client/learned.py, partagé avec tools/gen_learned.py)
 
-CLIENT_VERSION = "1.9.11"
+CLIENT_VERSION = "1.9.12"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 DATA_ADDON = "WarbandKeeper_Data"  # grosses bases, chargées à la demande (dossier à côté de l'addon)
@@ -841,10 +841,10 @@ class GitHub:
                 return json.loads(line[8:])
         return []
 
-    def learned_pr(self, sources, choices):
+    def learned_pr(self, sources, choices, direct=False):
         """Découvertes : fusionne les sources avec la base de main (tools/learned/learned.json), pousse la nouvelle
-        base et Modules/LearnedDB.lua sur une branche decouvertes-<date> et ouvre une demande de fusion.
-        Rend son adresse, ou None s'il n'y a rien de nouveau."""
+        base et Modules/LearnedDB.lua sur une branche decouvertes-<date> et ouvre une demande de fusion (rend son
+        adresse) ; direct : écrit sur main, sans demande de fusion (rend { n, base }). None s'il n'y a rien de nouveau."""
         import base64
 
         def get(path):
@@ -861,9 +861,11 @@ class GitHub:
             return None
         new = learned.build(base, rows)
         _, lsha = get(LEARNED_LUA)
-        head = self.api("GET", "/git/ref/heads/main")["object"]["sha"]
-        branch = "decouvertes-" + datetime.now().strftime("%Y%m%d-%H%M%S")
-        self.api("POST", "/git/refs", {"ref": "refs/heads/" + branch, "sha": head})
+        branch = "main"
+        if not direct:
+            head = self.api("GET", "/git/ref/heads/main")["object"]["sha"]
+            branch = "decouvertes-" + datetime.now().strftime("%Y%m%d-%H%M%S")
+            self.api("POST", "/git/refs", {"ref": "refs/heads/" + branch, "sha": head})
         per = {}
         for r in added:
             per[r["genre"]] = per.get(r["genre"], 0) + 1
@@ -874,6 +876,8 @@ class GitHub:
             if sha:
                 body["sha"] = sha
             self.api("PUT", "/contents/" + path, body)
+        if direct:
+            return {"n": len(added), "base": new, "what": what}
         pr = self.api("POST", "/pulls", {
             "title": "Découvertes : %d ajout%s" % (len(added), "s" if len(added) > 1 else ""), "head": branch, "base": "main",
             "body": "Découvertes intégrées à l'addon, envoyées par le client PC (page Découvertes).\n\n"
@@ -2349,6 +2353,51 @@ def installed_learned(addons):
         return {}
 
 
+def learned_sources(mine, cfg):
+    """Sources des découvertes : ce PC (sûr) puis les fichiers .wkd importés (sauf ceux de ce PC)."""
+    out = []
+    if mine:
+        out.append({"name": "Ce PC", "trusted": True, "data": mine})
+    me = cfg.get("learnedSrc")
+    for _, src, data in learned_files():
+        if src != me:
+            out.append({"name": src, "trusted": False, "data": data})
+    return out
+
+
+def learned_choices(cfg):
+    out = {}
+    for k, v in (cfg.get("learnedChoices") or {}).items():
+        g, _, key = k.partition("|")
+        out[(g, key)] = v
+    return out
+
+
+def sent_learned():
+    """Dernière base envoyée sur GitHub par ce client (pas encore dans l'addon installé avant la version suivante)."""
+    try:
+        with open(os.path.join(learned_dir(), "envoye.json"), encoding="utf-8") as f:
+            return learned.from_json(f.read())
+    except OSError:
+        return {}
+
+
+def save_sent_learned(base):
+    try:
+        with open(os.path.join(learned_dir(), "envoye.json"), "w", encoding="utf-8") as f:
+            f.write(learned.to_json(base))
+    except OSError:
+        pass
+
+
+def known_learned(addons):
+    """Ce qui est déjà connu : l'addon installé, plus ce que ce client a déjà envoyé."""
+    base = installed_learned(addons)
+    for g, part in sent_learned().items():
+        base.setdefault(g, {}).update(part)
+    return base
+
+
 @page("learned", "Découvertes", "✚")
 class LearnedPage(Page):
     """Maquette « mix » : en-tête (importer, relire), trois chiffres, genres à gauche, détail filtré à droite,
@@ -2413,30 +2462,22 @@ class LearnedPage(Page):
 
         bot = tk.Frame(self, bg=C["bg"])
         bot.pack(fill="x", pady=(10, 0))
-        self.prBtn = Button(bot, "Envoyer en PR", self.send_pr, "primary", height=32)
+        self.prBtn = Button(bot, "Envoyer", self.send_pr, "primary", height=32)
         self.prBtn.pack(side="right")
-        self.clearBtn = Button(bot, "Retirer les fichiers importés", self.clear_files, "ghost", height=32)
+        self.autoBtn = Button(bot, "Envoi auto : oui", self.toggle_auto, "secondary", height=32)
+        self.autoBtn.pack(side="left")
+        self.clearBtn = Button(bot, "Retirer les importés", self.clear_files, "ghost", height=32)
         self.clearBtn.pack(side="right", padx=(0, 6))
-        self.exportBtn = Button(bot, "Exporter mes découvertes", self.export, "ghost", height=32)
+        self.exportBtn = Button(bot, "Exporter", self.export, "ghost", height=32)
         self.exportBtn.pack(side="right", padx=(0, 6))
 
     # -- données
     def sources(self):
-        out = []
-        if self.mine:
-            out.append({"name": "Ce PC", "trusted": True, "data": self.mine})
-        me = self.app.cfg.get("learnedSrc")
-        for _, src, data in learned_files():
-            if src != me:
-                out.append({"name": src, "trusted": False, "data": data})
-        return out
+        return learned_sources(self.mine, self.app.cfg)
 
     def compute(self):
-        ch = {}
-        for k, v in (self.app.cfg.get("learnedChoices") or {}).items():
-            g, _, key = k.partition("|")
-            ch[(g, key)] = v
-        self.choices = ch
+        self.choices = learned_choices(self.app.cfg)
+        ch = self.choices
         self.rows = learned.merge(self.sources(), self.base, ch)
 
     def reload(self, force=True):
@@ -2459,7 +2500,7 @@ class LearnedPage(Page):
                 return
             self.mine, self.base = res
             self.fill()
-        a.run(lambda: (read_learned(addons), installed_learned(addons)), done)
+        a.run(lambda: (read_learned(addons), known_learned(addons)), done)
 
     def on_show(self):
         self.reload(force=False)
@@ -2483,7 +2524,7 @@ class LearnedPage(Page):
         src = self.sources()
         look = n.get(learned.CHECK, 0) + n.get(learned.REJECTED, 0) + n.get(learned.PENDING, 0)
         self.kpis["new"][0].configure(text=str(new), fg=C["positive"] if new else C["text"])
-        self.kpis["new"][1].configure(text="%s déjà dans l'addon" % n.get(learned.KNOWN, 0))
+        self.kpis["new"][1].configure(text="%s déjà connues" % n.get(learned.KNOWN, 0))
         self.kpis["src"][0].configure(text=str(len(src)))
         self.kpis["src"][1].configure(text="ce PC + %s" % plural(max(0, len(src) - (1 if self.mine else 0)), "fichier"))
         self.kpis["look"][0].configure(text=str(look), fg=C["warning"] if look else C["text"])
@@ -2527,7 +2568,7 @@ class LearnedPage(Page):
             label(self.list.inner, "Rien ici." if self.mine is not None else "Lecture de ta sauvegarde…",
                   fg="dim", font="small").pack(anchor="w", pady=6)
         can = bool(new and self.app.cfg.get("token"))
-        self.prBtn.set(text="Envoyer en PR (%d)" % new if new else "Envoyer en PR", enabled=can)
+        self.prBtn.set(text="Envoyer (%d)" % new if new else "Envoyer", enabled=can)
         files = len(learned_files())
         self.clearBtn.set(enabled=bool(files))
         if files:
@@ -2535,10 +2576,20 @@ class LearnedPage(Page):
         else:
             self.clearBtn.pack_forget()
         if not self.loading:
-            self.note.configure(text="Rien de nouveau : tout ce que tu as appris est déjà dans l'addon." if not new else (
-                "Crée une branche et une demande de fusion sur GitHub (rien n'est publié avant la fusion)."
-                if self.app.cfg.get("token") else "Ajoute un jeton GitHub (Réglages) pour envoyer en PR ; "
-                "sinon « Exporter mes découvertes » et envoie le fichier au mainteneur."))
+            cfg = self.app.cfg
+            last = cfg.get("learnedLast") or {}
+            when = (" Dernier envoi : %s, %s." % (datetime.fromtimestamp(last["at"]).strftime("%d/%m %H:%M"),
+                                                  plural(last.get("n", 0), "ajout"))) if last.get("at") else ""
+            if not cfg.get("token"):
+                txt = ("Ajoute un jeton GitHub (Réglages) pour l'envoi automatique ; sinon « Exporter »"
+                       " et envoie le fichier au mainteneur.")
+            elif cfg.get("learnedAuto", True):
+                txt = ("Envoi automatique : ce qui est nouveau part sur GitHub quand tu quittes le jeu, et arrive dans"
+                       " l'addon à la version suivante." + when)
+            else:
+                txt = ("Rien de nouveau." if not new else "Envoi automatique coupé : « Envoyer » pour l'envoyer.") + when
+            self.note.configure(text=txt)
+        self.autoBtn.set(text="Envoi auto : %s" % ("oui" if self.app.cfg.get("learnedAuto", True) else "non"))
 
     COLORS = {learned.INTEGRATED: "positive", learned.PENDING: "muted", learned.CHECK: "warning",
               learned.REJECTED: "negative", learned.KNOWN: "dim"}
@@ -2644,24 +2695,22 @@ class LearnedPage(Page):
         self.app.toast("Découvertes exportées (rien de personnel : ni persos, ni or, ni sacs).", "positive")
 
     # -- envoi
+    def toggle_auto(self):
+        cfg = self.app.cfg
+        cfg["learnedAuto"] = not cfg.get("learnedAuto", True)
+        save_config(cfg)
+        self.fill()
+        if cfg["learnedAuto"]:
+            self.app.auto_learned(force=True)
+
     def send_pr(self):
+        """« Envoyer » : tout de suite, comme l'envoi automatique (sur main, sans demande de fusion)."""
         a = self.app
         if not a.cfg.get("token"):
             return a.show_settings("github")
-        srcs, choices = self.sources(), self.choices
         self.prBtn.set(enabled=False)
         self.note.configure(text="Envoi sur GitHub…")
-
-        def done(res, err):
-            if err:
-                a.toast("Envoi impossible : %s" % err, "negative")
-            elif res:
-                a.toast("Demande de fusion créée.", "positive")
-                webbrowser.open(res)
-            else:
-                a.toast("Rien de nouveau par rapport à la base sur GitHub.", "muted")
-            self.fill()
-        a.run(lambda: GitHub(a.cfg["token"]).learned_pr(srcs, choices), done)
+        a.auto_learned(force=True, manual=True)
 
 
 @page("settings", "Réglages", "⚙")
@@ -3495,7 +3544,50 @@ class App:
                     return self.show("home")
             if self.current == "dash":
                 self.pages["dash"].fill()
+            self.auto_learned()
         self.run(lambda: read_save(addons), done)
+
+    def auto_learned(self, force=False, manual=False):
+        """Découvertes envoyées toutes seules sur GitHub (main, sans demande de fusion) quand la sauvegarde a changé
+        (déconnexion du jeu, /reload) : réglage learnedAuto (oui d'office), jeton en écriture. Au plus une fois
+        toutes les 10 min, sauf « Envoyer »."""
+        cfg, addons = self.cfg, self.addons
+        if not (addons and cfg.get("token")) or getattr(self, "learnSending", False):
+            return
+        if not manual and not cfg.get("learnedAuto", True):
+            return
+        if not force and time.time() - getattr(self, "learnAt", 0) < 600:
+            return
+        self.learnSending, self.learnAt = True, time.time()
+        token = cfg["token"]
+        choices = learned_choices(cfg)
+
+        def job():
+            mine = read_learned(addons)
+            if not mine:
+                return None
+            return GitHub(token).learned_pr(learned_sources(mine, cfg), choices, direct=True)
+
+        def done(res, err):
+            self.learnSending = False
+            if err:
+                if manual:
+                    self.toast("Envoi impossible : %s" % err, "negative")
+                else:
+                    print("découvertes : envoi impossible :", err)
+            elif res:
+                save_sent_learned(res["base"])
+                cfg["learnedLast"] = {"at": int(time.time()), "n": res["n"]}
+                save_config(cfg)
+                self.toast("Découvertes envoyées sur GitHub : %s." % res["what"], "positive")
+            elif manual:
+                self.toast("Rien de nouveau par rapport à GitHub.", "muted")
+            p = self.pages.get("learned")
+            if p and self.current == "learned":
+                p.reload(force=False)
+            elif p and manual:
+                p.fill()
+        self.run(job, done)
 
     def ui(self, fn, *a):
         self.q.put(("call", fn, a, None))

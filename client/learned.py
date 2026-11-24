@@ -334,7 +334,7 @@ def read_wkd(text):
 # --- Fusion -----------------------------------------------------------------------------------------
 INTEGRATED, PENDING, CHECK, REJECTED, KNOWN = "integrated", "pending", "check", "rejected", "known"
 STATUS_LABEL = {INTEGRATED: "intégrée", PENDING: "en attente d'une 2e", CHECK: "à vérifier",
-                REJECTED: "rejetée", KNOWN: "déjà dans l'addon"}
+                REJECTED: "rejetée", KNOWN: "déjà connue"}
 
 
 def merge(sources, base=None, choices=None):
