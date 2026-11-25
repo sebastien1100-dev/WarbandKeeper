@@ -8,6 +8,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.362", date = "25/11/2026",
+        changed = {
+            "Leveling, page refaite (maquettes A et 1) : deux onglets, « Talents » et « Sorts du maître », chacun sur toute la largeur. Les talents sont bien plus grands.",
+            "Leveling : le plan se choisit dans un menu déroulant, qui montre son nom, sa répartition (barre en couleurs et « 23 / 0 / 28 ») et ses points. Le menu donne les autres plans de la classe et les actions : nouveau, dupliquer, renommer, copier le plan de ce perso, partager ou importer un code, supprimer (avec confirmation).",
+            "Leveling, talents : les niveaux où chaque point est pris sont en or sur l'icône, et le rang (2/3) est en dessous. Une rangée pas encore ouverte (5 points par rangée dans l'arbre) est grisée, avec le nombre de points demandés en rouge à gauche.",
+        },
+        added = {
+            "Leveling, prérequis des talents : un trait relie un talent à celui qu'il demande (doré quand c'est rempli), et le plan refuse le point tant que le talent demandé n'est pas au rang max. Les prérequis sont lus dans la fenêtre des talents du jeu (traits de WoW Forever, nouveaux talents compris). Sans perso de la classe, ils viennent des tables du jeu.",
+        },
+    },
+    {
         version = "1.128.361", date = "25/11/2026",
         added = {
             "Leveling : un plan de montée se fait maintenant pour n'importe quelle classe, même sans perso de cette classe ni fenêtre des talents ouverte. Les arbres viennent des tables du jeu. Dès qu'un perso de la classe a relevé ses vrais arbres, le plan s'y recale tout seul, talent par talent (par le nom).",

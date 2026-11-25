@@ -54,6 +54,18 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.362 — 25/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Leveling, prérequis des talents : un trait relie un talent à celui qu'il demande (doré quand c'est rempli), et le plan refuse le point tant que le talent demandé n'est pas au rang max. Les prérequis sont lus dans la fenêtre des talents du jeu (traits de WoW Forever, nouveaux talents compris). Sans perso de la classe, ils viennent des tables du jeu.
+
+### Modifications
+- Leveling, page refaite (maquettes A et 1) : deux onglets, « Talents » et « Sorts du maître », chacun sur toute la largeur. Les talents sont bien plus grands.
+- Leveling : le plan se choisit dans un menu déroulant, qui montre son nom, sa répartition (barre en couleurs et « 23 / 0 / 28 ») et ses points. Le menu donne les autres plans de la classe et les actions : nouveau, dupliquer, renommer, copier le plan de ce perso, partager ou importer un code, supprimer (avec confirmation).
+- Leveling, talents : les niveaux où chaque point est pris sont en or sur l'icône, et le rang (2/3) est en dessous. Une rangée pas encore ouverte (5 points par rangée dans l'arbre) est grisée, avec le nombre de points demandés en rouge à gauche.
+
 ## v1.128.361 — 25/11/2026
 
 _Un /reload suffit._

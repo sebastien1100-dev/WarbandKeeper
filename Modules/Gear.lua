@@ -109,8 +109,15 @@ local function nodeData(cfgID, nodeID)
         end
     end
     if type(name) ~= "string" then return nil end
+    -- traits de la fenêtre des talents : ce nœud ouvre ceux qu'il vise (prérequis des talents visés)
+    local edges
+    for _, e in ipairs(type(n.visibleEdges) == "table" and n.visibleEdges or {}) do
+        local tgt = type(e) == "table" and num(e.targetNode)
+        if tgt then edges = edges or {}; edges[#edges + 1] = tgt end
+    end
     return { node = nodeID, name = name, icon = icon, spell = spell, x = num(n.posX) or 0, y = num(n.posY) or 0,
-        rank = num(n.activeRank) or num(n.currentRank) or 0, max = num(n.maxRanks) or 1, sub = num(n.subTreeID) }
+        rank = num(n.activeRank) or num(n.currentRank) or 0, max = num(n.maxRanks) or 1, sub = num(n.subTreeID),
+        edges = edges }
 end
 -- Noms des trois arbres par classe (ordre classique de gauche à droite), quand le jeu ne les donne pas
 local TREE_NAMES = {
@@ -219,6 +226,11 @@ local function scanTraits(c)
         for _, d in ipairs(groups[b].list) do bx = math.min(bx, d.x) end
         return ax < bx
     end)
+    -- prérequis : nœud source d'un trait vers ce nœud (9e champ des talents relevés)
+    local reqOf = {}
+    for _, d in ipairs(nodes) do
+        for _, tgt in ipairs(d.edges or {}) do reqOf[tgt] = d.node end
+    end
     local out = {}
     for i, gk in ipairs(order) do
         local g = groups[gk]
@@ -240,7 +252,7 @@ local function scanTraits(c)
         local tree = { name = type(name) == "string" and name or string.format(T("Arbre %d"), i), points = 0, list = {}, cols = #xs }
         for _, d in ipairs(g.list) do
             tree.points = tree.points + d.rank
-            table.insert(tree.list, { d.name, d.icon, yi[d.y], xi[d.x], d.rank, d.max, d.spell, d.node })
+            table.insert(tree.list, { d.name, d.icon, yi[d.y], xi[d.x], d.rank, d.max, d.spell, d.node, reqOf[d.node] })
         end
         table.insert(out, tree)
     end

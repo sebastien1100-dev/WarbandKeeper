@@ -8,7 +8,6 @@ local T = function(s) return WK.T(s) end
 -- (clic = point suivant, clic droit = retirer le dernier), à droite les sorts du maître rangés par niveau
 -- (clic = acheter / écarter). Tous les persos de la classe suivent le plan actif (pastilles « Suivi par »).
 local CreateFrame = _G.CreateFrame
-local GAP = 12
 local CLASSES = { { "WARRIOR", "Guerrier" }, { "PALADIN", "Paladin" }, { "HUNTER", "Chasseur" },
     { "ROGUE", "Voleur" }, { "PRIEST", "Prêtre" }, { "SHAMAN", "Chaman" }, { "MAGE", "Mage" },
     { "WARLOCK", "Démoniste" }, { "DRUID", "Druide" } }
@@ -62,78 +61,92 @@ UI:RegisterPage({
             end
         end
 
-        -- bandeau : plans de la classe, nom, persos qui suivent --------------------------------------------
+        -- bandeau (maquette 1) : menu déroulant du plan (nom, répartition, points), persos qui suivent ----------
         local head = CreateFrame("Frame", nil, p)
-        head:SetPoint("TOPLEFT", 0, -58 - 8); head:SetPoint("TOPRIGHT", 0, -58 - 8); head:SetHeight(30)
-        self.planBtns = {}
-        self.newBtn = UI:Button(head, "+ plan", nil, 26, "ghost")
-        self.newBtn:SetScript("OnClick", function()
-            local n = #CP():Plans(self.class) + 1
-            local i = CP():New(self.class, string.format(T("Plan %d"), n))
-            CP():SetActive(self.class, i)
-            self:Refresh()
-        end)
-        self.copyBtn = UI:Button(head, "Copier mon plan", nil, 26, "ghost")
-        self.copyBtn.tooltip = "Reprend l'ancien plan de montée de ce perso (d'avant cette page) comme plan de la classe."
-        self.copyBtn:SetScript("OnClick", function()
-            local key = WK:CharKey()
-            local pp = WK.modules.TalentPlan:Active(key)
-            if not pp then return end
-            local i = CP():New(self.class, pp.name, pp.steps)
-            CP():SetActive(self.class, i)
-            self:Refresh()
-        end)
-        self.nameIn = UI:Input(head, 150, 26, "Nom du plan")
+        head:SetPoint("TOPLEFT", 0, -58 - 8); head:SetPoint("TOPRIGHT", 0, -58 - 8); head:SetHeight(40)
+        self.head = head
+        local dd = CreateFrame("Button", nil, head)
+        dd:SetHeight(36); dd:SetPoint("LEFT", 0, 0); dd:SetWidth(330)
+        dd.bg = UI:Rounded(dd, 9, 0, "BACKGROUND", 1)
+        dd.edge = UI:Rounded(dd, 9, 0, "BACKGROUND", 0)
+        dd.lab = UI:Text(dd, 11, C.muted); dd.lab:SetPoint("LEFT", 12, 0); dd.lab:SetText(T("Plan"))
+        dd.name = UI:Text(dd, 14, C.text); dd.name:SetPoint("LEFT", dd.lab, "RIGHT", 8, 0)
+        dd.name:SetWidth(150); dd.name:SetJustifyH("LEFT")
+        if dd.name.SetWordWrap then dd.name:SetWordWrap(false) end
+        dd.car = UI:Icon(dd, "chevron", 12); dd.car:SetPoint("RIGHT", -10, 0)
+        if dd.car.SetRotation then dd.car:SetRotation(-math.pi / 2) end
+        dd.split = {}
+        for k = 1, 3 do
+            local t = dd:CreateTexture(nil, "ARTWORK"); t:SetHeight(6)
+            dd.split[k] = t
+        end
+        dd.splitBg = dd:CreateTexture(nil, "BORDER"); dd.splitBg:SetHeight(6)
+        dd.splitBg:SetPoint("RIGHT", dd.car, "LEFT", -10, 0); dd.splitBg:SetWidth(110)
+        dd:SetScript("OnClick", function(b) self:OpenPlanMenu(b) end)
+        dd:SetScript("OnEnter", function(b) b.hover = true; self:PaintDD() end)
+        dd:SetScript("OnLeave", function(b) b.hover = false; self:PaintDD() end)
+        self.dd = dd
+        self.nums = UI:Text(head, 12, C.muted); self.nums:SetPoint("LEFT", dd, "RIGHT", 12, 0)
+        -- « + plan » quand la classe n'en a aucun (sinon : dans le menu)
+        self.newBtn = UI:Button(head, "+ plan", nil, 30, "primary")
+        self.newBtn:SetPoint("LEFT", 0, 0)
+        self.newBtn:SetScript("OnClick", function() self:NewPlan() end)
+        -- saisie du nom (Renommer) et des codes (Partager / Importer), sur la ligne
+        self.nameIn = UI:Input(head, 220, 30, "Nom du plan")
+        self.nameIn:SetPoint("LEFT", self.nums, "RIGHT", 14, 0)
+        self.nameIn:Hide()
         self.nameIn.onEnter = function()
             local _, ai = CP():Active(self.class)
-            if ai then CP():Rename(self.class, ai, self.nameIn:GetText()) end
-            self:Refresh()
-        end
-        self.del = UI:IconButton(head, "trash", 22, "Supprimer ce plan (deux clics)", true)
-        self.del:SetScript("OnClick", function(b)
-            local _, ai = CP():Active(self.class)
-            if not ai then return end
-            if not b.armed then
-                b.armed = true
-                _G.C_Timer.After(3, function() b.armed = nil end)
-                WK:Print(T("Clique encore sur la corbeille pour supprimer ce plan."))
-                return
+            local txt = self.nameIn:GetText()
+            if self.inMode == "rename" and ai then CP():Rename(self.class, ai, txt)
+            elseif self.inMode == "import" then
+                local ok, why = CP():Import(self.class, txt)
+                if not ok then WK:Print(why) end
             end
-            b.armed = nil
-            CP():Delete(self.class, ai)
-            self:Refresh()
+            self.inMode = nil; self.nameIn:Hide(); self:Refresh()
+        end
+        self.delOk = UI:Button(head, "Confirmer la suppression", nil, 28, "danger")
+        self.delOk:SetPoint("LEFT", self.nums, "RIGHT", 14, 0); self.delOk:Hide()
+        self.delOk:SetScript("OnClick", function()
+            local _, ai = CP():Active(self.class)
+            if ai then CP():Delete(self.class, ai) end
+            self.delOk:Hide(); self:Refresh()
         end)
         self.follow = UI:Text(head, 11, C.muted)
         self.followBtns = {}
 
-        -- deux colonnes ------------------------------------------------------------------------------------
+        -- onglets Talents / Sorts du maître (maquette A) -----------------------------------------------------
         local body = CreateFrame("Frame", nil, p)
-        body:SetPoint("TOPLEFT", 0, -58 - 8 - 30 - 10); body:SetPoint("BOTTOMRIGHT")
+        body:SetPoint("TOPLEFT", 0, -58 - 8 - 40 - 8); body:SetPoint("BOTTOMRIGHT")
+        self.tab = cfg().levelTab or "talents"
+        self.tabs = UI:UnderTabs(body, { { "talents", "Talents" }, { "spells", "Sorts du maître" } }, function(k)
+            self.tab = k; cfg().levelTab = k; self:Refresh()
+        end, 30)
+        self.tabs:SetPoint("TOPLEFT", 0, 0); self.tabs:SetPoint("TOPRIGHT", 0, 0)
+        self.tabs:Select(self.tab)
+        self.tabSum = UI:Text(body, 12, C.muted); self.tabSum:SetPoint("TOPRIGHT", -4, -8)
+        self.tabSum:SetJustifyH("RIGHT")
         self.left = UI:Card(body, T("Talents"), " ")
         self.right = UI:Card(body, T("Achats chez le maître"), " ")
-        UI:OnResize(body, function(w)
-            local half = (w - GAP) / 2
-            self.left:ClearAllPoints(); self.left:SetPoint("TOPLEFT"); self.left:SetPoint("BOTTOMLEFT")
-            self.left:SetWidth(half)
-            self.right:ClearAllPoints(); self.right:SetPoint("TOPRIGHT"); self.right:SetPoint("BOTTOMRIGHT")
-            self.right:SetWidth(half)
-            UI:RefreshSoon()
-        end)
+        for _, c in ipairs({ self.left, self.right }) do
+            c:SetPoint("TOPLEFT", 0, -30 - 8); c:SetPoint("BOTTOMRIGHT")
+        end
+        UI:OnResize(body, function() UI:RefreshSoon() end)
         -- arbres
         self.treeHost = CreateFrame("Frame", nil, self.left)
-        self.treeHost:SetPoint("TOPLEFT", 12, -40); self.treeHost:SetPoint("BOTTOMRIGHT", -12, 46)
-        self.treeHeads, self.nodes = {}, {}
+        self.treeHost:SetPoint("TOPLEFT", 16, -44); self.treeHost:SetPoint("BOTTOMRIGHT", -16, 50)
+        self.treeHeads, self.nodes, self.links, self.rowLabs = {}, {}, {}, {}
         self.leftMsg = UI:Text(self.left, 12, C.muted); self.leftMsg:SetPoint("TOPLEFT", 16, -44)
         self.leftMsg:SetPoint("TOPRIGHT", -16, -44); self.leftMsg:SetJustifyH("LEFT")
         if self.leftMsg.SetWordWrap then self.leftMsg:SetWordWrap(true) end
-        self.undo = UI:Button(self.left, "Annuler le dernier point", nil, 24, "secondary")
-        self.undo:SetPoint("BOTTOMLEFT", 12, 12)
+        self.undo = UI:Button(self.left, "Annuler le dernier point", nil, 26, "secondary")
+        self.undo:SetPoint("BOTTOMLEFT", 14, 14)
         self.undo:SetScript("OnClick", function()
             local _, ai = CP():Active(self.class)
             if ai then CP():RemoveLast(self.class, ai); self:Refresh() end
         end)
-        self.leftFoot = UI:Text(self.left, 10, C.dim); self.leftFoot:SetPoint("LEFT", self.undo, "RIGHT", 10, 0)
-        self.leftFoot:SetPoint("RIGHT", -12, 0); self.leftFoot:SetJustifyH("LEFT")
+        self.leftFoot = UI:Text(self.left, 11, C.dim); self.leftFoot:SetPoint("LEFT", self.undo, "RIGHT", 12, 0)
+        self.leftFoot:SetPoint("RIGHT", -14, 0); self.leftFoot:SetJustifyH("LEFT")
         -- achats
         self.spells = UI:Scroll(self.right)
         self.spells:SetPoint("TOPLEFT", 8, -40); self.spells:SetPoint("BOTTOMRIGHT", -8, 34)
@@ -147,20 +160,100 @@ UI:RegisterPage({
             .. " d'un talent du plan."))
     end,
 
-    -- un nœud de talent (bouton réutilisé)
+    -- répartition des points d'un plan par arbre (« 23 / 0 / 28 »)
+    Split = function(_, plan)
+        local out = { 0, 0, 0 }
+        for _, st in ipairs(plan and plan.steps or {}) do out[st[1]] = (out[st[1]] or 0) + 1 end
+        return out
+    end,
+    PaintDD = function(self)
+        local dd = self.dd
+        local ar, ag, ab = UI:Accent()
+        dd.bg:SetColor(unpack(dd.hover and C.surface2 or C.surface))
+        dd.edge:SetColor(ar, ag, ab, 0.9)
+        dd.car:SetVertexColor(ar, ag, ab, 1)
+    end,
+    NewPlan = function(self)
+        local n = #CP():Plans(self.class) + 1
+        local i = CP():New(self.class, string.format(T("Plan %d"), n))
+        CP():SetActive(self.class, i)
+        self:Refresh()
+    end,
+    -- menu du plan : les plans de la classe (répartition, points), puis les actions
+    OpenPlanMenu = function(self, anchor)
+        local cp = CP()
+        local plans = cp:Plans(self.class)
+        local _, ai = cp:Active(self.class)
+        local list = {}
+        for i, pl in ipairs(plans) do
+            local sp = self:Split(pl)
+            list[#list + 1] = { label = pl.name, on = i == ai,
+                desc = string.format("%d / %d / %d  ·  %d / 51", sp[1], sp[2], sp[3], #pl.steps),
+                fn = function() cp:SetActive(self.class, i); self:Refresh() end }
+        end
+        list[#list + 1] = { sep = true }
+        list[#list + 1] = { label = T("+ Nouveau plan"), fn = function() self:NewPlan() end }
+        if ai then
+            list[#list + 1] = { label = T("Dupliquer ce plan"), fn = function()
+                local n = cp:Duplicate(self.class, ai)
+                if n then cp:SetActive(self.class, n) end
+                self:Refresh()
+            end }
+            list[#list + 1] = { label = T("Renommer"), fn = function() self:AskLine("rename", plans[ai].name) end }
+        end
+        local myKey = WK:CharKey()
+        local mine = WK.DB.global.characters[myKey]
+        local own = mine and mine.class == self.class and WK.modules.TalentPlan:Active(myKey)
+        if own then
+            list[#list + 1] = { label = T("Copier le plan de ce perso"), desc = own.name, fn = function()
+                local i = cp:New(self.class, own.name, own.steps)
+                cp:SetActive(self.class, i); self:Refresh()
+            end }
+        end
+        if ai then
+            list[#list + 1] = { label = T("Partager (code)"), desc = T("Le code s'affiche, prêt à copier (Ctrl+C)"),
+                fn = function() self:AskLine("share", cp:Export(self.class, ai)) end }
+        end
+        list[#list + 1] = { label = T("Importer un code"), fn = function() self:AskLine("import", "") end }
+        if ai then
+            list[#list + 1] = { sep = true }
+            list[#list + 1] = { label = T("Supprimer ce plan…"), col = C.negative, fn = function()
+                self.nameIn:Hide(); self.delOk:Show()
+                _G.C_Timer.After(5, function() if self.delOk then self.delOk:Hide() end end)
+            end }
+        end
+        UI.StashPopMenu():Open(anchor, T(CLASS_LABEL[self.class] or self.class), T("Plans de montée"), list, 330)
+    end,
+    -- ligne de saisie : renommer, code à copier, code à coller
+    AskLine = function(self, mode, text)
+        self.inMode = mode; self.delOk:Hide()
+        self.nameIn:SetText(text or ""); self.nameIn:Show()
+        local eb = self.nameIn.edit or self.nameIn.EditBox or self.nameIn
+        if eb.SetFocus then pcall(eb.SetFocus, eb) end
+        if eb.HighlightText then pcall(eb.HighlightText, eb) end
+    end,
+
+    -- un nœud de talent (bouton réutilisé) : icône, liseré (or = rang max, accent = en cours), rang dessous,
+    -- niveaux où les points sont pris en or au coin haut droit
     Node = function(self, i)
         local n = self.nodes[i]
         if n then return n end
         n = CreateFrame("Button", nil, self.treeHost)
         n:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-        n.bg = n:CreateTexture(nil, "BACKGROUND"); n.bg:SetAllPoints(); n.bg:SetColorTexture(0, 0, 0, 0.5)
+        n:SetFrameLevel(self.treeHost:GetFrameLevel() + 3)
+        n.edge = n:CreateTexture(nil, "BACKGROUND"); n.edge:SetAllPoints()
         n.icon = n:CreateTexture(nil, "ARTWORK"); n.icon:SetPoint("TOPLEFT", 2, -2)
         n.icon:SetPoint("BOTTOMRIGHT", -2, 2)
         n.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-        n.edge = n:CreateTexture(nil, "BORDER"); n.edge:SetAllPoints()
-        n.lab = UI:Text(n, 9, C.text); n.lab:SetPoint("BOTTOMRIGHT", 3, -3)
-        if n.lab.SetIgnoreParentAlpha then n.lab:SetIgnoreParentAlpha(true) end
-        n.rk = UI:Text(n, 9, C.muted); n.rk:SetPoint("TOPLEFT", -2, 3)
+        -- pastilles : rang (sous l'icône) et niveaux (coin haut droit), chacune dans son petit cadre arrondi
+        n.rkF = CreateFrame("Frame", nil, n); n.rkF:SetHeight(14); n.rkF:SetPoint("CENTER", n, "BOTTOM", 0, -1)
+        n.rkF:SetFrameLevel(n:GetFrameLevel() + 2)
+        n.rkBg = UI:Rounded(n.rkF, 5, 0, "BACKGROUND", 1)
+        n.rk = UI:Text(n.rkF, 10, C.text); n.rk:SetPoint("CENTER", 0, 0)
+        n.lvF = CreateFrame("Frame", nil, n); n.lvF:SetHeight(14); n.lvF:SetPoint("CENTER", n, "TOPRIGHT", -2, 0)
+        n.lvF:SetFrameLevel(n:GetFrameLevel() + 2)
+        n.lvBg = UI:Rounded(n.lvF, 5, 0, "BACKGROUND", 1)
+        n.lv = UI:Text(n.lvF, 10, { 0.14, 0.1, 0 }); n.lv:SetPoint("CENTER", 0, 0)
         n:SetScript("OnClick", function(s, btn)
             local _, ai = CP():Active(self.class)
             if not ai then return end
@@ -174,14 +267,26 @@ UI:RegisterPage({
         n:SetScript("OnEnter", function(s)
             local GT = _G.GameTooltip
             UI:TooltipOwner(s, "ANCHOR_RIGHT")
-            GT:SetText(s.d and s.d[1] or "", 1, 1, 1)
-            if s.when then GT:AddLine(string.format(T("Niveaux : %s"), s.when), C.muted[1], C.muted[2], C.muted[3]) end
+            if s.d and s.d[7] and GT.SetSpellByID then pcall(GT.SetSpellByID, GT, s.d[7])
+            else GT:SetText(s.d and s.d[1] or "", 1, 1, 1) end
+            GT:AddLine(" ")
+            GT:AddLine(string.format(T("Rang %d / %d"), s.r or 0, s.d and s.d[6] or 1), 1, 1, 1)
+            if s.when then GT:AddLine(string.format(T("Niveaux : %s"), s.when), C.gold[1], C.gold[2], C.gold[3]) end
+            if s.why then GT:AddLine(s.why, C.negative[1], C.negative[2], C.negative[3], true) end
             GT:AddLine(T("Clic : point suivant du plan · clic droit : retirer le dernier"), 0.6, 0.6, 0.6)
             GT:Show()
         end)
         n:SetScript("OnLeave", function() _G.GameTooltip:Hide() end)
         self.nodes[i] = n
         return n
+    end,
+    -- trait de prérequis (textures réutilisées : segments droits)
+    Link = function(self, i)
+        local t = self.links[i]
+        if t then return t end
+        t = self.treeHost:CreateTexture(nil, "BORDER")
+        self.links[i] = t
+        return t
     end,
 
     -- une puce de sort (bouton réutilisé)
@@ -232,40 +337,26 @@ UI:RegisterPage({
         local class = self.class
         local cp = CP()
         self:PaintClasses()
-        local plans = cp:Plans(class)
-        local plan, ai = cp:Active(class)
-        -- bandeau
-        local x = 0
-        for i = 1, math.max(#plans, #self.planBtns) do
-            local b = self.planBtns[i]
-            if not b and plans[i] then
-                b = UI:Button(self.newBtn:GetParent(), "", nil, 26, "ghost")
-                b:SetScript("OnClick", function() cp:SetActive(self.class, i); self:Refresh() end)
-                self.planBtns[i] = b
-            end
-            if b then
-                if plans[i] then
-                    b:SetLabel(plans[i].name); b:SetStyle(i == ai and "primary" or "ghost")
-                    b:ClearAllPoints(); b:SetPoint("LEFT", x, 0); b:Show()
-                    x = x + b:GetWidth() + 6
-                else b:Hide() end
-            end
-        end
-        self.newBtn:ClearAllPoints(); self.newBtn:SetPoint("LEFT", x, 0); x = x + self.newBtn:GetWidth() + 6
-        local myKey = WK:CharKey()
-        local mine = WK.DB.global.characters[myKey]
-        local canCopy = mine and mine.class == class and WK.modules.TalentPlan:Active(myKey) ~= nil
-        self.copyBtn:SetShown(canCopy and true or false)
-        if canCopy then
-            self.copyBtn:ClearAllPoints(); self.copyBtn:SetPoint("LEFT", x, 0); x = x + self.copyBtn:GetWidth() + 6
-        end
-        self.nameIn:SetShown(plan ~= nil); self.del:SetShown(plan ~= nil)
+        local plan = cp:Active(class)
+        -- bandeau : menu du plan (ou « + plan » si la classe n'en a aucun)
+        self.dd:SetShown(plan ~= nil); self.nums:SetShown(plan ~= nil); self.newBtn:SetShown(plan == nil)
+        if not plan then self.nameIn:Hide(); self.delOk:Hide() end
         if plan then
-            self.nameIn:ClearAllPoints(); self.nameIn:SetPoint("LEFT", x + 6, 0)
-            -- nom remis seulement en changeant de plan (pas pendant la frappe : la page se redessine souvent)
-            local nk = self.class .. ":" .. ai .. ":" .. plan.name
-            if self.nameFor ~= nk then self.nameFor = nk; self.nameIn:SetText(plan.name) end
-            self.del:ClearAllPoints(); self.del:SetPoint("LEFT", self.nameIn, "RIGHT", 6, 0)
+            self:PaintDD()
+            self.dd.name:SetText(plan.name)
+            local sp = self:Split(plan)
+            local cols = { C.gold, C.info, C.negative }
+            local x = 0
+            for k = 1, 3 do
+                local t = self.dd.split[k]
+                local w = 110 * sp[k] / 51
+                t:ClearAllPoints(); t:SetPoint("LEFT", self.dd.splitBg, "LEFT", x, 0); t:SetWidth(math.max(0.01, w))
+                t:SetColorTexture(cols[k][1], cols[k][2], cols[k][3], 1); t:SetShown(w > 0)
+                x = x + w
+            end
+            self.dd.splitBg:SetColorTexture(C.surface2[1], C.surface2[2], C.surface2[3], 1)
+            self.nums:SetText(string.format("%s%d / %d / %d|r  ·  %d / 51", UI:Hex(C.text), sp[1], sp[2], sp[3],
+                #plan.steps))
         end
         -- persos de la classe : pastille par perso (accent = suit le plan, clic = suivre ou non)
         local chars = cp:Chars(class)
@@ -274,7 +365,7 @@ UI:RegisterPage({
             local b = self.followBtns[i]
             local e = chars[i]
             if not b and e then
-                b = UI:Button(self.newBtn:GetParent(), "", nil, 24, "ghost")
+                b = UI:Button(self.head, "", nil, 26, "ghost")
                 b:SetScript("OnClick", function(s) cp:SetFollow(s.key, not cp:Follows(s.key)); self:Refresh() end)
                 b.tooltip = "Clic : ce perso suit le plan de sa classe, ou n'en suit aucun (sauf un ancien plan à lui)."
                 self.followBtns[i] = b
@@ -284,15 +375,21 @@ UI:RegisterPage({
                     b.key = e.key
                     b:SetLabel(string.format("%s (%d)", WK:CharName(e.c, e.key), e.c.level or 1))
                     b:SetStyle(cp:Follows(e.key) and "secondary" or "ghost")
-                    b:ClearAllPoints(); b:SetPoint("RIGHT", self.newBtn:GetParent(), "RIGHT", -fx, 0); b:Show()
+                    b:ClearAllPoints(); b:SetPoint("RIGHT", self.head, "RIGHT", -fx, 0); b:Show()
                     fx = fx + b:GetWidth() + 6
                 else b:Hide() end
             end
         end
-        self.follow:ClearAllPoints(); self.follow:SetPoint("RIGHT", self.newBtn:GetParent(), "RIGHT", -fx - 4, 0)
+        self.follow:ClearAllPoints(); self.follow:SetPoint("RIGHT", self.head, "RIGHT", -fx - 4, 0)
         self.follow:SetText(#chars > 0 and T("Suivi par") or T("Aucun perso de cette classe pour l'instant"))
+        -- onglet affiché
+        self.tabs:Select(self.tab)
+        self.left:SetShown(self.tab == "talents"); self.right:SetShown(self.tab == "spells")
         self:RefreshTalents(plan)
         self:RefreshSpells(plan)
+        local sp = self:Split(plan)
+        self.tabSum:SetText(plan and (self.tab == "talents" and string.format(T("Talents %d / %d / %d"), sp[1], sp[2],
+            sp[3]) or (self.selCost:GetText() or "")) or "")
     end,
 
     RefreshTalents = function(self, plan)
@@ -300,54 +397,117 @@ UI:RegisterPage({
         local trees = cp:Trees(self.class)
         for _, n in ipairs(self.nodes) do n:Hide() end
         for _, h in ipairs(self.treeHeads) do h:Hide() end
+        for _, l in ipairs(self.links) do l:Hide() end
+        for _, l in ipairs(self.rowLabs) do l:Hide() end
         local msg
         if not plan then msg = T("Pas encore de plan pour cette classe : « + plan » pour en créer un.")
-        elseif not trees then
-            msg = T("Arbres de talents introuvables pour cette classe.")
-        end
+        elseif not trees then msg = T("Arbres de talents introuvables pour cette classe.") end
         self.leftMsg:SetText(msg or ""); self.leftMsg:SetShown(msg ~= nil)
         self.undo:SetShown(plan ~= nil and trees ~= nil)
-        local used = 0
-        for _ in pairs(plan and plan.steps or {}) do used = used + 1 end
         self.left.subtitle:SetText(plan and string.format(T("%d / 51 points prévus"), #plan.steps) or "")
-        self.leftFoot:SetText(plan and trees and T("Le chiffre : niveaux où le point est pris") or "")
+        self.leftFoot:SetText(plan and trees and T("Chiffre doré : niveaux où le point est pris. Rangée fermée :"
+            .. " 5 points par rangée dans l'arbre. Trait : prérequis (au rang max).") or "")
         if msg then return end
         local TP = WK.modules.TalentPlan
         local labels = TP:LevelLabels(plan)
         local ranks = TP:Ranks(plan)
-        local W = (self.treeHost:GetWidth() or 400)
+        local W, H = self.treeHost:GetWidth() or 600, self.treeHost:GetHeight() or 400
         local nT = #trees
-        local tw = (W - (nT - 1) * 10) / math.max(1, nT)
-        local idx = 0
+        local tw = (W - (nT - 1) * 24) / math.max(1, nT)
+        local idx, li, ri = 0, 0, 0
         local ar, ag, ab = UI:Accent()
+        local function seg(x1, y1, x2, y2, col)
+            li = li + 1
+            local t = self:Link(li)
+            t:ClearAllPoints()
+            t:SetPoint("TOPLEFT", math.min(x1, x2) - 1.5, -(math.min(y1, y2) - 1.5))
+            t:SetSize(math.abs(x2 - x1) + 3, math.abs(y2 - y1) + 3)
+            t:SetColorTexture(col[1], col[2], col[3], col[4] or 1); t:Show()
+        end
         for ti, t in ipairs(trees) do
             local h = self.treeHeads[ti]
-            if not h then h = UI:Text(self.treeHost, 11, C.muted); self.treeHeads[ti] = h end
+            if not h then h = UI:Text(self.treeHost, 13, C.text); self.treeHeads[ti] = h end
             local inTree = 0
             for k, v in pairs(ranks) do if k:match("^(%d+):") == tostring(ti) then inTree = inTree + v end end
-            h:ClearAllPoints(); h:SetPoint("TOP", self.treeHost, "TOPLEFT", (ti - 1) * (tw + 10) + tw / 2, 0)
+            local maxCol, maxRow = 4, 1
+            for _, d in ipairs(t.list or {}) do
+                if (d[4] or 1) > maxCol then maxCol = d[4] end
+                if (d[3] or 1) > maxRow then maxRow = d[3] end
+            end
+            -- case : remplit la largeur de l'arbre et la hauteur disponible (icônes de 34 à 52 px)
+            local cell = math.floor(math.min((tw - 22) / maxCol, (H - 30) / maxRow, 64))
+            local size = math.max(24, math.min(52, cell - 14))
+            local x0 = (ti - 1) * (tw + 24) + 22 + ((tw - 22) - cell * maxCol) / 2
+            h:ClearAllPoints(); h:SetPoint("TOPLEFT", self.treeHost, "TOPLEFT", x0, 0)
             h:SetText(string.format("%s  %s%d|r", t.name or "", UI:Hex(C.gold), inTree)); h:Show()
-            local maxCol = 1
-            for _, d in ipairs(t.list or {}) do if (d[4] or 1) > maxCol then maxCol = d[4] end end
-            local cell = math.min(40, math.floor(tw / math.max(4, maxCol)))
-            local size = cell - 6
-            local x0 = (ti - 1) * (tw + 10) + (tw - cell * math.max(4, maxCol)) / 2
+            local pos = {}
+            -- rangées : chiffre des points demandés à gauche, rouge tant que la rangée est fermée
+            for row = 2, maxRow do
+                ri = ri + 1
+                local l = self.rowLabs[ri]
+                if not l then l = UI:Text(self.treeHost, 10, C.dim); self.rowLabs[ri] = l end
+                local need = (row - 1) * 5
+                l:SetTextColor(unpack(inTree >= need and C.dim or C.negative))
+                l:SetText(need)
+                local ly = 24 + (row - 1) * cell + cell / 2 - 6
+                l:ClearAllPoints(); l:SetPoint("CENTER", self.treeHost, "TOPLEFT", x0 - 14, -ly)
+                l:Show()
+            end
             for j, d in ipairs(t.list or {}) do
                 idx = idx + 1
                 local n = self:Node(idx)
-                n.ti, n.j, n.d = ti, j, d
                 local r = ranks[ti .. ":" .. j] or 0
+                local max = d[6] or 1
+                local open = inTree >= ((d[3] or 1) - 1) * 5
+                local pj, pmax, pd = cp:Prereq(self.class, trees, ti, j)
+                local preOk = not pj or (ranks[ti .. ":" .. pj] or 0) >= pmax
+                n.ti, n.j, n.d, n.r = ti, j, d, r
                 n.when = labels[ti .. ":" .. j]
+                local needRow = ((d[3] or 1) - 1) * 5
+                n.why = (not open and string.format(T("Rangée fermée : %d points dans %s (%d)."), needRow,
+                    t.name or "", inTree))
+                    or (not preOk and string.format(T("Il faut d'abord %s au rang %d."), pd and pd[1] or "?", pmax))
+                    or nil
                 n:SetSize(size, size)
-                n:ClearAllPoints()
-                n:SetPoint("TOPLEFT", x0 + ((d[4] or 1) - 1) * cell + 3, -20 - ((d[3] or 1) - 1) * cell)
+                local x = x0 + ((d[4] or 1) - 1) * cell + (cell - size) / 2
+                local y = 24 + ((d[3] or 1) - 1) * cell + (cell - size) / 2 - 6
+                pos[j] = { x + size / 2, y, y + size }
+                n:ClearAllPoints(); n:SetPoint("TOPLEFT", x, -y)
                 n.icon:SetTexture(d[2] or 134400)
+                local locked = r == 0 and (not open or not preOk)
                 if n.icon.SetDesaturated then n.icon:SetDesaturated(r == 0) end
-                n.icon:SetAlpha(r > 0 and 1 or 0.45)
-                n.edge:SetColorTexture(ar, ag, ab, r > 0 and 0.9 or 0)
-                n.lab:SetText(n.when and (UI:Hex(C.gold) .. n.when .. "|r") or "")
-                n.rk:SetText(r > 0 and string.format("%d/%d", r, d[6] or 1) or "")
+                n.icon:SetAlpha(r > 0 and 1 or (locked and 0.25 or 0.6))
+                if r >= max then n.edge:SetColorTexture(C.gold[1], C.gold[2], C.gold[3], 1)
+                elseif r > 0 then n.edge:SetColorTexture(ar, ag, ab, 1)
+                else n.edge:SetColorTexture(C.border[1], C.border[2], C.border[3], locked and 0.5 or 1) end
+                n.rk:SetText(r .. "/" .. max)
+                n.rk:SetTextColor(unpack(r > 0 and C.text or C.muted))
+                n.rkF:SetWidth((n.rk:GetStringWidth() or 18) + 10)
+                n.rkBg:SetColor(C.bg[1], C.bg[2], C.bg[3], 0.95)
+                -- niveaux (or) : « 21 · 22 · 23 », ou « 21…25 » au-delà de deux
+                local lv = n.when
+                if lv then
+                    local nums = {}
+                    for v in lv:gmatch("%d+") do nums[#nums + 1] = v end
+                    lv = #nums > 2 and (nums[1] .. "…" .. nums[#nums]) or table.concat(nums, " · ")
+                end
+                n.lv:SetText(lv or "")
+                n.lvF:SetWidth((n.lv:GetStringWidth() or 10) + 8)
+                n.lvBg:SetColor(C.gold[1], C.gold[2], C.gold[3], 1)
+                n.lvF:SetShown(lv ~= nil and lv ~= "")
                 n:Show()
+            end
+            -- traits de prérequis : du bas du talent demandé au haut du talent visé (coude à mi-hauteur)
+            for j in ipairs(t.list or {}) do
+                local pj, pmax = cp:Prereq(self.class, trees, ti, j)
+                if pj and pos[pj] and pos[j] then
+                    local ok = (ranks[ti .. ":" .. pj] or 0) >= pmax
+                    local col = ok and { C.gold[1], C.gold[2], C.gold[3], 1 }
+                        or { C.muted[1], C.muted[2], C.muted[3], 0.6 }
+                    local xa, ya, xb, yb = pos[pj][1], pos[pj][3] + 6, pos[j][1], pos[j][2] - 1
+                    local ym = (ya + yb) / 2
+                    seg(xa, ya, xa, ym, col); seg(xa, ym, xb, ym, col); seg(xb, ym, xb, yb, col)
+                end
             end
         end
     end,

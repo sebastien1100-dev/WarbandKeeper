@@ -80,11 +80,13 @@ function M.StaticTrees(_, class)
     t = { static = true, complete = true }
     for _, tr in ipairs(raw) do
         local tree = { name = fr and tr[1] or tr[2], points = 0, list = {} }
-        for row, col, max, sp in tr[3]:gmatch("(%d+),(%d+),(%d+),(%d+)") do
+        for row, col, max, sp, pre in tr[3]:gmatch("(%d+),(%d+),(%d+),(%d+),?([%d%.]*)") do
             sp = tonumber(sp)
             local name, icon = WK.SpellInfo(sp)
             if not name then t.complete = false end
             local d = { name or ("#" .. sp), icon, tonumber(row), tonumber(col), 0, tonumber(max), sp }
+            local pr, pc = pre:match("^(%d+)%.(%d+)$")
+            if pr then d.req = { tonumber(pr), tonumber(pc) } end
             tree.list[#tree.list + 1] = d
         end
         tree.cols = 4
@@ -92,6 +94,74 @@ function M.StaticTrees(_, class)
     end
     staticTrees[class] = t
     return t
+end
+
+-- Prérequis d'un talent (arbre ti, n° j) : n° du talent demandé (même arbre) et son rang max, ou nil.
+-- Arbres relevés : 9e champ (nœud source du trait de la fenêtre des talents) ; arbres des tables : d.req
+-- (rangée, colonne) ; sinon le talent de même nom des tables donne le nom du prérequis.
+local function findIn(list, test) for j, d in ipairs(list or {}) do if test(d) then return j, d end end end
+function M:Prereq(class, trees, ti, j)
+    local tree = trees and trees[ti]
+    local d = tree and tree.list and tree.list[j]
+    if not d then return nil end
+    if d[9] then
+        local pj, pd = findIn(tree.list, function(x) return x[8] == d[9] end)
+        if pj then return pj, pd[6] or 1, pd end
+    end
+    if d.req then
+        local pj, pd = findIn(tree.list, function(x) return x[3] == d.req[1] and x[4] == d.req[2] end)
+        if pj then return pj, pd[6] or 1, pd end
+    end
+    if not trees.static then
+        local st = self:StaticTrees(class)
+        for _, stree in ipairs(st or {}) do
+            local _, sd = findIn(stree.list, function(x) return x[1] == d[1] end)
+            if sd then
+                if not sd.req then return nil end
+                local _, sp = findIn(stree.list, function(x) return x[3] == sd.req[1] and x[4] == sd.req[2] end)
+                local pj, pd
+                if sp then pj, pd = findIn(tree.list, function(x) return x[1] == sp[1] end) end
+                if pj then return pj, pd[6] or 1, pd end
+                return nil
+            end
+        end
+    end
+    return nil
+end
+
+-- Copie d'un plan (nom « … (copie) »), et code de partage « WKC1:CLASSE:nom du talent*rangs,… » (par noms :
+-- marche sur les arbres des tables comme sur les arbres relevés)
+function M:Duplicate(class, i)
+    local p = store(class).list[i]
+    if not p then return nil end
+    local n = self:New(class, p.name .. " " .. T("(copie)"), p.steps)
+    local q = store(class).list[n]
+    for k in pairs(p.skip or {}) do q.skip[k] = true end
+    q.static = p.static
+    return n
+end
+function M.Export(_, class, i)
+    local p = store(class).list[i]
+    if not p then return nil end
+    local parts = {}
+    for k, st in ipairs(p.steps) do parts[k] = st[1] .. "." .. st[2] end
+    return "WKC1:" .. class .. ":" .. table.concat(parts, ",")
+end
+function M:Import(class, code)
+    code = tostring(code or ""):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("[%s%[%]\"']", "")
+    local cls, body = code:match("^WKC1:(%u+):([%d%.,]*)$")
+    if not cls then cls, body = code:match("^WKP1:([%u%?]+):([%d%.,]*)$") end
+    if not cls then return nil, T("code non reconnu (attendu : WKC1:… ou WKP1:…)") end
+    if cls ~= "?" and cls ~= class then return nil, T("ce code est pour une autre classe") end
+    local i = self:New(class, T("Plan importé"))
+    for ti, j in body:gmatch("(%d+)%.(%d+)") do
+        if not self:AddStep(class, i, tonumber(ti), tonumber(j)) then
+            self:Delete(class, i)
+            return nil, T("le code ne correspond pas aux arbres de cette classe")
+        end
+    end
+    self:SetActive(class, i)
+    return i
 end
 
 -- Plan fait sur les arbres des tables, recalé sur les arbres relevés en jeu dès qu'un perso de la classe les a :
@@ -173,6 +243,10 @@ function M:AddStep(class, i, ti, j)
         return false, string.format(fmt, need, inTree)
     end
     if #p.steps >= 51 then return false, T("Le plan a déjà tous ses points (niveau 60).") end
+    local pj, pmax, pd = self:Prereq(class, trees, ti, j)
+    if pj and (ranks[ti .. ":" .. pj] or 0) < pmax then
+        return false, string.format(T("Il faut d'abord %s au rang %d."), pd[1] or "?", pmax)
+    end
     table.insert(p.steps, { ti, j, d[8], d[1] })
     if trees.static then p.static = true end
     self:Changed()

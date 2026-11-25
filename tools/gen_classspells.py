@@ -19,8 +19,9 @@ WK.ClassPetSpellsRaw[CLASSE] = "niveau,sort,n°.n°;…" (n° des familles qui o
 sans les sorts techniques (DND, Scaling).
 
 Arbres de talents (tables Talent et TalentTab, pour faire un plan sans perso de la classe) :
-WK.ClassTalentTrees[CLASSE] = { { "nom français", "nom anglais", "rangée,colonne,rangs,sort;…" }, … } dans
-l'ordre du jeu (OrderIndex) ; talents rangés par rangée puis colonne ; nom et icône relus en jeu par le sort.
+WK.ClassTalentTrees[CLASSE] = { { "nom fr", "nom en", "rangée,colonne,rangs,sort,prérequis;…" }, … } dans
+l'ordre du jeu (OrderIndex) ; talents rangés par rangée puis colonne ; nom et icône relus en jeu par le sort ;
+prérequis = « rangée.colonne » du talent demandé (au rang max), 0 sans prérequis.
 """
 import csv
 import os
@@ -76,7 +77,9 @@ def talent_trees(folder):
     except OSError:
         return {}
     trees = {}
-    for r in rd(folder, "Talent"):
+    rows = rd(folder, "Talent")
+    pos_of = {int(r["ID"]): (int(r["TierID"]) + 1, int(r["ColumnIndex"]) + 1) for r in rows}
+    for r in rows:
         tab = tabs_en.get(int(r["TabID"]))
         if not tab:
             continue
@@ -85,7 +88,8 @@ def talent_trees(folder):
         if not ranks:
             continue
         pos = (int(r["TierID"]) + 1, int(r["ColumnIndex"]) + 1)
-        trees.setdefault(int(r["TabID"]), []).append(pos + (len(ranks), ranks[0]))
+        pre = pos_of.get(int(r.get("PrereqTalent_0") or 0))
+        trees.setdefault(int(r["TabID"]), []).append(pos + (len(ranks), ranks[0], "%d.%d" % pre if pre else "0"))
     out = {}
     for tid, lst in trees.items():
         tab = tabs_en[tid]
@@ -161,7 +165,7 @@ def main(folder, out):
             parts = []
             for fr, en, lst in trees[cls]:
                 ntal += len(lst)
-                parts.append('{"%s","%s","%s"}' % (fr, en, ";".join("%d,%d,%d,%d" % x for x in lst)))
+                parts.append('{"%s","%s","%s"}' % (fr, en, ";".join("%d,%d,%d,%d,%s" % x for x in lst)))
             f.write("%s={%s},\n" % (cls, ",".join(parts)))
         f.write("}\n")
     print("%d sorts de classe, %d sorts de familiers, %d talents" % (total, npet, ntal))
