@@ -3129,6 +3129,7 @@ WK.Locales.enUS.text = {
     ["et le marquer d'une tête de mort"] = "and mark it with a skull",
     ["et lancer le guidage"] = "and start guidance",
     ["En combat : le jeu ne permet pas de cibler d'un clic"] = "In combat: the game does not allow targeting with a click",
+    ["Clic : guider, cibler ce rare et le marquer"] = "Click: guide, target this rare and mark it",
     ["Barre d'XP"] = "XP bar",
     ["Avant de partir"] = "Before you go",
     ["Le meilleur objet de chaque sorte pour ton niveau ; rouge : sous le seuil. Seuils x2 en raid ; en JcJ, pas d'élixir et moitié de nourriture."] = "The best item of each kind for your level; red: below threshold. Thresholds x2 in raids; in PvP, no elixir and half the food.",

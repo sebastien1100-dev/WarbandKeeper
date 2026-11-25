@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.315", date = "25/11/2026",
+        added = {
+            "Carte du monde : un clic sur le médaillon d'un rare ou sur sa ligne dans la liste des rares lance le guidage et, hors combat, le cible et lui pose une tête de mort s'il est à portée (comme le bandeau « Rare en vue »). En combat, le clic ne fait que guider : le jeu interdit de cibler d'un clic.",
+        },
+    },
+    {
         version = "1.128.314", date = "25/11/2026",
         added = {
             "Rare en vue : un clic sur le bandeau cible le rare et lui pose une tête de mort au-dessus de la tête (si le marquage est actif dans les réglages des Rares). Le bouton Guider et la croix gardent leur rôle ; en style compact, le clic cible, marque et lance le guidage. Hors combat seulement : le jeu interdit de cibler d'un clic en combat (le bandeau le dit au survol).",

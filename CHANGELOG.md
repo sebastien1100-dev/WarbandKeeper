@@ -53,6 +53,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.315 — 25/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Carte du monde : un clic sur le médaillon d'un rare ou sur sa ligne dans la liste des rares lance le guidage et, hors combat, le cible et lui pose une tête de mort s'il est à portée (comme le bandeau « Rare en vue »). En combat, le clic ne fait que guider : le jeu interdit de cibler d'un clic.
+
 ## v1.128.314 — 25/11/2026
 
 _Un /reload suffit._

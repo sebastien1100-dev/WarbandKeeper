@@ -63,32 +63,37 @@ local function tbButton()
     b:RegisterForClicks("AnyUp", "AnyDown")
     b:SetScript("PostClick", function(s, _, down)
         if down then return end
-        local f, info = s.owner, s.info
-        if f and f.compactStyle and info then
-            if info.rare then R:GuideTo(info.rare) end
-            R:MarkSkull(info)
-            tbHide(); safeHide(f)
-        end
+        local f, info, post = s.owner, s.info, s.post
+        if f and post and info then post(info, f) end
     end)
     b:SetScript("OnEnter", function(s)
+        -- cadre dessous qui a sa propre infobulle (médaillon de la carte, ligne de liste) : elle est reprise
+        if s.enter and s.owner then s.enter(s.owner) return end
         UI:TooltipOwner(s, "ANCHOR_BOTTOM")
         local tt = _G.GameTooltip
         tt:SetText(T("Clic : cibler ce rare"), 1, 1, 1)
         if R:Config().skull ~= false then tt:AddLine(T("et le marquer d'une tête de mort"), 0.8, 0.8, 0.8) end
-        if s.owner and s.owner.compactStyle then tt:AddLine(T("et lancer le guidage"), 0.8, 0.8, 0.8) end
+        if s.post then tt:AddLine(T("et lancer le guidage"), 0.8, 0.8, 0.8) end
         tt:Show()
     end)
-    b:SetScript("OnLeave", function() _G.GameTooltip:Hide(); tbHide() end)
+    b:SetScript("OnLeave", function(s)
+        local o, leave = s.owner, s.leave
+        _G.GameTooltip:Hide(); tbHide()
+        if leave and o then leave(o) end
+    end)
     b:SetScript("OnUpdate", function(s)
         local o = s.owner
         if not o or not o:IsVisible() or o:GetAlpha() == 0 or (s.lastL and o:GetLeft() ~= s.lastL) then tbHide() end
     end)
     return b
 end
--- pose le bouton sur le cadre f (survolé) ; right = largeur laissée libre à droite (Guider, croix)
-local function tbCover(f, right)
-    if inCombat() or f.sample or f.preview or not f.info then return end
-    local m = macroFor(f.info)
+-- pose le bouton sur le cadre f (survolé) ; right = largeur laissée libre à droite (Guider, croix) ;
+-- opts = { post(info, f) après le clic, enter(f) / leave(f) = infobulle du cadre dessous }
+local function tbCover(f, right, info, opts)
+    info = info or f.info
+    if inCombat() or f.sample or f.preview or not info then return end
+    if TB and TB:IsShown() and TB.owner == f then return end
+    local m = macroFor(info)
     if not m then return end
     local b = tbButton()
     if not b then return end
@@ -97,7 +102,8 @@ local function tbCover(f, right)
     local k = f:GetEffectiveScale() / _G.UIParent:GetEffectiveScale()
     b:SetAttribute("type", "macro")
     b:SetAttribute("macrotext", m)
-    b.owner, b.info, b.lastL = f, f.info, f:GetLeft()
+    b.owner, b.info, b.lastL = f, info, f:GetLeft()
+    b.post, b.enter, b.leave = opts and opts.post, opts and opts.enter, opts and opts.leave
     b:ClearAllPoints()
     b:SetPoint("BOTTOMLEFT", _G.UIParent, "BOTTOMLEFT", l * k, bt * k)
     b:SetSize(math.max(10, (w - (right or 0)) * k), h * k)
@@ -112,6 +118,9 @@ WK:On("PLAYER_REGEN_DISABLED", function()
     TB:SetAttribute("type", nil)
     TB:Hide()
 end)
+-- aussi pour la carte du monde (UI/RarePins.lua : médaillons et liste des rares)
+UI.RareTargetCover = tbCover
+UI.RareTargetOwner = function() return TB and TB:IsShown() and TB.owner or nil end
 
 -- Texte de la ligne de détail : butin notable, puis tué / jamais tué
 local function detail(info, short)
@@ -222,7 +231,13 @@ local function makeCompact(parent, name)
     f.pin:SetPoint("RIGHT", -12, 0)
     f.compactStyle = true
     f:SetScript("OnEnter", function(s)
-        if not inCombat() and s.info then tbCover(s, 0) end
+        if not inCombat() and s.info then
+            tbCover(s, 0, nil, { post = function(info, fr)
+                if info.rare then R:GuideTo(info.rare) end
+                R:MarkSkull(info)
+                tbHide(); safeHide(fr)
+            end })
+        end
         if TB and TB:IsShown() and TB.owner == s then return end
         WK.UI:TooltipOwner(s, "ANCHOR_BOTTOM")
         GameTooltip:SetText(T("Clic : guidage vers ce rare"), 1, 1, 1)

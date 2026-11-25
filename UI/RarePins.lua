@@ -34,6 +34,21 @@ local function killedText(r)
     return yes, no
 end
 
+-- Clic sur un rare de la carte (médaillon ou ligne de la liste) : guidage, et hors combat ciblage + tête de mort
+-- par le bouton protégé commun du bandeau (UI.RareTargetCover de UI/RareAlert.lua), posé sur le cadre survolé.
+local function clickHint()
+    if _G.InCombatLockdown and _G.InCombatLockdown() then return T("Clic : guidage vers ce rare") end
+    return T("Clic : guider, cibler ce rare et le marquer")
+end
+local function coverTarget(s)
+    if not (UI.RareTargetCover and s.r) then return end
+    local info = { name = R:Name(s.r), id = s.r.id, rare = s.r }
+    UI.RareTargetCover(s, 0, info, {
+        post = function(i) if i.rare then R:GuideTo(i.rare) end end,
+        enter = function(o) local fn = o:GetScript("OnEnter"); if fn then fn(o) end end,
+        leave = function(o) local fn = o:GetScript("OnLeave"); if fn then fn(o) end end,
+    })
+end
 local function tooltipLines(tt, r)
     tt:AddLine(string.format(T("Niveau %s · %s"), r.min == r.max and r.min or (r.min .. "-" .. r.max), T(r.elite and "Rare élite" or "Rare")), 0.8, 0.8, 0.8)
     local m
@@ -96,9 +111,10 @@ local function getPin(i)
             if not ext then GameTooltip:AddLine(T("Ne patrouille pas : toujours à son point d'apparition."), 0.6, 0.6, 0.6, true)
             elseif ext < 4 then GameTooltip:AddLine(T("Patrouille courte (quelques mètres autour du médaillon)."), 0.6, 0.6, 0.6, true)
             else GameTooltip:AddLine(T("Patrouille : pointillés sur la carte."), 0.6, 0.6, 0.6, true) end
-            GameTooltip:AddLine(T("Clic : guidage vers ce rare"), 0.5, 0.5, 0.5)
+            _G.GameTooltip:AddLine(clickHint(), 0.5, 0.5, 0.5)
             GameTooltip:Show()
             if changed and UI.RedrawRarePins then UI:RedrawRarePins() end
+            coverTarget(s)
         end)
         p:SetScript("OnLeave", function(s)
             if hovered ~= s.r then return end
@@ -371,9 +387,10 @@ local function getRow(i)
             WK.UI:TooltipOwner(s, "ANCHOR_LEFT")
             GameTooltip:SetText(R:Name(s.r), C.rare[1], C.rare[2], C.rare[3])
             tooltipLines(GameTooltip, s.r)
-            GameTooltip:AddLine(T("Clic : guidage vers ce rare"), 0.5, 0.5, 0.5)
+            _G.GameTooltip:AddLine(clickHint(), 0.5, 0.5, 0.5)
             GameTooltip:Show()
             hovered = s.r; UI:RedrawRarePins()
+            coverTarget(s)
         end)
         r:SetScript("OnLeave", function(s) s.hl:Hide(); GameTooltip:Hide(); hovered = nil; UI:RedrawRarePins() end)
         r:SetScript("OnClick", function(s) R:GuideTo(s.r) end)
