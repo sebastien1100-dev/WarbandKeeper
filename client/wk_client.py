@@ -33,7 +33,7 @@ from tkinter import filedialog, font as tkfont
 
 import learned  # Découvertes (client/learned.py, partagé avec tools/gen_learned.py)
 
-CLIENT_VERSION = "1.9.27"
+CLIENT_VERSION = "1.9.28"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 DATA_ADDON = "WarbandKeeper_Data"  # grosses bases, chargées à la demande (dossier à côté de l'addon)
@@ -2967,8 +2967,10 @@ class LearnedPage(Page):
             self.segBtns[v] = b
         head = tk.Frame(right.body, bg=C["surface"])
         head.pack(fill="x")
-        for text, w in (("DÉCISION", 12), ("CONF.", 5), ("SOURCES", 9)):
-            label(head, text, fg="dim", font="smallb", width=w).pack(side="right")
+        # marge à droite = ce que la liste perd à droite (4 px, plus la barre de défilement quand elle est là)
+        self.headPad = tk.Frame(head, bg=C["surface"], width=4, height=1)
+        self.headPad.pack(side="right")
+        self.cells(head, [(t, "dim", "smallb") for t, _ in self.COLW])
         label(head, "DÉTAIL", fg="dim", font="smallb").pack(side="left")
         self.note = label(right.body, "", fg="muted", font="small", wraplength=480)
         self.note.pack(side="bottom", anchor="w", pady=(6, 0))
@@ -2977,6 +2979,10 @@ class LearnedPage(Page):
         self.list.cv.configure(bg=C["surface"])
         self.list.inner.configure(bg=C["surface"])
         self.list.pack(fill="both", expand=True)
+        sb = self.list.sb
+        for ev in ("<Map>", "<Unmap>"):
+            sb.bind(ev, lambda e: self.headPad.configure(width=4 + (sb.winfo_reqwidth() if sb.winfo_ismapped() else 0)),
+                    add="+")
 
         bot = tk.Frame(self, bg=C["bg"])
         bot.pack(fill="x", pady=(10, 0))
@@ -3126,10 +3132,8 @@ class LearnedPage(Page):
                         conf = str(r.get("confirm") or len(r.get("srcs") or []) or "")
                     row = tk.Frame(self.list.inner, bg=C["surface"])
                     row.pack(fill="x", pady=1)
-                    label(row, "envoyée", fg="positive", font="small", width=12).pack(side="right")
-                    label(row, conf or "–", fg="muted" if conf else "dim", font="small", width=5).pack(side="right")
-                    label(row, (srcs if len(srcs) < 11 else srcs[:10] + "…") or "–", fg="dim", font="small",
-                          width=9).pack(side="right")
+                    self.cells(row, [("envoyée", "positive", "small"), (conf or "–", "muted" if conf else "dim", "small"),
+                                     ((srcs if len(srcs) < 13 else srcs[:12] + "…") or "–", "dim", "small")])
                     label(row, t if len(t) < 47 else t[:46] + "…", font="small").pack(side="left", fill="x", expand=True)
                 if not items:
                     label(self.list.inner, "(détail gardé à partir du prochain envoi)", fg="dim", font="small").pack(anchor="w")
@@ -3165,6 +3169,21 @@ class LearnedPage(Page):
             self.note.configure(text=txt)
         self.autoBtn.set(text="Envoi auto : %s" % ("oui" if self.app.cfg.get("learnedAuto", True) else "non"))
 
+    # colonnes de droite, de droite à gauche : largeurs en pixels communes aux titres et aux lignes
+    COLW = (("DÉCISION", 104), ("CONF.", 48), ("SOURCES", 92))
+
+    def cells(self, row, vals):
+        """Cases de largeur fixe à droite de row (titres et lignes alignés) ; vals = [(texte, couleur, police)]."""
+        out = []
+        for (_, w), (text, fg, font) in zip(self.COLW, vals):
+            f = tk.Frame(row, bg=row["bg"], width=w, height=20)
+            f.pack_propagate(False)
+            f.pack(side="right")
+            lab = label(f, text, fg=fg, font=font)
+            lab.pack(side="left", fill="y")
+            out.append(lab)
+        return out
+
     def others_count(self):
         """Découvertes déjà dans l'addon (ou envoyées) qui ne viennent pas de ce PC : celles des autres joueurs."""
         base, mine = self.base or {}, self.mine or {}
@@ -3193,11 +3212,9 @@ class LearnedPage(Page):
         row.pack(fill="x", pady=1)
         st = r["status"]
         dec = {learned.PENDING: "en attente ▸", learned.CHECK: "à vérifier ▸"}.get(st, learned.STATUS_LABEL[st])
-        c = label(row, dec, fg=self.COLORS[st], font="small", width=12)
-        c.pack(side="right")
-        label(row, str(r.get("confirm") or len(r["srcs"])), fg="muted", font="small", width=5).pack(side="right")
         srcs = ", ".join(r["srcs"])
-        label(row, srcs if len(srcs) < 11 else srcs[:10] + "…", fg="dim", font="small", width=9).pack(side="right")
+        c = self.cells(row, [(dec, self.COLORS[st], "small"), (str(r.get("confirm") or len(r["srcs"])), "muted", "small"),
+                             (srcs if len(srcs) < 13 else srcs[:12] + "…", "dim", "small")])[0]
         v = r["value"] if r["value"] is not None else (r["values"][0] if r["values"] else {})
         try:
             text = learned.short(r["genre"], r["key"], v)

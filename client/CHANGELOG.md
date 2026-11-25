@@ -3,6 +3,11 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.9.28 — 25/11/2026
+
+### Corrections
+- Page Découvertes : les titres SOURCES, CONF. et DÉCISION n'étaient pas au-dessus de leurs colonnes (largeurs comptées en caractères de deux polices différentes, barre de défilement oubliée). Les colonnes ont maintenant une largeur fixe commune aux titres et aux lignes, et le titre suit la barre de défilement.
+
 ## 1.9.27 — 25/11/2026
 
 ### Ajouts

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.318", date = "25/11/2026",
+        changed = {
+            "Rien ne change en jeu : cette version livre le client PC 1.9.28 (colonnes de la page Découvertes alignées avec leurs titres).",
+        },
+    },
+    {
         version = "1.128.317", date = "25/11/2026",
         changed = {
             "Rien ne change en jeu : cette version livre le client PC 1.9.27 (découvertes partagées toutes seules entre les PC d'un même réseau, sans jeton).",
