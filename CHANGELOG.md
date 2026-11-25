@@ -53,6 +53,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.326 — 25/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Hôtel des ventes, onglet À acheter : les colonnes se chevauchaient (titres « Plus bas » et « En vente » l'un sur l'autre, prix coupés, total caché sous le bouton). Les prix tiennent en deux unités (« 15pa 99pc », « 285po »), le bouton dit seulement « Acheter » (la quantité est dans « Il manque ») et la colonne « Pour » n'apparaît que si une ligne a un destinataire : le nom de l'objet a plus de place.
+- Hôtel des ventes, onglet Vendre : la variation du prix était coupée (« +60… »). La colonne est plus large, une très forte hausse s'écrit « x7 », et la liste des sacs est un peu plus large pour les noms.
+
 ## v1.128.325 — 25/11/2026
 
 _Un /reload suffit._

@@ -657,8 +657,8 @@ local function build(host)
     f.views.sell = sv
     -- à gauche : tes sacs en liste (nom, quantité, valeur à l'HV), filtre et pastilles Tout / Favoris / Rangement / Cachés
     sv.bags = panelBox(sv, "Tes sacs")
-    sv.bags:SetPoint("TOPLEFT"); sv.bags:SetPoint("BOTTOMLEFT"); sv.bags:SetWidth(330)
-    sv.filter = UI:Input(sv.bags, 310, 26, "Filtrer…", "search")
+    sv.bags:SetPoint("TOPLEFT"); sv.bags:SetPoint("BOTTOMLEFT"); sv.bags:SetWidth(360)
+    sv.filter = UI:Input(sv.bags, 340, 26, "Filtrer…", "search")
     sv.filter:SetPoint("TOPLEFT", 10, -28)
     sv.filter.onChange = function() sv.offset = 0; sv:Refresh() end
     sv.mode, sv.offset = "all", 0
@@ -683,8 +683,9 @@ local function build(host)
         r.b:SetFontObject(_G.NumberFontNormalSmall or r.b:GetFontObject())
         r.b:SetTextColor(1, 1, 1)
         r.c:ClearAllPoints(); r.c:SetPoint("RIGHT", -4, 0); r.c:SetWidth(78)
-        r.d:ClearAllPoints(); r.d:SetPoint("RIGHT", -86, 0); r.d:SetWidth(40)
-        r.spark = _G.CreateFrame("Frame", nil, r); r.spark:SetSize(30, 14); r.spark:SetPoint("RIGHT", -130, 0)
+        r.d:ClearAllPoints(); r.d:SetPoint("RIGHT", -86, 0); r.d:SetWidth(56)
+        if r.d.SetWordWrap then r.d:SetWordWrap(false) end
+        r.spark = _G.CreateFrame("Frame", nil, r); r.spark:SetSize(30, 14); r.spark:SetPoint("RIGHT", -146, 0)
         r.spark.bars = {}
         for k = 1, 14 do
             local t = r.spark:CreateTexture(nil, "ARTWORK")
@@ -692,7 +693,7 @@ local function build(host)
             t:SetPoint("BOTTOMLEFT", (k - 1) * 2.1, 0)
             r.spark.bars[k] = t
         end
-        r.a:SetPoint("RIGHT", -166, 0)
+        r.a:SetPoint("RIGHT", -182, 0)
         r.tag = UI:Icon(r, "star", 10); r.tag:SetPoint("RIGHT", r.spark, "LEFT", -4, 0)
         if r.RegisterForClicks then r:RegisterForClicks("LeftButtonUp", "RightButtonUp") end
         r:SetScript("OnClick", function(s, button)
@@ -1178,7 +1179,10 @@ local function build(host)
                 if ch and math.abs(ch) >= 0.005 then
                     local col = ch > 0 and C.positive or C.negative
                     local pc = math.floor(ch * 100 + (ch > 0 and 0.5 or -0.5))
-                    r.d:SetText(UI:Hex(col) .. string.format("%+d %%", pc) .. "|r")
+                    -- au-delà de +999 % : « x12 » (prix multiplié), sinon la colonne déborde
+                    local txt = string.format("%+d %%", pc)
+                    if pc > 999 then txt = string.format("x%d", math.floor(1 + ch + 0.5)) end
+                    r.d:SetText(UI:Hex(col) .. txt .. "|r")
                 else
                     r.d:SetText(ch and (UI:Hex(C.dim) .. "=|r") or "")
                 end
@@ -1342,27 +1346,46 @@ local function build(host)
     -- tableau
     bv.main = panelBox(bv, "")
     bv.main:SetPoint("TOPLEFT", bv.lists, "TOPRIGHT", 8, 0); bv.main:SetPoint("BOTTOMRIGHT", bv.sum, "BOTTOMLEFT", -8, 0)
-    local BCOLS = { { "Objet", 34, "LEFT" }, { "Pour", -326, "LEFT2" }, { "Il manque", -284 }, { "Plus bas", -212 }, { "En vente", -166 }, { "Total", -96 } }
+    -- colonnes (bord droit de chaque colonne, depuis la droite de la ligne) : bouton « Acheter » (la quantité est
+    -- dans « Il manque »), total, en vente, plus bas, il manque, pour (seulement si une ligne a un destinataire)
+    local BX = { tot = -92, d = -170, c = -228, b = -310, who = -364, name = -440 }
+    local BCOLS = { { "Objet", 34, "LEFT" }, { "Pour", BX.who - 72, "LEFT2" }, { "Il manque", BX.b - 6 },
+        { "Plus bas", BX.c - 6 }, { "En vente", BX.d - 6 }, { "Total", BX.tot - 6 } }
+    bv.heads = {}
     for _, cdef in ipairs(BCOLS) do
         local h = UI:Text(bv.main, 9, C.dim)
         if cdef[3] == "LEFT" then h:SetPoint("TOPLEFT", cdef[2], -30)
-        elseif cdef[3] == "LEFT2" then h:SetPoint("TOPLEFT", bv.main, "TOPRIGHT", cdef[2] - 80, -30)
+        elseif cdef[3] == "LEFT2" then h:SetPoint("TOPLEFT", bv.main, "TOPRIGHT", cdef[2], -30)
         else h:SetPoint("TOPRIGHT", cdef[2], -30) end
         h:SetText(UI:Upper(T(cdef[1])))
+        bv.heads[cdef[1]] = h
+    end
+    -- colonne « Pour » : affichée seulement quand elle sert, sinon la place va au nom
+    function bv:WhoColumn(on)
+        if self.whoOn == on then return end
+        self.whoOn = on
+        self.heads["Pour"]:SetShown(on)
+        for _, r in ipairs(self.irows) do
+            r.who:SetShown(on)
+            r.a:ClearAllPoints(); r.a:SetPoint("LEFT", 28, 0); r.a:SetPoint("RIGHT", on and BX.name or (BX.who + 4), 0)
+        end
     end
     bv.irows = {}
     for i = 1, 16 do
         local r = textRow(bv.main, 26)
         r:SetPoint("TOPLEFT", 6, -44 - (i - 1) * 28); r:SetPoint("TOPRIGHT", -6, -44 - (i - 1) * 28)
         if r.RegisterForClicks then r:RegisterForClicks("LeftButtonUp", "RightButtonUp") end
-        r.a:SetPoint("RIGHT", -412, 0)
-        r.who = UI:Text(r, 11, C.muted); r.who:SetPoint("RIGHT", -326, 0); r.who:SetWidth(80); r.who:SetJustifyH("LEFT")
+        r.a:SetPoint("RIGHT", BX.name, 0)
+        r.who = UI:Text(r, 11, C.muted); r.who:SetPoint("RIGHT", BX.who, 0); r.who:SetWidth(72)
+        r.who:SetJustifyH("LEFT")
         if r.who.SetWordWrap then r.who:SetWordWrap(false) end
-        r.b:SetPoint("RIGHT", -284, 0); r.b:SetWidth(40)
-        r.c:SetPoint("RIGHT", -212, 0); r.c:SetWidth(68); r.c:SetTextColor(C.text[1], C.text[2], C.text[3])
-        r.d:SetPoint("RIGHT", -166, 0); r.d:SetWidth(42)
-        r.tot = UI:Text(r, 11, C.gold); r.tot:SetPoint("RIGHT", -96, 0); r.tot:SetWidth(66); r.tot:SetJustifyH("RIGHT")
-        r.btn = UI:Button(r, "Acheter", 88, 22, "primary"); r.btn:SetPoint("RIGHT", -2, 0)
+        r.b:SetPoint("RIGHT", BX.b, 0); r.b:SetWidth(48)
+        r.c:SetPoint("RIGHT", BX.c, 0); r.c:SetWidth(76); r.c:SetTextColor(C.text[1], C.text[2], C.text[3])
+        r.d:SetPoint("RIGHT", BX.d, 0); r.d:SetWidth(52)
+        r.tot = UI:Text(r, 11, C.gold); r.tot:SetPoint("RIGHT", BX.tot, 0); r.tot:SetWidth(72)
+        r.tot:SetJustifyH("RIGHT")
+        if r.tot.SetWordWrap then r.tot:SetWordWrap(false) end
+        r.btn = UI:Button(r, "Acheter", 84, 22, "primary"); r.btn:SetPoint("RIGHT", -2, 0)
         r.tag = UI:Badge(r, "", C.muted); r.tag:SetPoint("RIGHT", -4, 0)
         r.add = UI:IconButton(r, "plus", 22, "Ajouter à la liste d'achat")
         r.add:SetPoint("RIGHT", r.btn, "LEFT", -6, 0)
@@ -1452,6 +1475,7 @@ local function build(host)
 
     -- résultats de la recherche « Ajouter un objet » : objets de tes scans dont le nom contient le texte
     function bv:RefreshSearch(q)
+        self:WhoColumn(true)
         local list = {}
         for id in pairs(S:Data().items) do
             local name = WK.GetItemInfo(id)
@@ -1478,7 +1502,7 @@ local function build(host)
                 r.b:SetText("")
                 local low = lowestOther(id) or S:Price(id)
                 local av = available(id)
-                r.c:SetText(low and money(low) or "-")
+                r.c:SetText(low and shortMoney(low) or "-")
                 r.d:SetText(av and tostring(av) or "")
                 r.tot:SetText("")
                 r.tag:Hide(); r.btn:Show(); r.add:Show()
@@ -1578,6 +1602,7 @@ local function build(host)
         self.skipSet = {}
         local sAH, nAH, sVendor, nVendor, nAlt, nNone, noneName, n = 0, 0, 0, 0, 0, 0, nil, 0
         f.buyCount = 0
+        local anyWho = false
         for i, r in ipairs(self.irows) do
             local it = l and l.items[i]
             r.watch = nil
@@ -1591,11 +1616,12 @@ local function build(host)
                 r.a:SetText(name or ("#" .. id))
                 if quality and GetItemQualityColor then r.a:SetTextColor(GetItemQualityColor(quality)) end
                 r.who:SetText(cur == QNAME and self.who[id] or "")
+                if cur == QNAME and self.who[id] and self.who[id] ~= "" then anyWho = true end
                 r.b:SetText(need > 0 and tostring(need) or (UI:Hex(C.positive) .. T("ok") .. "|r"))
                 local low = lowestOther(id) or (results[id] == nil and S:Price(id)) or nil
                 local av = available(id)
                 local none = results[id] ~= nil and not lowestOther(id)
-                r.c:SetText(none and (UI:Hex(C.negative) .. T("aucun") .. "|r") or (low and money(low) or "-"))
+                r.c:SetText(none and (UI:Hex(C.negative) .. T("aucun") .. "|r") or (low and shortMoney(low) or "-"))
                 r.d:SetText(av and tostring(av) or "")
                 -- prix vu par un de tes persos, sinon marchand vu dans WoW Forever (ForeverDB, Modules/Vendors.lua)
                 local v = vseen[id]
@@ -1614,7 +1640,7 @@ local function build(host)
                     f.buyCount = f.buyCount + 1
                     if v and (not low or v.p <= low) then
                         r.tag:Set(T("au marchand"), C.rule); r.tag:Show()
-                        r.tot:SetText(money(v.p * need))
+                        r.tot:SetText(shortMoney(v.p * need))
                         sVendor, nVendor = sVendor + v.p * need, nVendor + 1
                         self.skipSet[id] = true
                     elseif alt then
@@ -1626,14 +1652,16 @@ local function build(host)
                         nNone = nNone + 1; noneName = noneName or name
                         self.skipSet[id] = true
                     else
-                        r.tot:SetText(low and money(low * need) or "")
+                        r.tot:SetText(low and shortMoney(low * need) or "")
                         if low then sAH = sAH + low * need end
                         nAH = nAH + 1
                         r.btn:Show()
                         if not isCommodity(id) then r.btn:SetLabel(T("Chercher"))
-                        elseif b and b.id == id and b.phase == "confirm" then r.btn:SetLabel(string.format(T("Confirmer %s"), money(b.total)))
+                        elseif b and b.id == id and b.phase == "confirm" then
+                            -- le bouton s'élargit : le total (déjà dans le bouton) laisse sa place
+                            r.btn:SetLabel(string.format(T("Confirmer %s"), shortMoney(b.total))); r.tot:SetText("")
                         elseif b and b.id == id and (b.phase == "quote" or b.phase == "wait") then r.btn:SetLabel("…")
-                        else r.btn:SetLabel(string.format(T("Acheter %d"), need)) end
+                        else r.btn:SetLabel(T("Acheter")) end
                     end
                 end
                 n = n + 1
@@ -1653,6 +1681,7 @@ local function build(host)
         local inBuy = b and b.list == cur
         self.buyAll:SetEnabled(cur ~= nil and nAH > 0 or (inBuy and b.phase == "confirm"))
         self.searchAll:SetEnabled(cur ~= nil)
+        self:WhoColumn(anyWho)
         self.buyAll:SetLabel((b and b.phase == "confirm") and string.format(T("Confirmer %s"), money(b.total)) or string.format(T("Tout acheter à l'HV (%d)"), nAH))
         local done = inBuy and (b.count or 0) or 0
         local totalSteps = done + nAH
@@ -1664,6 +1693,7 @@ local function build(host)
 
     -- Prix surveillés (alertes de prix) : seuil, plus bas, « ça y est »
     function bv:RefreshWatch(alerts)
+        self:WhoColumn(true)
         self.main.title:SetText(T("Prix surveillés"))
         local list = {}
         for id, max in pairs(alerts) do table.insert(list, { id = id, max = max, name = WK.GetItemInfo(id) or ("#" .. id) }) end

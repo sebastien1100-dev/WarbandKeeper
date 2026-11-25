@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.326", date = "25/11/2026",
+        fixed = {
+            "Hôtel des ventes, onglet À acheter : les colonnes se chevauchaient (titres « Plus bas » et « En vente » l'un sur l'autre, prix coupés, total caché sous le bouton). Les prix tiennent en deux unités (« 15pa 99pc », « 285po »), le bouton dit seulement « Acheter » (la quantité est dans « Il manque ») et la colonne « Pour » n'apparaît que si une ligne a un destinataire : le nom de l'objet a plus de place.",
+            "Hôtel des ventes, onglet Vendre : la variation du prix était coupée (« +60… »). La colonne est plus large, une très forte hausse s'écrit « x7 », et la liste des sacs est un peu plus large pour les noms.",
+        },
+    },
+    {
         version = "1.128.325", date = "25/11/2026",
         changed = {
             "Marchand au même endroit : « Réassort chez le marchand » (le bouton, les boissons et la nourriture de ce perso, les objets à garder en stock) quitte la roue de l'Inventaire pour QoL > Général > Marchand, sous la réparation et la vente des gris. La carte de l'Inventaire s'appelle maintenant « Sacs et équipement ».",
