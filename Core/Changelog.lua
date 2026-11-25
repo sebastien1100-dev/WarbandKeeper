@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.360", date = "25/11/2026",
+        changed = {
+            "Leveling, carte « Achats chez le maître » : le coût de la sélection (sorts gardés, sans les écartés) est affiché en haut à droite de la carte. À côté du titre : le nombre de sorts choisis.",
+        },
+    },
+    {
         version = "1.128.359", date = "25/11/2026",
         added = {
             "Leveling, carte « Achats chez le maître » : section des familiers sous les sorts de classe. Démoniste : sorts des démons (Diablotin, Marcheur du Vide, Succube, Chasseur corrompu), appris par les grimoires du maître des démons. Chasseur : techniques des familiers, apprises en apprivoisant. Classés par niveau du familier ; l'infobulle donne les familles qui ont la technique. Un clic l'écarte du plan ou l'y remet, comme les sorts.",

@@ -54,6 +54,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.360 — 25/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Leveling, carte « Achats chez le maître » : le coût de la sélection (sorts gardés, sans les écartés) est affiché en haut à droite de la carte. À côté du titre : le nombre de sorts choisis.
+
 ## v1.128.359 — 25/11/2026
 
 _Un /reload suffit._

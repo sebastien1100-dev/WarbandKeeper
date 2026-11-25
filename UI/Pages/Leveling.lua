@@ -139,6 +139,9 @@ UI:RegisterPage({
         self.spells:SetPoint("TOPLEFT", 8, -40); self.spells:SetPoint("BOTTOMRIGHT", -8, 34)
         self.lvRows, self.chips = {}, {}
         self.rightFoot = UI:Text(self.right, 10, C.dim); self.rightFoot:SetPoint("BOTTOMLEFT", 14, 12)
+        -- coût de la sélection (sorts gardés) en haut à droite de la carte
+        self.selCost = UI:Text(self.right, 14, C.text); self.selCost:SetPoint("TOPRIGHT", -16, -16)
+        self.selCost:SetJustifyH("RIGHT")
         self.rightFoot:SetPoint("BOTTOMRIGHT", -14, 12); self.rightFoot:SetJustifyH("LEFT")
         self.rightFoot:SetText(T("Clic sur un sort : l'acheter ou l'écarter chez le maître. Bordure violette : sort"
             .. " d'un talent du plan."))
@@ -355,7 +358,10 @@ UI:RegisterPage({
         for _, r in ipairs(self.lvRows) do r:Hide() end
         for _, b in ipairs(self.chips) do b:Hide() end
         if self.petHead then self.petHead:Hide(); self.petNote:Hide() end
-        if not plan then self.right.subtitle:SetText(""); self.spells:SetContentHeight(1) return end
+        if not plan then
+            self.right.subtitle:SetText(""); self.selCost:SetText(""); self.spells:SetContentHeight(1)
+            return
+        end
         local tal = cp:TalentNames(plan)
         local byLvl, levels = {}, {}
         for _, e in ipairs(CS:Catalog(self.class)) do
@@ -375,7 +381,7 @@ UI:RegisterPage({
         table.sort(petLevels)
         local W = math.max(200, (self.spells:GetWidth() or 400) - 16)
         self.spells.child:SetWidth(W)
-        local y, ci, ri, total = 0, 0, 0, 0
+        local y, ci, ri, total, kept = 0, 0, 0, 0, 0
         local ar, ag, ab = UI:Accent()
         local function drawLevels(lvls, by)
             for _, lv in ipairs(lvls) do
@@ -416,6 +422,7 @@ UI:RegisterPage({
                     b:Show()
                     cx = cx + bw + 6
                     if not b.skipped then
+                        kept = kept + 1
                         -- familier : prix connu seulement (pas d'estimation d'après les sorts de classe)
                         local pr, how = CS:Price(self.class, e)
                         if not (e.pet and how == "est") then sum = sum + (pr or 0) end
@@ -448,7 +455,8 @@ UI:RegisterPage({
             drawLevels(petLevels, petLvl)
         end
         self.spells:SetContentHeight(y + 4)
-        self.right.subtitle:SetText(string.format(T("total %s"), CS:Money(total)))
+        self.right.subtitle:SetText(string.format(T("%d sorts choisis"), kept))
+        self.selCost:SetText(UI:Hex(C.muted) .. T("Sélection") .. "|r  " .. CS:Money(total))
     end,
 })
 
