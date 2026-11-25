@@ -53,6 +53,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.323 — 25/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Hôtel des ventes, onglet Vendre : évolution du prix sur chaque ligne. Petites barres des 14 derniers jours relevés par le scan et variation en % (vert en hausse, rouge en baisse) du dernier prix par rapport aux jours d'avant ; le détail est dans l'infobulle.
+
+### Modifications
+- Hôtel des ventes, onglet Vendre : liste des sacs plus lisible. La quantité est écrite sur l'icône, la valeur de la pile tient en deux unités (« 2po 70pa ») et ne déborde plus sur la colonne voisine, la colonne est un peu plus large pour les noms.
+
 ## v1.128.322 — 25/11/2026
 
 _Un /reload suffit._

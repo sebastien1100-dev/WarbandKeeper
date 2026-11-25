@@ -37,6 +37,14 @@ local function cfg()
     return c
 end
 local function money(v) return v and WK:FormatMoney(v) or "-" end
+-- montant court pour une colonne étroite : les deux unités principales (« 1po 52pa », « 32pa 5pc », « 84pc »)
+local function shortMoney(v)
+    if not v then return "-" end
+    v = math.floor(v)
+    if v >= 1000000 then v = math.floor(v / 10000) * 10000      -- 100 po et plus : po seulement
+    elseif v >= 10000 then v = math.floor(v / 100) * 100 end    -- po et pa
+    return WK:FormatMoney(v)
+end
 local function itemIcon(id)
     local f = (C_Item and C_Item.GetItemIconByID) or GetItemIcon
     return (f and f(id)) or "Interface\\Icons\\INV_Misc_QuestionMark"
@@ -649,8 +657,8 @@ local function build(host)
     f.views.sell = sv
     -- à gauche : tes sacs en liste (nom, quantité, valeur à l'HV), filtre et pastilles Tout / Favoris / Rangement / Cachés
     sv.bags = panelBox(sv, "Tes sacs")
-    sv.bags:SetPoint("TOPLEFT"); sv.bags:SetPoint("BOTTOMLEFT"); sv.bags:SetWidth(300)
-    sv.filter = UI:Input(sv.bags, 280, 26, "Filtrer…", "search")
+    sv.bags:SetPoint("TOPLEFT"); sv.bags:SetPoint("BOTTOMLEFT"); sv.bags:SetWidth(330)
+    sv.filter = UI:Input(sv.bags, 310, 26, "Filtrer…", "search")
     sv.filter:SetPoint("TOPLEFT", 10, -28)
     sv.filter.onChange = function() sv.offset = 0; sv:Refresh() end
     sv.mode, sv.offset = "all", 0
@@ -669,10 +677,23 @@ local function build(host)
     for i = 1, 18 do
         local r = textRow(sv.bags, BROW - 2)
         r:SetPoint("TOPLEFT", 6, -90 - (i - 1) * BROW); r:SetPoint("TOPRIGHT", -6, -90 - (i - 1) * BROW)
-        r.a:SetPoint("RIGHT", -110, 0)
-        r.b:SetPoint("RIGHT", -70, 0); r.b:SetWidth(40); r.b:SetTextColor(C.muted[1], C.muted[2], C.muted[3])
-        r.c:SetPoint("RIGHT", -6, 0); r.c:SetWidth(64)
-        r.tag = UI:Icon(r, "star", 10); r.tag:SetPoint("RIGHT", r.b, "LEFT", -4, 0)
+        -- colonnes : icône (quantité dessus) · nom · courbe 14 j · variation · valeur de la pile
+        r.icon:SetSize(20, 20)
+        r.b:ClearAllPoints(); r.b:SetPoint("BOTTOMRIGHT", r.icon, "BOTTOMRIGHT", 3, -2)
+        r.b:SetFontObject(_G.NumberFontNormalSmall or r.b:GetFontObject())
+        r.b:SetTextColor(1, 1, 1)
+        r.c:ClearAllPoints(); r.c:SetPoint("RIGHT", -4, 0); r.c:SetWidth(78)
+        r.d:ClearAllPoints(); r.d:SetPoint("RIGHT", -86, 0); r.d:SetWidth(40)
+        r.spark = _G.CreateFrame("Frame", nil, r); r.spark:SetSize(30, 14); r.spark:SetPoint("RIGHT", -130, 0)
+        r.spark.bars = {}
+        for k = 1, 14 do
+            local t = r.spark:CreateTexture(nil, "ARTWORK")
+            t:SetColorTexture(1, 1, 1, 1); t:SetWidth(1.6)
+            t:SetPoint("BOTTOMLEFT", (k - 1) * 2.1, 0)
+            r.spark.bars[k] = t
+        end
+        r.a:SetPoint("RIGHT", -166, 0)
+        r.tag = UI:Icon(r, "star", 10); r.tag:SetPoint("RIGHT", r.spark, "LEFT", -4, 0)
         if r.RegisterForClicks then r:RegisterForClicks("LeftButtonUp", "RightButtonUp") end
         r:SetScript("OnClick", function(s, button)
             local e = s.e
@@ -698,6 +719,18 @@ local function build(host)
             UI:TooltipOwner(s, "ANCHOR_RIGHT")
             if GameTooltip.SetItemByID then GameTooltip:SetItemByID(s.e.id) end
             GameTooltip:AddLine(" ")
+            if s.e.value and s.e.value > 0 then
+                GameTooltip:AddDoubleLine(string.format(T("Valeur de la pile (x%d)"), s.e.count or 1), money(s.e.value),
+                    0.8, 0.8, 0.8, 1, 1, 1)
+            end
+            local _, ch = WK.modules.AHScan:Trend(s.e.id)
+            if ch then
+                local col = ch >= 0 and C.positive or C.negative
+                GameTooltip:AddDoubleLine(T("Évolution du prix (14 j)"), string.format("%+.0f %%", ch * 100),
+                    0.8, 0.8, 0.8, col[1], col[2], col[3])
+            else
+                GameTooltip:AddLine(T("Pas encore assez de relevés pour l'évolution du prix"), 0.6, 0.6, 0.6, true)
+            end
             if s.e.hidden then GameTooltip:AddLine(T("Clic : le proposer de nouveau"), 0.6, 0.6, 0.6)
             else
                 GameTooltip:AddLine(cfg().sellFav[s.e.id] and T("Clic droit : retirer des favoris") or T("Clic droit : favori (en tête)"), 0.6, 0.6, 0.6)
@@ -1126,8 +1159,29 @@ local function build(host)
                 local name, _, quality = WK.GetItemInfo(e.id)
                 r.a:SetText(name or ("#" .. e.id))
                 if quality and GetItemQualityColor then r.a:SetTextColor(GetItemQualityColor(quality)) else r.a:SetTextColor(1, 1, 1) end
-                r.b:SetText("x" .. e.count)
-                if e.value and e.value > 0 then r.c:SetText(money(e.value)) else r.c:SetText(UI:Hex(C.dim) .. T("pas de prix") .. "|r") end
+                r.b:SetText(e.count > 1 and tostring(e.count) or "")
+                if e.value and e.value > 0 then r.c:SetText(shortMoney(e.value))
+                else r.c:SetText(UI:Hex(C.dim) .. T("pas de prix") .. "|r") end
+                -- évolution du prix (14 derniers jours relevés par le scan) : barres et variation
+                local pts, ch = WK.modules.AHScan:Trend(e.id)
+                local hi = 0
+                for _, p in ipairs(pts) do if p > hi then hi = p end end
+                local off = 14 - #pts
+                for k, t in ipairs(r.spark.bars) do
+                    local p = pts[k - off]
+                    t:SetShown(p ~= nil and hi > 0)
+                    if p and hi > 0 then
+                        t:SetHeight(math.max(1, 14 * p / hi))
+                        t:SetVertexColor(br1, bg1, bb1, k == 14 and 1 or 0.45)
+                    end
+                end
+                if ch and math.abs(ch) >= 0.005 then
+                    local col = ch > 0 and C.positive or C.negative
+                    local pc = math.floor(ch * 100 + (ch > 0 and 0.5 or -0.5))
+                    r.d:SetText(UI:Hex(col) .. string.format("%+d %%", pc) .. "|r")
+                else
+                    r.d:SetText(ch and (UI:Hex(C.dim) .. "=|r") or "")
+                end
                 r.tag:SetShown(fav[e.id] or marked[e.id] or false)
                 if fav[e.id] then r.tag:SetVertexColor(br1, bg1, bb1, 1) else r.tag:SetVertexColor(C.rule[1], C.rule[2], C.rule[3], 1) end
                 r.hl:SetColorTexture(br1, bg1, bb1, e.id == self.id and 0.14 or 0)

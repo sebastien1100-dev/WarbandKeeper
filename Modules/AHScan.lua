@@ -136,6 +136,21 @@ end
 function M:History(itemID)
     return hread(self:Entry(itemID))
 end
+-- Évolution du prix sur `days` jours (14 par défaut) : prix par jour { p, … } du plus ancien au plus récent et
+-- variation du dernier par rapport à la moyenne des jours d'avant (fraction), nil s'il n'y a pas 2 jours relevés
+function M:Trend(itemID, days)
+    days = days or 14
+    local today = math.floor(_G.time() / 86400)
+    local pts = {}
+    for _, x in ipairs(hread(self:Entry(itemID))) do
+        if x[1] > today - days and (x[2] or 0) > 0 then pts[#pts + 1] = x[2] end
+    end
+    if #pts < 2 then return pts, nil end
+    local sum = 0
+    for i = 1, #pts - 1 do sum = sum + pts[i] end
+    local before = sum / (#pts - 1)
+    return pts, before > 0 and (pts[#pts] - before) / before or nil
+end
 -- Objets qui ont le plus bougé sur 7 jours : { { id, change (fraction), now, before } }, du plus fort au plus faible
 function M:Movers(limit)
     local today = math.floor(time() / 86400)
