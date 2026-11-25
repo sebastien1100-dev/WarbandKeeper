@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.350", date = "25/11/2026",
+        added = {
+            "/wk heritage (aussi dans Options > Fiabilité, diagnostics) : après un clic sur le raccourci Héritages du micro menu, montre ce qui s'est passé à chaque essai (onglet trouvé, onglet affiché, journal ouvert ou non) et la liste des onglets du journal des collections. Sert à corriger le raccourci, qui ouvre encore Montures sur WoW Forever.",
+        },
+    },
+    {
         version = "1.128.349", date = "25/11/2026",
         fixed = {
             "Métiers, Minage, Dépeçage et Herboristerie : le bouton « Maître le plus proche » manquait (il n'existait que pour les métiers d'artisanat). Il est maintenant dans l'en-tête de la carte « Où aller à ton niveau » et guide vers le maître de ta faction le plus proche.",

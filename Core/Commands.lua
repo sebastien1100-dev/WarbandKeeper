@@ -8,7 +8,7 @@ local function plainBars(s) return (s:gsub("|", "||")) end
 local function help()
     WK:Print(L.HELP_TITLE)
     for _, k in ipairs({ "HELP_OPEN", "HELP_NOTES", "HELP_FARM", "HELP_TAKE", "HELP_GOLD", "HELP_CHARS", "HELP_FIND", "HELP_PROF", "HELP_STATS",
-                         "HELP_MAIL_ADD", "HELP_MAIL_DEL", "HELP_MAIL_LIST", "HELP_MAIL_TOG", "HELP_NAME", "HELP_LINK", "HELP_GUIDE", "HELP_EDIT", "HELP_HALO", "HELP_MICRO", "HELP_BAGS", "HELP_NAV", "HELP_FISH", "HELP_HV", "HELP_ALERT", "HELP_HUD", "HELP_DUNGEON", "HELP_FP", "HELP_BOAT", "HELP_PERF", "HELP_BUFF", "HELP_RELOAD" }) do
+                         "HELP_MAIL_ADD", "HELP_MAIL_DEL", "HELP_MAIL_LIST", "HELP_MAIL_TOG", "HELP_NAME", "HELP_LINK", "HELP_GUIDE", "HELP_EDIT", "HELP_HALO", "HELP_MICRO", "HELP_HERITAGE", "HELP_BAGS", "HELP_NAV", "HELP_FISH", "HELP_HV", "HELP_ALERT", "HELP_HUD", "HELP_DUNGEON", "HELP_FP", "HELP_BOAT", "HELP_PERF", "HELP_BUFF", "HELP_RELOAD" }) do
         if L[k] then WK:Print("  " .. plainBars(L[k])) end
     end
 end
@@ -161,6 +161,8 @@ SlashCmdList.WARBANDKEEPER = function(msg)
         WK.modules.Guide:NavReport()
     elseif cmd == "micro" then
         WK.UI:ClockReport()
+    elseif cmd == "heritage" or cmd == "heirloom" then
+        WK.UI:HeirloomReport()
     elseif cmd == "hv" or cmd == "ah" then
         local r = string.lower(rest or "")
         if r == "scan" then WK.modules.AHScan:Start()

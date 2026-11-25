@@ -284,7 +284,7 @@ local SHORTCUTS = {
               local id = t and t.GetID and t:GetID()
               return id ~= nil and selected(cj) == id
           end
-          local function report(cj)
+          local function tabList(cj)
               local seen = {}
               for _, t in ipairs(tabsOf(cj)) do
                   local id = t.GetID and t:GetID() or "?"
@@ -292,15 +292,28 @@ local SHORTCUTS = {
                   if t.IsEnabled and not t:IsEnabled() then flags = flags .. " grisé" end
                   seen[#seen + 1] = tostring(id) .. "=" .. tostring(textOf(t)) .. flags
               end
+              return table.concat(seen, ", ") .. " ; " .. tostring(selected(cj))
+          end
+          local function report(cj)
               WK:Print(WK.T("Onglet des héritages introuvable dans le journal des collections.")
-                  .. " (" .. table.concat(seen, ", ") .. " ; " .. tostring(selected(cj)) .. ")")
+                  .. " (" .. tabList(cj) .. ")")
           end
           local DELAYS = { 0, 0.15, 0.4 }
+          -- trace du dernier clic, lue par /wk heritage (diagnostic sur WoW Forever)
+          local trace = {}
+          UI.heirTrace = trace
+          local function note(cj, n, t, what)
+              local id = t and t.GetID and t:GetID()
+              trace[#trace + 1] = string.format("%d : %s · onglet %s · affiché %s · journal %s", n, what,
+                  tostring(id), tostring(selected(cj)), tostring(cj:IsShown()))
+          end
           local function try(n)
               local cj = CollectionsJournal
-              if not cj or (_G.InCombatLockdown and _G.InCombatLockdown()) then return end
+              if not cj then trace[#trace + 1] = n .. " : pas de journal" return end
+              if _G.InCombatLockdown and _G.InCombatLockdown() then return end
               local t = heirTab(cj)
-              if done(cj, t) then return end
+              if done(cj, t) then note(cj, n, t, "déjà bon") return end
+              note(cj, n, t, t and "clic" or "onglet non reconnu")
               if t then
                   pick(cj, t)
               elseif n == #DELAYS then
@@ -316,6 +329,10 @@ local SHORTCUTS = {
               elseif not done(cj, t) then
                   report(cj)
               end
+          end
+          UI.heirReport = function()
+              local cj = _G.CollectionsJournal
+              if cj then WK:Print("  " .. WK.T("Onglets (n°=nom ; affiché) :") .. " " .. tabList(cj)) end
           end
           _G.C_Timer.After(0, function() try(1) end)
       end },
@@ -657,6 +674,19 @@ function UI.ClockMicroButton(def)
         if type(mb) == "table" and mb.Click then return mb, name end
     end
     return nil
+end
+
+-- Diagnostic (/wk heritage) : trace du dernier clic sur le raccourci Héritages et état du journal.
+function UI:HeirloomReport()
+    WK:Print(T("Raccourci Héritages : diagnostic"))
+    if not self.heirTrace then WK:Print("  " .. T("Clique d'abord sur le raccourci Héritages.")) return end
+    for _, l in ipairs(self.heirTrace) do WK:Print("  " .. l) end
+    local cj = _G.CollectionsJournal
+    local hj = _G.HeirloomsJournal
+    WK:Print(string.format("  HeirloomsJournal %s · visible %s · ToggleCollectionsJournal %s · SetTab %s",
+        tostring(hj ~= nil), tostring(hj and hj.IsVisible and hj:IsVisible()),
+        tostring(_G.ToggleCollectionsJournal ~= nil), tostring(_G.CollectionsJournal_SetTab ~= nil)))
+    if cj and self.heirReport then self.heirReport() end
 end
 
 -- Diagnostic (/wk micro) : par quel chemin chaque raccourci ouvre sa fenêtre.
