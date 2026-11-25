@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.342", date = "25/11/2026",
+        changed = {
+            "Données mises à jour depuis QuestieDB, Everloot, wago.tools, wowtbc.gg, What's Training et opendata : 19 quêtes retirées, 63 quêtes sans camps d'objectifs.",
+        },
+    },
+    {
         version = "1.128.341", date = "25/11/2026", restart = true,
         added = {
             "Nouvelle catégorie « Leveling » dans la barre latérale, page « Plans de montée » : la barre des 9 classes en haut, puis le plan de la classe choisie en deux colonnes. À gauche, ses arbres de talents avec, sur chaque case, les niveaux où le point est pris (clic : point suivant du plan, clic droit : retirer le dernier, « Annuler le dernier point »). À droite, les sorts du maître rangés par niveau avec leur coût : un clic achète ou écarte un sort (les sorts d'un talent du plan, bordés de violet, n'apparaissent que si le talent est prévu).",

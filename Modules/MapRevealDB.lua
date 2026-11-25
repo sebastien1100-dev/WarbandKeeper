@@ -1,6 +1,6 @@
 local ADDON_NAME, WK = ...
 -- GÉNÉRÉ par tools/gen_reveal.py : ne pas modifier à la main.
--- Zones à découvrir de chaque carte (version du jeu 1.60.1.71037) : tables WorldMapOverlay et
+-- Zones à découvrir de chaque carte (version du jeu 1.60.1.71091) : tables WorldMapOverlay et
 -- WorldMapOverlayTile des fichiers du jeu (wago.tools).
 -- WK.MapRevealDB[carte] = { largeur, hauteur de l'image, { largeur, hauteur, x, y, "images (lignes puis colonnes)" }, ... }
 WK.MapRevealDB = {
