@@ -427,7 +427,16 @@ function UI:ItemInfo(itemID)
 end
 
 -- Les noms d'objets arrivent du serveur en différé : on rafraîchit l'écran.
-WK:On("GET_ITEM_INFO_RECEIVED", function() WK:NotifyChanged() end)
+-- un objet inconnu du serveur (success faux) ne redessine qu'une fois : chaque dessin le redemande et la réponse
+-- « échec » relançait le dessin, sans fin (ex. le perso en 3D de l'onglet BiS qui clignotait)
+local itemFailed = {}
+WK:On("GET_ITEM_INFO_RECEIVED", function(itemID, success)
+    if success == false and itemID then
+        if itemFailed[itemID] then return end
+        itemFailed[itemID] = true
+    end
+    WK:NotifyChanged()
+end)
 
 -- Personnages triés : perso connecté en premier, puis par or décroissant.
 function UI:SortedCharacters()

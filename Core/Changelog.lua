@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.336", date = "25/11/2026",
+        fixed = {
+            "Fiche du personnage, onglet BiS : le personnage en 3D clignotait encore. La vraie cause : un objet que le serveur ne connaît pas (« #231578 » dans ta liste) était redemandé à chaque dessin ; la réponse « inconnu » faisait redessiner toute la fenêtre, qui le redemandait, sans fin. Un objet inconnu ne relance plus le dessin qu'une fois, le personnage n'est plus rhabillé ni replacé sans raison, et c'est pareil pour le personnage de l'onglet Fiche.",
+        },
+    },
+    {
         version = "1.128.335", date = "25/11/2026",
         fixed = {
             "Fiche du personnage, onglet BiS : le personnage en 3D clignotait sans arrêt, comme s'il changeait d'arme. Chaque objet essayé sur lui fait arriver des informations du serveur, qui faisaient redessiner la page et rhabiller le personnage, en boucle (surtout avec un objet encore inconnu, comme « #231578 »). Il n'est plus rhabillé que si sa tenue change.",

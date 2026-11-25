@@ -352,6 +352,7 @@ local function build(parent)
             if s.SetPortraitZoom then s:SetPortraitZoom(s.zoom) end
         end)
         model:Hide()
+        model:HookScript("OnHide", function(s) s.dressSig = nil end)
         f.model = model
     end
     f.big = UI:Icon(mid, "ring", 78, nil, "ARTWORK")
@@ -1146,6 +1147,14 @@ local function refreshGear(f, c)
     local RACE_ID = { Human = 1, Orc = 2, Dwarf = 3, NightElf = 4, Scourge = 5, Tauren = 6, Gnome = 7, Troll = 8, BloodElf = 10, Draenei = 11 }
     local shown = false
     local m = f.model
+    local gsig = tostring(c.key) .. ";" .. tostring(c.race) .. ";" .. tostring(c.sex)
+    do
+        local ks = {}
+        for k in pairs(c.gear or {}) do ks[#ks + 1] = k end
+        table.sort(ks, function(a, b) return tostring(a) < tostring(b) end)
+        for _, k in ipairs(ks) do gsig = gsig .. ";" .. tostring(k) .. "=" .. tostring(c.gear[k]) end
+    end
+    if m and m.dressSig == gsig and m.dressOk ~= nil then shown = m.dressOk; m = nil end
     if m then
         local mine = c.key == WK:CharKey()
         local okm = pcall(function()
@@ -1160,6 +1169,7 @@ local function refreshGear(f, c)
         end)
         shown = okm
         m:SetShown(shown)
+        m.dressSig, m.dressOk = gsig, shown
     end
     f.big:SetShown(not shown); f.bigCls:SetShown(not shown)
     f.spec:ClearAllPoints(); f.seen:ClearAllPoints()
@@ -1741,7 +1751,12 @@ local function refreshBis(f, c)
         end
     end
     local h = 8 * step - 6
-    f.bisMid:ClearAllPoints(); f.bisMid:SetPoint("TOPLEFT", x0 + colW + 14, -top); f.bisMid:SetSize(MIDW, h)
+    -- replacé seulement si la place change (le modèle 3D, enfant de ce cadre, se redessinait à chaque fois)
+    local midSig = (x0 + colW + 14) .. ":" .. top .. ":" .. MIDW .. ":" .. h
+    if f.bisMidSig ~= midSig then
+        f.bisMidSig = midSig
+        f.bisMid:ClearAllPoints(); f.bisMid:SetPoint("TOPLEFT", x0 + colW + 14, -top); f.bisMid:SetSize(MIDW, h)
+    end
     UI:SetClassIcon(f.bisCls, c.class)
     local cr, cg, cb = UI:ClassColor(c.class)
     f.bisRing:SetVertexColor(cr, cg, cb)
@@ -2393,8 +2408,17 @@ UI:RegisterPage({
 })
 
 -- objets reçus du serveur : un seul rafraîchissement par demi-seconde (ils arrivent par dizaines)
+-- un objet que le serveur ne connaît pas (success faux, ex. « #231578 ») ne relance rien : redemandé à chaque dessin,
+-- il relançait la page toutes les demi-secondes, sans fin (le perso en 3D clignotait)
 local itemRefresh
-WK:On("GET_ITEM_INFO_RECEIVED", function()
+local itemFailed = {}
+WK:On("GET_ITEM_INFO_RECEIVED", function(itemID, success)
+    if success == false then
+        if itemID then
+            if itemFailed[itemID] then return end
+            itemFailed[itemID] = true
+        else return end
+    end
     if itemRefresh or not (sheet and sheet:IsVisible()) then return end
     itemRefresh = true
     C_Timer.After(0.5, function() itemRefresh = nil; if sheet and sheet:IsVisible() then sheet:Refresh() end end)
