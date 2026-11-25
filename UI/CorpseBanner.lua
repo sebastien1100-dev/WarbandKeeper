@@ -161,16 +161,8 @@ local function build()
         UI:RefreshCorpse()
     end)
     f:Hide()
-    UI:RegisterHUD("corpseBanner", f, {
-        -- seulement quand l'épingle ne peut pas guider (corps sur un autre continent, position inconnue,
-        -- épingle coupée) : l'aperçu du mode édition montre ce cas-là
-        label = T("Retour au corps (secours)"), default = { 0, 160 },
-        enabled = function() return cfgOn() end,
-        sample = function(on)
-            f.sample = on or nil
-            if on then f:Paint({ far = true, advice = "healer" }); f:Show() else UI:RefreshCorpse() end
-        end,
-    })
+    -- (plus d'élément « Retour au corps (secours) » dans le mode édition : bandeau retiré à la demande du joueur,
+    -- l'épingle à l'écran guide seule ; le cadre reste construit mais n'est plus jamais montré)
     return f
 end
 
@@ -212,8 +204,9 @@ function UI:RefreshCorpse()
     -- arrivé au corps (le guidage s'est arrêté à moins de 10 m) : plus de bandeau, le jeu propose déjà de revenir à
     -- la vie (avant : « Retour au corps : cours-y · env. 0:00 » réapparaissait sur le corps)
     if st and st.d and st.d <= ARRIVED then banner:Hide() return end
-    banner:Paint(st)
-    banner:Show()
+    -- bandeau de secours retiré à la demande du joueur (corps sur un autre continent, position inconnue,
+    -- épingle coupée) : plus rien à l'écran dans ces cas
+    banner:Hide()
 end
 
 WK:On("PLAYER_DEAD", function()

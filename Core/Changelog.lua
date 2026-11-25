@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.344", date = "25/11/2026",
+        changed = {
+            "Retour au corps : le bandeau de secours (« Corps sur un autre continent », « Position du corps inconnue ») est retiré, et il n'apparaît plus dans le mode édition. Le guidage vers le corps passe seulement par l'épingle à l'écran (tête de mort, conseil, temps et coût de l'ange gardien).",
+        },
+    },
+    {
         version = "1.128.343", date = "25/11/2026",
         changed = {
             "Fiche du personnage, onglet Talents : la carte « Plans de montée » et le mode plan sur les arbres sont retirés. Les plans se font maintenant à un seul endroit, la page Leveling, un par classe. Un ancien plan de perso n'est pas perdu : « Copier mon plan » de la page Leveling le reprend comme plan de la classe.",

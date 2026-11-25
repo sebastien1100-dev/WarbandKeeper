@@ -53,6 +53,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.344 — 25/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Retour au corps : le bandeau de secours (« Corps sur un autre continent », « Position du corps inconnue ») est retiré, et il n'apparaît plus dans le mode édition. Le guidage vers le corps passe seulement par l'épingle à l'écran (tête de mort, conseil, temps et coût de l'ange gardien).
+
 ## v1.128.343 — 25/11/2026
 
 _Un /reload suffit._
