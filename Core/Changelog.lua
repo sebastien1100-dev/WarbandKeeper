@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.312", date = "25/11/2026",
+        fixed = {
+            "Barre de fabrication : fermer la fenêtre du métier pendant une série arrête les fabrications restantes, mais la barre restait affichée (« 2 / 8 », « reste 0:18 »). Elle se ferme maintenant à la fin de la fabrication en cours, ou tout de suite si rien n'était en train de se faire.",
+        },
+    },
+    {
         version = "1.128.311", date = "25/11/2026",
         fixed = {
             "Recherche de groupe : cliquer sur un donjon pendant qu'une recherche était en cours donnait l'erreur « WarbandKeeper a tenté d'appeler la fonction protégée » (le jeu n'accepte la recherche que sur un clic, et elle était relancée plus tard). Le clic relance maintenant la recherche tout de suite, à la place de celle en cours.",

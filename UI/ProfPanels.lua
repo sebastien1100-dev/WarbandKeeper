@@ -991,7 +991,14 @@ WK:OnUnit("UNIT_SPELLCAST_SUCCEEDED", "player", function(_, _, spellID)
     b.first = b.first or now
     if b.done >= 2 then b.per = (now - b.first) / (b.done - 1) end
     b.last = now
-    if b.done >= b.n then UI:EndCraftBar(false) end
+    if b.done >= b.n then UI:EndCraftBar(false)
+    elseif b.lastOne then UI:EndCraftBar(true) end -- fenêtre du métier fermée : celle-ci était la dernière
+end)
+-- fenêtre du métier fermée pendant une série : le jeu annule les fabrications restantes (celle en cours finit)
+WK:On("TRADE_SKILL_CLOSE", function()
+    local b = batch
+    if not b or b.test then return end
+    if b.casting then b.lastOne = true else UI:EndCraftBar(true) end
 end)
 WK:OnUnit("UNIT_SPELLCAST_STOP", "player", function(_, _, spellID)
     if batch and batch.locked and spellID == batch.spell then batch.casting = false; batch.last = GetTime() end

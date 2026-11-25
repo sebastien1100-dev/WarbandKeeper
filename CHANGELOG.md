@@ -53,6 +53,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.312 — 25/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Barre de fabrication : fermer la fenêtre du métier pendant une série arrête les fabrications restantes, mais la barre restait affichée (« 2 / 8 », « reste 0:18 »). Elle se ferme maintenant à la fin de la fabrication en cours, ou tout de suite si rien n'était en train de se faire.
+
 ## v1.128.311 — 25/11/2026
 
 _Un /reload suffit._
