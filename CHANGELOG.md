@@ -24,6 +24,7 @@ _Prévu, pas encore commencé._
 - **Annonce de métier** (basse) — Une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
 ### Personnages
+- **Enchantements du BiS** (moyenne) — Pour chaque pièce de ta liste BiS, l'enchantement conseillé (déjà connu pour les listes par spécialisation), ce qu'il manque sur ton équipement actuel, où trouver la formule ou un enchanteur de ton compte qui la connaît, et la liste des composants à réunir.
 - **BiS conseillés par niveau** (basse) — Listes conseillées aussi pour la montée (niveaux 20, 40…) et une variante « facile à obtenir » (sans raid ni rang JcJ élevé).
 - **Comparer deux persos** (basse) — Équipement, stats et métiers côte à côte.
 - **Expérience, suite** (basse) — Temps passé à chaque niveau par perso, barre de réputation au même endroit, barre fine sous le micro menu.

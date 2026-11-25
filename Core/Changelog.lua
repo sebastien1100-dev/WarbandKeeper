@@ -7708,6 +7708,7 @@ WK.RoadmapPrio = {
     { label = "Basse", color = "muted" },
 }
 WK.Roadmap = {
+    { prio = 2, theme = "char", title = "Enchantements du BiS", text = "Pour chaque pièce de ta liste BiS, l'enchantement conseillé (déjà connu pour les listes par spécialisation), ce qu'il manque sur ton équipement actuel, où trouver la formule ou un enchanteur de ton compte qui la connaît, et la liste des composants à réunir." },
     { prio = 3, theme = "char", title = "BiS conseillés par niveau", text = "Listes conseillées aussi pour la montée (niveaux 20, 40…) et une variante « facile à obtenir » (sans raid ni rang JcJ élevé)." },
     { prio = 2, theme = "dung", title = "Quêtes journalières", text = "Une section du module Quêtes avec les quêtes journalières et répétables (déjà relevées), classées par réputation ou par zone ; pour les métiers, à décider." },
     { prio = 3, theme = "class", title = "Salut choisi par classe", text = "Cocher dans le tableau des bénédictions quelles classes reçoivent le Salut, et revoir les priorités une fois Puissance et Salut collectif vérifiés en jeu." },
