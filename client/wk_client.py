@@ -33,7 +33,7 @@ from tkinter import filedialog, font as tkfont
 
 import learned  # Découvertes (client/learned.py, partagé avec tools/gen_learned.py)
 
-CLIENT_VERSION = "1.9.25"
+CLIENT_VERSION = "1.9.26"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 DATA_ADDON = "WarbandKeeper_Data"  # grosses bases, chargées à la demande (dossier à côté de l'addon)
@@ -79,6 +79,11 @@ DATALOG_PATH = "Modules/DataLogDB.lua"  # journal des données (ligne « -- DATA
 DATA_WORKFLOW = "update-data.yml"
 LEARNED_JSON = "tools/learned/learned.json"  # Découvertes : base de référence (client/learned.py)
 LEARNED_LUA = "Modules/LearnedDB.lua"
+# Découvertes proposées par des joueurs sans droit d'écriture sur le dépôt (fork + demande de fusion) : un fichier
+# .wkd par envoi, lu comme une source « autre joueur » par le client du mainteneur (learned_pr)
+LEARNED_INBOX = "tools/learned/inbox"
+# jeton « classique » pour un joueur qui propose ses découvertes depuis sa copie (fork) du dépôt public
+FRIEND_TOKEN_URL = "https://github.com/settings/tokens/new?scopes=public_repo&description=Warband%20Keeper"
 
 
 def load_config():
@@ -837,6 +842,110 @@ class GitHub:
         except (urllib.error.URLError, OSError) as e:
             raise NetError("Pas de connexion à GitHub (%s)." % getattr(e, "reason", e))
 
+    def rest(self, method, path, body=None):
+        """Appel de l'API GitHub hors du dépôt (chemin après api.github.com : /user, /repos/<fork>/…)."""
+        data = json.dumps(body).encode("utf-8") if body is not None else None
+        req = urllib.request.Request("https://api.github.com" + path, data=data, method=method,
+                                     headers={"User-Agent": UA, "Accept": "application/vnd.github+json"})
+        if data is not None:
+            req.add_header("Content-Type", "application/json")
+        if self.token:
+            req.add_header("Authorization", "Bearer " + self.token)
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                raw = r.read()
+                return json.loads(raw) if raw else None
+        except urllib.error.HTTPError as e:
+            if e.code in (401, 403):
+                raise NetError("Jeton GitHub refusé (il lui faut le droit « public_repo »).")
+            raise NetError("GitHub répond %d." % e.code)
+        except (urllib.error.URLError, OSError) as e:
+            raise NetError("Pas de connexion à GitHub (%s)." % getattr(e, "reason", e))
+
+    def can_push(self):
+        """Le jeton peut-il écrire sur le dépôt (mainteneur) ? Sinon les découvertes passent par un fork."""
+        r = self.rest("GET", "/repos/" + REPO) or {}
+        return bool((r.get("permissions") or {}).get("push"))
+
+    def learned_contribute(self, data, src, what):
+        """Joueur sans droit d'écriture : copie (fork) du dépôt sur son compte, une branche avec le fichier
+        tools/learned/inbox/<src>-<date>.json (ses découvertes nouvelles, format .wkd) et une demande de fusion vers
+        le dépôt. Rend l'adresse de la demande."""
+        import base64
+        login = (self.rest("GET", "/user") or {}).get("login")
+        if not login:
+            raise NetError("Jeton GitHub sans compte lisible.")
+        fork = (self.rest("POST", "/repos/%s/forks" % REPO, {"default_branch_only": True}) or {}).get("full_name")
+        if not fork:
+            raise NetError("Copie du dépôt impossible sur ton compte GitHub.")
+        # la copie met quelques secondes à exister ; puis elle est remise à jour avec le dépôt
+        for _ in range(15):
+            try:
+                self.rest("GET", "/repos/%s/git/ref/heads/main" % fork)
+                break
+            except NetError:
+                time.sleep(2)
+        try:
+            self.rest("POST", "/repos/%s/merge-upstream" % fork, {"branch": "main"})
+        except NetError:
+            pass
+        head = self.api("GET", "/git/ref/heads/main")["object"]["sha"]
+        stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        branch = "decouvertes-%s-%s" % (src, stamp)
+        self.rest("POST", "/repos/%s/git/refs" % fork, {"ref": "refs/heads/" + branch, "sha": head})
+        path = "%s/%s-%s.json" % (LEARNED_INBOX, src, stamp)
+        self.rest("PUT", "/repos/%s/contents/%s" % (fork, path), {
+            "message": "Découvertes proposées : %s (client PC)" % what, "branch": branch,
+            "content": base64.b64encode(learned.export_wkd(data, src).encode("utf-8")).decode("ascii")})
+        pr = self.api("POST", "/pulls", {
+            "title": "Découvertes proposées : %s" % what, "head": "%s:%s" % (login, branch), "base": "main",
+            "maintainer_can_modify": True,
+            "body": "Découvertes d'un autre joueur, envoyées par son client PC (page Découvertes) : un seul fichier "
+                    "dans %s, fusionné ensuite dans la base par le client du mainteneur." % LEARNED_INBOX})
+        return pr.get("html_url")
+
+    def learned_inbox(self):
+        """Découvertes proposées par les autres joueurs (fichiers de tools/learned/inbox sur main) : [(src, data)]."""
+        import base64
+        try:
+            files = self.api("GET", "/contents/%s?ref=main" % LEARNED_INBOX) or []
+        except NetError:
+            return []
+        out = []
+        for f in files if isinstance(files, list) else []:
+            if not str(f.get("name", "")).endswith(".json") or (f.get("size") or 0) > 2000000:
+                continue
+            try:
+                r = self.api("GET", "/git/blobs/" + f["sha"])
+                src, data = learned.read_wkd(base64.b64decode(r.get("content") or "").decode("utf-8"))
+                out.append((src, data))
+            except (NetError, ValueError, KeyError):
+                pass
+        return out
+
+    def merge_friend_prs(self, friends):
+        """Mainteneur : fusionne les demandes de découvertes des joueurs de confiance (comptes GitHub de friends)
+        qui n'ajoutent que des fichiers .json dans tools/learned/inbox. Rend le nombre fusionné."""
+        friends = {str(f).strip().lower() for f in friends or [] if str(f).strip()}
+        if not friends:
+            return 0
+        n = 0
+        for pr in self.api("GET", "/pulls?state=open&per_page=50") or []:
+            who = ((pr.get("user") or {}).get("login") or "").lower()
+            if who not in friends:
+                continue
+            files = self.api("GET", "/pulls/%d/files?per_page=20" % pr["number"]) or []
+            ok = files and all(f.get("status") == "added" and str(f.get("filename", "")).startswith(LEARNED_INBOX + "/")
+                               and str(f.get("filename", "")).endswith(".json") for f in files)
+            if not ok:
+                continue
+            try:
+                self.api("PUT", "/pulls/%d/merge" % pr["number"], {"merge_method": "squash"})
+                n += 1
+            except NetError:
+                pass
+        return n
+
     def schedule(self):
         """Planning des données (tools/update_schedule.json) : (réglages, sha du fichier)."""
         import base64
@@ -889,6 +998,12 @@ class GitHub:
             except ValueError:
                 raise RuntimeError("base des découvertes illisible sur GitHub : rien n'a été envoyé")
         base = learned.from_json(text) if text else {}
+        # découvertes proposées par les autres joueurs (fusionnées dans tools/learned/inbox) : sources « autre joueur »
+        known_src = {s.get("name") for s in sources}
+        for src, data in self.learned_inbox():
+            if src not in known_src:
+                sources = list(sources) + [{"name": src, "trusted": False, "data": data}]
+                known_src.add(src)
         rows = learned.merge(sources, base, choices)
         added = [r for r in rows if r["status"] == learned.INTEGRATED]
         if not added:
@@ -2704,6 +2819,7 @@ class LearnedPage(Page):
         self.exportBtn.pack(side="right", padx=(0, 6))
         Button(bot, "Importer…", self.import_file, "ghost", height=32).pack(side="right", padx=(0, 6))
         Button(bot, "Relire", self.reload, "ghost", height=32).pack(side="right", padx=(0, 6))
+        Button(bot, "Joueurs de confiance…", self.edit_friends, "ghost", height=32).pack(side="left", padx=(6, 0))
 
     # -- données
     def sources(self):
@@ -2766,6 +2882,10 @@ class LearnedPage(Page):
         pills = [("NOUVEAU", str(new), "positive" if new else None), ("CONNUES", str(n.get(learned.KNOWN, 0)), None)]
         if len(src) > 1:  # seulement s'il y a des fichiers d'autres joueurs (« ce PC » seul n'apprend rien)
             pills.append(("SOURCES", "ce PC + %d" % (len(src) - 1), None))
+        # déjà dans l'addon et venu d'ailleurs (autres joueurs) : la liste ne montre que tes sources
+        others = self.others_count()
+        if others:
+            pills.append(("AUTRES JOUEURS", str(others), "accent"))
         if look:
             pills.append(("À REGARDER", str(look), "warning"))
         if last.get("at"):
@@ -2857,16 +2977,42 @@ class LearnedPage(Page):
             last = cfg.get("learnedLast") or {}
             when = (" Dernier envoi : %s, %s." % (datetime.fromtimestamp(last["at"]).strftime("%d/%m %H:%M"),
                                                   plural(last.get("n", 0), "ajout"))) if last.get("at") else ""
+            others = self.others_count()
+            otxt = (" L'addon contient aussi %s d'autres joueurs (pas listées ici : seulement tes sources)."
+                    % plural(others, "découverte")) if others else ""
             if not cfg.get("token"):
-                txt = ("Ajoute un jeton GitHub (Réglages) pour l'envoi automatique ; sinon « Exporter »"
-                       " et envoie le fichier au mainteneur.")
+                txt = ("Rien n'est envoyé : pas de jeton GitHub. Crée-en un (Réglages > GitHub, « Jeton pour proposer »,"
+                       " compte GitHub gratuit) ou « Exporter » et envoie le fichier au mainteneur." + otxt)
+            elif cfg.get("learnedMode") == "pr":
+                txt = ("Envoi automatique : tes découvertes partent en demande de fusion vers le mainteneur et arrivent"
+                       " dans l'addon une fois acceptées." + when + otxt)
             elif cfg.get("learnedAuto", True):
                 txt = ("Envoi automatique : ce qui est nouveau part sur GitHub quand tu quittes le jeu, et arrive dans"
-                       " l'addon à la version suivante." + when)
+                       " l'addon à la version suivante." + when + otxt)
             else:
                 txt = ("Rien de nouveau." if not new else "Envoi automatique coupé : « Envoyer » pour l'envoyer.") + when
             self.note.configure(text=txt)
         self.autoBtn.set(text="Envoi auto : %s" % ("oui" if self.app.cfg.get("learnedAuto", True) else "non"))
+
+    def others_count(self):
+        """Découvertes déjà dans l'addon (ou envoyées) qui ne viennent pas de ce PC : celles des autres joueurs."""
+        base, mine = self.base or {}, self.mine or {}
+        return sum(len(set((base.get(g) or {})) - set((mine.get(g) or {}))) for g, _, _ in learned.GENRES)
+
+    def edit_friends(self):
+        """Mainteneur : comptes GitHub dont les propositions de découvertes sont fusionnées toutes seules."""
+        from tkinter import simpledialog
+        cfg = self.app.cfg
+        cur = ", ".join(cfg.get("learnedFriends") or [])
+        v = simpledialog.askstring("Joueurs de confiance",
+                                   "Comptes GitHub dont les découvertes proposées sont acceptées toutes seules\n"
+                                   "(séparés par des virgules ; vide = tu les acceptes toi-même sur GitHub) :",
+                                   initialvalue=cur, parent=self)
+        if v is None:
+            return
+        cfg["learnedFriends"] = [x.strip() for x in v.replace(";", ",").split(",") if x.strip()]
+        save_config(cfg)
+        self.app.toast("Joueurs de confiance : %s." % (", ".join(cfg["learnedFriends"]) or "aucun"), "muted")
 
     COLORS = {learned.INTEGRATED: "positive", learned.PENDING: "muted", learned.CHECK: "warning",
               learned.REJECTED: "negative", learned.KNOWN: "dim"}
@@ -3021,11 +3167,13 @@ class SettingsPage(Page):
         self.pathInfo = label(g.body, "", fg="muted", font="small")
         self.pathInfo.pack(anchor="w", pady=(8, 0))
 
-        t = Card(tab["github"], "Accès à GitHub", "dépôt privé : jeton fine-grained")
+        t = Card(tab["github"], "Accès à GitHub", "dépôt public : jeton facultatif")
         t.pack(fill="x")
-        label(t.body, "Limité au dépôt WarbandKeeper. Pour installer l'addon : Contents « Read-only ».\n"
-                      "Pour régler les données (onglet Données) : Contents et Actions « Read and write ». Gardé seulement sur ce PC.",
-              fg="muted", font="small").pack(anchor="w")
+        label(t.body, "Installer l'addon : aucun jeton. Proposer tes découvertes (autre joueur) : jeton « classique »"
+                      " de ton compte GitHub avec le droit « public_repo » (bouton « Jeton pour proposer »).\n"
+                      "Mainteneur (régler les données, envoyer directement) : jeton fine-grained du dépôt, Contents et"
+                      " Actions « Read and write ». Gardé seulement sur ce PC.",
+              fg="muted", font="small", wraplength=700).pack(anchor="w")
         row2 = tk.Frame(t.body, bg=C["surface"])
         row2.pack(fill="x", pady=(8, 0))
         self.token = tk.StringVar(value=cfg["token"])
@@ -3034,6 +3182,8 @@ class SettingsPage(Page):
         te.pack(side="left", fill="x", expand=True, ipady=7, padx=(0, 8))
         Button(row2, "Enregistrer", self.save_token, "secondary", height=34).pack(side="left")
         Button(row2, "Créer un jeton", lambda: webbrowser.open(TOKEN_URL), "ghost", height=34).pack(side="left", padx=(6, 0))
+        Button(row2, "Jeton pour proposer", lambda: webbrowser.open(FRIEND_TOKEN_URL), "ghost",
+               height=34).pack(side="left", padx=(6, 0))
 
         # Mises à jour de l'addon (sur ce PC)
         u = Card(tab["updates"], "Mises à jour", "de l'addon, sur ce PC")
@@ -3864,6 +4014,8 @@ class App:
         (déconnexion du jeu, /reload) : réglage learnedAuto (oui d'office), jeton en écriture. Au plus une fois
         toutes les 10 min, sauf « Envoyer »."""
         cfg, addons = self.cfg, self.addons
+        if addons and not cfg.get("token") and cfg.get("learnedAuto", True):
+            self.learnNoToken = True  # dit dans la page Découvertes : rien ne part sans jeton
         if not (addons and cfg.get("token")):
             return
         if not manual and not cfg.get("learnedAuto", True):
@@ -3879,11 +4031,43 @@ class App:
         token = cfg["token"]
         choices = learned_choices(cfg)
 
+        if not cfg.get("learnedSrc"):
+            import secrets
+            cfg["learnedSrc"] = "wk-" + secrets.token_hex(4)
+            save_config(cfg)
+        src = cfg["learnedSrc"]
+        friends = list(cfg.get("learnedFriends") or [])
+
         def job():
             mine = read_learned(addons)
+            gh = GitHub(token)
+            if gh.can_push():
+                # mainteneur : propositions des joueurs de confiance fusionnées, puis envoi direct sur main
+                merged = gh.merge_friend_prs(friends)
+                if not mine and not merged:
+                    return None
+                res = gh.learned_pr(learned_sources(mine or {}, cfg), choices, direct=True)
+                if res is not None:
+                    res["merged"] = merged
+                return res
+            # autre joueur : seulement ce qui est nouveau, proposé par une demande de fusion depuis sa copie
             if not mine:
                 return None
-            return GitHub(token).learned_pr(learned_sources(mine, cfg), choices, direct=True)
+            known = known_learned(addons)
+            rows = learned.merge([{"name": "Ce PC", "trusted": True, "data": mine}], known, choices)
+            added = [r for r in rows if r["status"] == learned.INTEGRATED]
+            if not added:
+                return None
+            data = {}
+            per = {}
+            for r in added:
+                data.setdefault(r["genre"], {})[r["key"]] = r["value"]
+                per[r["genre"]] = per.get(r["genre"], 0) + 1
+            what = ", ".join("%s %d" % (learned.LABEL[g].lower(), n) for g, n in per.items())
+            url = gh.learned_contribute(data, src, what)
+            return {"n": len(added), "base": learned.build(known, rows), "what": what, "pr": url,
+                    "items": [{"t": learned.short(r["genre"], r["key"], r["value"]), "s": ["Ce PC"], "c": 1}
+                              for r in added][:60]}
 
         def done(res, err):
             self.learnSending = False
@@ -3897,8 +4081,14 @@ class App:
             elif res:
                 save_sent_learned(res["base"])
                 cfg["learnedLast"] = {"at": int(time.time()), "n": res["n"], "items": res.get("items") or []}
+                cfg["learnedMode"] = "pr" if res.get("pr") else "direct"
                 save_config(cfg)
-                self.toast("Découvertes envoyées sur GitHub : %s." % res["what"], "positive")
+                if res.get("pr"):
+                    self.toast("Découvertes proposées au mainteneur : %s." % res["what"], "positive")
+                else:
+                    self.toast("Découvertes envoyées sur GitHub : %s." % res["what"]
+                               + (" (%s d'autres joueurs fusionnée%s)" % (res["merged"], "s" if res["merged"] > 1 else "")
+                                  if res.get("merged") else ""), "positive")
             elif manual:
                 self.toast("Rien de nouveau par rapport à GitHub.", "muted")
             p = self.pages.get("learned")

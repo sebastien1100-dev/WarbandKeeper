@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.316", date = "25/11/2026",
+        changed = {
+            "Rien ne change en jeu : cette version livre le client PC 1.9.26 (découvertes à plusieurs : un autre joueur propose les siennes depuis sa copie du dépôt, acceptées toutes seules pour tes joueurs de confiance).",
+        },
+    },
+    {
         version = "1.128.315", date = "25/11/2026",
         added = {
             "Carte du monde : un clic sur le médaillon d'un rare ou sur sa ligne dans la liste des rares lance le guidage et, hors combat, le cible et lui pose une tête de mort s'il est à portée (comme le bandeau « Rare en vue »). En combat, le clic ne fait que guider : le jeu interdit de cibler d'un clic.",

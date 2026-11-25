@@ -31,9 +31,16 @@ l'addon et du client ; la roue en haut à droite ouvre les Réglages.
 2. Le lancer. Windows peut afficher « Windows a protégé votre ordinateur » (programme non signé) :
    **Informations complémentaires > Exécuter quand même**.
 
-## Dépôt privé : jeton GitHub
+## Jeton GitHub (facultatif)
 
-Tant que le dépôt est privé, le client a besoin d'un jeton en lecture seule :
+Le dépôt est public : **aucun jeton n'est nécessaire pour installer l'addon et le client**.
+
+Pour **partager tes découvertes** (page Découvertes) sans être mainteneur : un jeton « classique » de ton compte
+GitHub (gratuit) avec le seul droit **public_repo** (bouton « Jeton pour proposer » de Réglages > GitHub). Le client
+crée ta copie (fork) du dépôt et propose tes nouveautés par une demande de fusion ; le mainteneur les accepte (ou
+toutes seules si ton compte est dans ses « Joueurs de confiance… »).
+
+Mainteneur (envoi direct, réglage des données) : jeton fine-grained du dépôt :
 
 1. github.com > Settings > Developer settings > **Fine-grained tokens** > Generate new token
    (bouton « Créer un jeton » du client).
@@ -43,7 +50,7 @@ Tant que le dépôt est privé, le client a besoin d'un jeton en lecture seule :
    (le client modifie `tools/update_schedule.json` et lance la vérification).
 4. Copier le jeton dans **Réglages > Accès à GitHub** du client, puis « Enregistrer ».
 
-Le jeton reste sur ton PC (`%APPDATA%\WarbandKeeper Client\config.json`). Si le dépôt devient public, il n'est plus utile.
+Le jeton reste sur ton PC (`%APPDATA%\WarbandKeeper Client\config.json`).
 
 ## Pour le développement
 

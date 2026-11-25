@@ -3,6 +3,17 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.9.26 — 25/11/2026
+
+### Ajouts
+- Découvertes à plusieurs : un joueur qui n'a pas le droit d'écrire sur le dépôt (dépôt public) peut maintenant envoyer ses découvertes. Avec un jeton « classique » de son propre compte GitHub (droit « public_repo », bouton « Jeton pour proposer » de Réglages > GitHub), le client crée sa copie du dépôt et propose ses nouveautés au mainteneur par une demande de fusion, tout seul à chaque sortie du jeu.
+- Mainteneur : « Joueurs de confiance… » (page Découvertes) : les propositions de ces comptes GitHub sont acceptées toutes seules à ton prochain envoi, puis fusionnées dans la base comme les fichiers .wkd d'autres joueurs (2e confirmation pour les quêtes, chaînes et boss). Sans joueur de confiance, tu les acceptes toi-même sur GitHub.
+- Page Découvertes : la pastille « AUTRES JOUEURS » compte ce qui est déjà dans l'addon et vient d'autres PC (la liste ne montre que tes sources).
+
+### Corrections
+- Sans jeton GitHub, l'envoi automatique ne faisait rien sans le dire. La page le dit maintenant et explique comment envoyer (jeton pour proposer, ou « Exporter »).
+- Réglages > GitHub : le dépôt est public, aucun jeton n'est plus nécessaire pour installer l'addon (textes mis à jour).
+
 ## 1.9.25 — 24/11/2026
 
 ### Corrections
