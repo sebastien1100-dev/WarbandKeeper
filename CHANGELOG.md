@@ -54,6 +54,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.368 — 25/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Halo : une barre de vie s'affichait au-dessus du PNJ ami le plus proche (garde, marchand…). Pour faire briller les objets, le halo demande au jeu une plaque de nom sur ce qui est désigné, et le jeu désigne aussi les PNJ. Cette plaque est maintenant invisible quand c'est un PNJ ami (sauf si tu as allumé toi-même les plaques des PNJ amis dans le jeu).
+
 ## v1.128.367 — 25/11/2026
 
 _Un /reload suffit._

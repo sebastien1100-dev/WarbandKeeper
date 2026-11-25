@@ -730,3 +730,37 @@ WK:On("PLAYER_ENTERING_WORLD", function() C_Timer.After(1, function()
     if g.enabled and WK:FeatureOn("halo") and not M:OtherAddonLoaded() then M:ApplyCVars() end
     refresh()
 end) end)
+
+---------------------------------------------------------------------------
+-- Barre de nom d'un PNJ ami désigné : le halo allume la plaque de nom de ce qui est désigné (support de la
+-- lueur des objets), et le jeu en donnait une aussi aux PNJ amis proches (garde, marchand…) avec une barre de
+-- vie. Elle est rendue invisible quand le joueur n'a pas demandé les plaques des PNJ amis.
+---------------------------------------------------------------------------
+local npcHidden -- plaque rendue invisible (rendue visible au prochain changement)
+local function friendlyNpc(unit)
+    local function ask(fn)
+        if not fn then return nil end
+        local ok, v = pcall(fn, unit)
+        return ok and plain(v) or nil
+    end
+    if not ask(_G.UnitExists) then return false end
+    if ask(_G.UnitIsGameObject) == true then return false end
+    if ask(_G.UnitIsPlayer) == true then return false end
+    local atk = _G.UnitCanAttack and select(2, pcall(_G.UnitCanAttack, "player", unit))
+    return plain(atk) ~= true
+end
+function M.HideNpcPlate()
+    if npcHidden then pcall(npcHidden.SetAlpha, npcHidden, 1); npcHidden = nil end
+    local g = M:Config()
+    if not (g.enabled and WK:FeatureOn("halo")) or M:OtherAddonLoaded() then return end
+    if getCVar("nameplateShowFriendlyNPCs") == "1" then return end -- plaques des PNJ voulues par le joueur
+    if not friendlyNpc(UNIT) then return end
+    local plate = findPlate()
+    if plate then
+        local ok = pcall(plate.SetAlpha, plate, 0)
+        if ok then npcHidden = plate end
+    end
+end
+WK:On("PLAYER_SOFT_INTERACT_CHANGED", function() M.HideNpcPlate() end)
+WK:On("NAME_PLATE_UNIT_ADDED", function() M.HideNpcPlate() end)
+WK:On("NAME_PLATE_UNIT_REMOVED", function() M.HideNpcPlate() end)
