@@ -53,6 +53,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.335 — 25/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Fiche du personnage, onglet BiS : le personnage en 3D clignotait sans arrêt, comme s'il changeait d'arme. Chaque objet essayé sur lui fait arriver des informations du serveur, qui faisaient redessiner la page et rhabiller le personnage, en boucle (surtout avec un objet encore inconnu, comme « #231578 »). Il n'est plus rhabillé que si sa tenue change.
+
 ## v1.128.334 — 25/11/2026
 
 _Un /reload suffit._

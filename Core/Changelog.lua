@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.335", date = "25/11/2026",
+        fixed = {
+            "Fiche du personnage, onglet BiS : le personnage en 3D clignotait sans arrêt, comme s'il changeait d'arme. Chaque objet essayé sur lui fait arriver des informations du serveur, qui faisaient redessiner la page et rhabiller le personnage, en boucle (surtout avec un objet encore inconnu, comme « #231578 »). Il n'est plus rhabillé que si sa tenue change.",
+        },
+    },
+    {
         version = "1.128.334", date = "25/11/2026",
         changed = {
             "Hôtel des ventes, onglet À acheter : sur la ligne « Introuvable » de « Ce qu'il faut », les icônes des objets à la place du nom coupé (cinq au plus, « +N » au-delà). Au survol, l'infobulle de l'objet.",

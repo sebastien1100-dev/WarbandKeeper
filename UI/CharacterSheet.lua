@@ -839,6 +839,8 @@ local function build(parent)
             if m.SetFacing then m:SetFacing(m.rot) end
         end)
         bm:Hide()
+        -- montré de nouveau (onglet, fenêtre) : rhabillé au prochain dessin
+        bm:HookScript("OnHide", function(m) m.dressSig = nil end)
         f.bisModel = bm
     end
     -- une tuile d'emplacement : icône (liseré de qualité), nom, emplacement · source · état
@@ -1749,6 +1751,19 @@ local function refreshBis(f, c)
     -- aperçu 3D habillé avec la liste (ou l'équipement porté)
     local shown = false
     local m = f.bisModel
+    -- rhabillé seulement si ce qu'il porte change : chaque objet essayé fait venir des infos d'objet du serveur
+    -- (GET_ITEM_INFO_RECEIVED), qui relançaient le dessin et le rhabillage, en boucle (le perso clignotait)
+    local parts = { tostring(f.key), f.bisShowWorn and "w" or "l", tostring(c.race), tostring(c.sex) }
+    local src = f.bisShowWorn and gear or list
+    local keys = {}
+    for k in pairs(src or {}) do keys[#keys + 1] = k end
+    table.sort(keys, function(a, b) return tostring(a) < tostring(b) end)
+    for _, k in ipairs(keys) do parts[#parts + 1] = tostring(k) .. "=" .. tostring(src[k]) end
+    local sig = table.concat(parts, ";")
+    if m and m.dressSig == sig and m.dressOk ~= nil then
+        shown = m.dressOk
+        m = nil
+    end
     if m then
         shown = pcall(function()
             m:SetUnit("player")
@@ -1765,6 +1780,7 @@ local function refreshBis(f, c)
             if m.SetFacing then m:SetFacing(m.rot or 0) end
         end)
         m:SetShown(shown)
+        m.dressSig, m.dressOk = sig, shown
     end
     f.bisRing:SetShown(not shown); f.bisCls:SetShown(not shown)
     f.bisClass:ClearAllPoints()
