@@ -812,8 +812,6 @@ UI:RegisterPage({
                 function(v) tc.scope = v; redraw() end, 26)
             scope:Select(tc.scope)
             trow("Tâches de", "Tout le compte, ou seulement celles du perso connecté.", scope, 230)
-            trow("Titre « À faire »", "Le mot « À faire » au début de la barre.",
-                tog(function() return tc.title end, function(v) tc.title = v end), 80)
             trow("Libellés", "Un mot à côté du nombre (« 2 plafond », « 1 repos »…) quand la tâche en a un.",
                 tog(function() return tc.labels end, function(v) tc.labels = v end), 80)
             trow("Cacher quand il n'y a rien", "Sinon la barre affiche « rien à faire ».",
@@ -822,10 +820,18 @@ UI:RegisterPage({
                 function(v) tc.size = v; redraw() end, 26)
             size:Select(tc.size)
             trow("Taille des pastilles", "La taille d'ensemble se règle aussi en mode édition.", size, 260)
-            local lay = UI:Segmented(tcard, { { "row", "En ligne" }, { "col", "En colonne" } },
-                function(v) tc.vertical = v == "col"; redraw() end, 26)
-            lay:Select(tc.vertical and "col" or "row")
-            trow("Disposition", "Pastilles côte à côte, ou les unes sous les autres.", lay, 220)
+            trow("Largeur", "Largeur fixe de la barre ; les pastilles qui ne tiennent pas passent à la ligne.",
+                UI:Slider(tcard, 220, UI.TODO_W_MIN, UI.TODO_W_MAX, 10, function() return tc.width or 360 end,
+                    function(v) tc.width = v; redraw() end, "%d px"), 240)
+            -- sens d'empilement : la barre garde son bord (haut ou bas) et l'infobulle s'ouvre du même côté
+            local grow = UI:Segmented(tcard, { { "down", "En dessous" }, { "up", "Au-dessus" } },
+                function(v)
+                    tc.grow = v; redraw()
+                    if UI.HUDCapture then UI:HUDCapture("todoBar") end
+                end, 26)
+            grow:Select(tc.grow or "down")
+            trow("Nouvelles rangées", "Où s'ajoutent les rangées de pastilles ; l'infobulle s'ouvre du même côté.",
+                grow, 240)
             trow("Fond", "Fond graphite derrière les pastilles ; sans fond, seules les pastilles restent.",
                 tog(function() return tc.bg end, function(v) tc.bg = v end), 80)
             trow("Pastilles au plus", "Les plus urgentes d'abord ; 0 : toutes.",

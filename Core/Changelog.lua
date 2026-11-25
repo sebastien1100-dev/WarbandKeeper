@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.353", date = "25/11/2026",
+        changed = {
+            "Mini-fenêtre « À faire » : le mot « À faire » est retiré, la barre ne montre plus que les pastilles.",
+            "Mini-fenêtre « À faire » : largeur fixe, réglable de 120 à 800 px (« Largeur »). Les pastilles qui ne tiennent pas passent à la ligne. Remplace le choix « En ligne / En colonne » : une barre étroite donne une colonne.",
+            "Mini-fenêtre « À faire » : nouveau réglage « Nouvelles rangées » (En dessous / Au-dessus). La barre garde son bord du haut ou du bas, et l'infobulle d'une pastille s'ouvre du même côté que les rangées.",
+        },
+    },
+    {
         version = "1.128.352", date = "25/11/2026",
         fixed = {
             "Micro menu, raccourci Héritages : sur WoW Forever, les héritages ne sont pas un onglet du journal des collections mais une fenêtre à part. Le raccourci cherche maintenant cette fenêtre dans le jeu (nom contenant « heirloom » ou « héritage » : bouton, fonction d'ouverture ou fenêtre) et l'ouvre ou la ferme. /wk heritage liste les noms trouvés et celui utilisé.",

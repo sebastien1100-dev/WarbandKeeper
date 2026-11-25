@@ -6,10 +6,11 @@ local T = function(s) return WK.T(s) end
 -- Mini-fenêtre « À faire » (maquette B) : une barre de pastilles à l'écran, sans ouvrir la fenêtre principale.
 -- Mêmes tâches que « À faire » du Résumé et du bandeau de connexion (UI.TodoItems), une pastille par groupe
 -- (icône de l'addon + nombre), plus l'objectif le plus proche du perso connecté (Modules/CharGoals.lua).
--- Survol d'une pastille : le détail en dessous ; clic : l'action de la 1re tâche (sa page). Placée en mode
+-- Survol d'une pastille : le détail du côté des rangées (dessous ou dessus) ; clic : l'action de la 1re
+-- tâche (sa page). Placée en mode
 -- édition (HUD « todoBar ») ; réglages : carte « Mini-fenêtre « À faire » » (QoL > Général > Alertes) :
 -- settings.ui.todoBar (affichée, vrai par défaut) et settings.ui.todo (Cfg ci-dessous : genres, perso, titre,
--- libellés, taille, disposition, fond, nombre de pastilles, cachée quand vide).
+-- libellés, taille, largeur fixe, sens d'empilement, fond, nombre de pastilles, cachée quand vide).
 local PAD = 8
 local bar
 
@@ -27,8 +28,10 @@ local KNOWN = {}
 for _, k in ipairs(UI.TODO_KINDS) do KNOWN[k[1]] = true end
 local SIZES = { s = 20, m = 26, l = 32 }
 
-local DEFAULTS = { scope = "all", title = true, labels = false, hideEmpty = false, size = "m", vertical = false,
+-- width = largeur fixe (px) ; grow = down (rangées ajoutées dessous, infobulle dessous) / up (dessus)
+local DEFAULTS = { scope = "all", labels = false, hideEmpty = false, size = "m", width = 360, grow = "down",
     bg = true, max = 0, hoverFull = true, tips = true, click = true, hideCombat = false }
+UI.TODO_W_MIN, UI.TODO_W_MAX = 120, 800
 function UI.TodoConfig()
     local s = WK.DB.global.settings.ui
     s.todo = s.todo or {}
@@ -81,11 +84,8 @@ local function build()
     f:SetClampedToScreen(true)
     f:EnableMouse(true)
     UI:HudBackground(f, "hud", 12)
-    f.title = UI:Text(f, 12)
-    f.title:SetPoint("LEFT", 12, 0)
-    f.title:SetText(T("À faire"))
+    -- plus de titre « À faire » (retiré à la demande du joueur)
     f.empty = UI:Text(f, 11, C.muted)
-    f.empty:SetPoint("LEFT", f.title, "RIGHT", 10, 0)
     f.empty:SetText(T("rien à faire"))
     f.pool = UI:Pool(function()
         local b = CreateFrame("Button", nil, f)
@@ -103,7 +103,7 @@ local function build()
             local col = s.color or { UI:Accent() }
             s.bg:SetColor(col[1], col[2], col[3], 0.32)
             if not UI.TodoConfig().tips then return end
-            UI:TooltipOwner(s, "ANCHOR_BOTTOM")
+            UI:TooltipOwner(s, UI.TodoConfig().grow == "up" and "ANCHOR_TOP" or "ANCHOR_BOTTOM")
             local tip = GameTooltip
             for i, l in ipairs(s.lines or {}) do
                 if i > 10 then tip:AddLine(string.format(T("+ %d autres"), #s.lines - 10), 0.6, 0.6, 0.6) break end
@@ -125,35 +125,35 @@ local function build()
         end)
         return b
     end)
-    -- clic sur le titre : la fenêtre sur le Résumé
-    f:SetScript("OnMouseUp", function(s, button)
-        if button == "LeftButton" and s.title:IsMouseOver() then UI:Create():Show(); UI:ShowPage("overview") end
-    end)
     -- rafraîchie toutes les 5 s par une minuterie à part (la barre cachée quand vide doit pouvoir revenir)
     f:Hide()
     return f
 end
 
+-- Largeur fixe (réglage) ; les pastilles passent à la ligne. Rangées empilées dessous (grow = down, cadre
+-- placé par son haut) ou dessus (up, placé par son bas : la 1re rangée, la plus urgente, reste en bas).
 local function barPaint(f, list)
     local cfg = UI.TodoConfig()
     local h = SIZES[cfg.size] or 26
     local fs = h >= 32 and 14 or (h <= 20 and 10 or 12)
+    local W = math.max(UI.TODO_W_MIN, math.min(UI.TODO_W_MAX, cfg.width or 360))
+    local up = cfg.grow == "up"
     f.pool:Reset()
-    f.title:SetShown(cfg.title and true or false)
-    f.title:ClearAllPoints()
     f.empty:ClearAllPoints()
     -- fond : graphite (réglage) ou rien
     if f.bg then f.bg:SetShown(cfg.bg and true or false) end
     if f.border then f.border:SetShown(cfg.bg and true or false) end
     if f.edge then f.edge:SetShown(cfg.bg and true or false) end
     local max = (cfg.max or 0) > 0 and cfg.max or #list
-    local x, y, w = PAD + 4, PAD, 0
-    if cfg.title then
-        if cfg.vertical then
-            f.title:SetPoint("TOPLEFT", PAD + 4, -PAD - 2); y = PAD + 22
-        else
-            f.title:SetPoint("LEFT", PAD + 4, 0); x = PAD + 4 + f.title:GetStringWidth() + 10
-        end
+    local inner = W - 2 * PAD
+    local x, row = 0, 1
+    local function place(region, w)
+        if x > 0 and x + w > inner then x, row = 0, row + 1 end
+        local y = PAD + (row - 1) * (h + 4)
+        region:ClearAllPoints()
+        if up then region:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", PAD + x, y)
+        else region:SetPoint("TOPLEFT", f, "TOPLEFT", PAD + x, -y) end
+        x = x + w + 6
     end
     local shown = 0
     for _, p in ipairs(list) do
@@ -172,29 +172,16 @@ local function barPaint(f, list)
         b.n:SetText(txt)
         b.n:SetTextColor(unpack(C.text))
         b.color, b.lines, b.go = p.color, p.lines, p.go
-        b:SetWidth(8 + (h - 10) + 5 + b.n:GetStringWidth() + 10)
-        b:ClearAllPoints()
-        if cfg.vertical then
-            b:SetPoint("TOPLEFT", f, "TOPLEFT", PAD, -y)
-            y = y + h + 4
-            w = math.max(w, b:GetWidth())
-        else
-            b:SetPoint("LEFT", f, "LEFT", x, 0)
-            x = x + b:GetWidth() + 6
-        end
+        local bw = math.min(inner, 8 + (h - 10) + 5 + b.n:GetStringWidth() + 10)
+        b:SetWidth(bw)
+        place(b, bw)
     end
     f.empty:SetShown(shown == 0)
-    if cfg.vertical then
-        if shown == 0 then
-            f.empty:SetPoint("TOPLEFT", PAD + 4, -y); y = y + 18
-            w = math.max(w, f.empty:GetStringWidth() + 8)
-        end
-        if cfg.title then w = math.max(w, f.title:GetStringWidth() + 8) end
-        f:SetSize(w + 2 * PAD, y + PAD - 4)
-    else
-        if shown == 0 then f.empty:SetPoint("LEFT", x, 0); x = x + f.empty:GetStringWidth() + 4 end
-        f:SetSize(x + PAD - 6 + 6, h + 2 * PAD - 2)
+    if shown == 0 then
+        f.empty:SetHeight(h)
+        place(f.empty, f.empty:GetStringWidth())
     end
+    f:SetSize(W, 2 * PAD + row * h + (row - 1) * 4)
     return shown
 end
 
@@ -238,8 +225,17 @@ end
 
 WK:On("PLAYER_LOGIN", function()
     bar = bar or build()
+    -- placée par son haut (rangées dessous) ou son bas (rangées dessus) : l'autre bord bouge avec les rangées
+    local tc = UI.TodoConfig()
+    if not tc.anchorV2 then
+        -- ancienne place notée pour le coin haut droit : recalée sur le milieu du haut (largeur fixe)
+        tc.anchorV2 = true
+        local e = UI:HUDEntry("todoBar")
+        if e.x then e.x = e.x - (tc.width or 360) * (e.scale or 1) / 2 end
+    end
     UI:RegisterHUD("todoBar", bar, {
-        label = T("Mini-fenêtre « À faire »"), point = "TOPRIGHT", default = { -260, -200 },
+        label = T("Mini-fenêtre « À faire »"), default = { -440, -200 },
+        dynamicPoint = function() return UI.TodoConfig().grow == "up" and "BOTTOM" or "TOP" end,
         enabled = cfgOn,
         sample = function(on)
             bar.sample = on or nil
