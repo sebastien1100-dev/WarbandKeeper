@@ -12,6 +12,11 @@ viennent de la fenêtre du maître (Modules/ClassSpells.lua).
 
 Format : WK.ClassSpellsRaw[CLASSE] = "niveau,sort,t;…" (t = 1 si un talent porte le même nom :
 sort de talent, montré seulement si le perso a ce talent).
+
+Familiers (lignes « Pet - … ») : WK.ClassPetFamilies[CLASSE] = { noms français des familles } et
+WK.ClassPetSpellsRaw[CLASSE] = "niveau,sort,n°.n°;…" (n° des familles qui ont le sort) : démons du démoniste
+(grimoires du maître des démons) et techniques des familiers du chasseur. Méthode 0 seulement, niveau > 0,
+sans les sorts techniques (DND, Scaling).
 """
 import csv
 import os
@@ -20,6 +25,37 @@ import sys
 CLASSES = {1: "WARRIOR", 2: "PALADIN", 4: "HUNTER", 8: "ROGUE", 16: "PRIEST", 64: "SHAMAN", 128: "MAGE",
            256: "WARLOCK", 1024: "DRUID"}
 SKIP_LINES = ("Runes", "Engraving", "Mounts", "Companions", "Beast Training")
+DEMONS = {"Imp": "Diablotin", "Voidwalker": "Marcheur du Vide", "Succubus": "Succube", "Felhunter": "Chasseur corrompu",
+          "Felguard": "Gangregarde"}
+BEASTS = {"Bat": "Chauve-souris", "Bear": "Ours", "Bird of Prey": "Oiseau de proie", "Boar": "Sanglier",
+          "Carrion Bird": "Charognard", "Cat": "Félin", "Core Hound": "Chien du Magma", "Crab": "Crabe",
+          "Crocilisk": "Crocilisque", "Gorilla": "Gorille", "Hyena": "Hyène", "Raptor": "Raptor", "Scorpid": "Scorpide",
+          "Spider": "Araignée", "Tallstrider": "Haut-trotteur", "Turtle": "Tortue", "Wind Serpent": "Serpent des vents",
+          "Wolf": "Loup", "Fox": "Renard"}
+
+
+def pet_spells(lines, rows, level, names):
+    """Sorts des familiers : { CLASSE: (familles, { sort: [niveau, {n° de famille}] }) }."""
+    out = {"WARLOCK": ([], {}), "HUNTER": ([], {})}
+    for r in rows:
+        sl = lines.get(int(r["SkillLine"]))
+        if not sl or sl["CategoryID"] != "7" or not sl["DisplayName_lang"].startswith("Pet - "):
+            continue
+        fam = sl["DisplayName_lang"][6:]
+        cls = "WARLOCK" if fam in DEMONS else ("HUNTER" if fam in BEASTS else None)
+        if not cls or r["AcquireMethod"] != "0":
+            continue
+        sp = int(r["Spell"])
+        nm, lvl = names.get(sp), level.get(sp, 0)
+        if not nm or lvl <= 0 or "(DND)" in nm or "Scaling" in nm:
+            continue
+        fams, spells = out[cls]
+        label = (DEMONS if cls == "WARLOCK" else BEASTS)[fam]
+        if label not in fams:
+            fams.append(label)
+        e = spells.setdefault(sp, [lvl, set()])
+        e[1].add(fams.index(label) + 1)
+    return out
 
 
 def rd(folder, name):
@@ -42,7 +78,9 @@ def main(folder, out):
                 talent.add(v)
                 talent_names.add(names.get(v))
     per = {c: {} for c in CLASSES.values()}
-    for r in rd(folder, "SkillLineAbility"):
+    sla = rd(folder, "SkillLineAbility")
+    pets = pet_spells(lines, sla, level, names)
+    for r in sla:
         sl = lines.get(int(r["SkillLine"]))
         if not sl or sl["CategoryID"] != "7":
             continue
@@ -72,7 +110,18 @@ def main(folder, out):
             total += len(items)
             f.write('%s="%s",\n' % (cls, ";".join("%d,%d,%d" % x for x in items)))
         f.write("}\n")
-    print("%d sorts de classe" % total)
+        npet = 0
+        f.write("WK.ClassPetFamilies = {\n")
+        for cls in sorted(pets):
+            f.write('%s={%s},\n' % (cls, ",".join('"%s"' % x for x in pets[cls][0])))
+        f.write("}\nWK.ClassPetSpellsRaw = {\n")
+        for cls in sorted(pets):
+            items = sorted(pets[cls][1].items(), key=lambda kv: (kv[1][0], kv[0]))
+            npet += len(items)
+            f.write('%s="%s",\n' % (cls, ";".join("%d,%d,%s" % (v[0], sp, ".".join(str(x) for x in sorted(v[1])))
+                                               for sp, v in items)))
+        f.write("}\n")
+    print("%d sorts de classe, %d sorts de familiers" % (total, npet))
 
 
 if __name__ == "__main__":

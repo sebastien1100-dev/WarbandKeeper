@@ -54,6 +54,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.359 — 25/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Leveling, carte « Achats chez le maître » : section des familiers sous les sorts de classe. Démoniste : sorts des démons (Diablotin, Marcheur du Vide, Succube, Chasseur corrompu), appris par les grimoires du maître des démons. Chasseur : techniques des familiers, apprises en apprivoisant. Classés par niveau du familier ; l'infobulle donne les familles qui ont la technique. Un clic l'écarte du plan ou l'y remet, comme les sorts.
+
 ## v1.128.358 — 25/11/2026
 
 _Un /reload suffit._

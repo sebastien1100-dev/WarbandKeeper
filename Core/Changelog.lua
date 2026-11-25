@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.359", date = "25/11/2026",
+        added = {
+            "Leveling, carte « Achats chez le maître » : section des familiers sous les sorts de classe. Démoniste : sorts des démons (Diablotin, Marcheur du Vide, Succube, Chasseur corrompu), appris par les grimoires du maître des démons. Chasseur : techniques des familiers, apprises en apprivoisant. Classés par niveau du familier ; l'infobulle donne les familles qui ont la technique. Un clic l'écarte du plan ou l'y remet, comme les sorts.",
+        },
+    },
+    {
         version = "1.128.358", date = "25/11/2026",
         changed = {
             "À venir : le raccourci Héritages du micro menu, qui n'ouvre toujours pas « Suivi de la progression », est noté pour être corrigé plus tard.",

@@ -91,6 +91,30 @@ function M:Catalog(class)
     return cat
 end
 
+-- Sorts des familiers (démons du démoniste : grimoires du maître des démons ; techniques des familiers du
+-- chasseur) : { id, name, rank, level (niveau du familier), icon, pet = true, fams = { noms de familles } }
+local petCatalog = {}
+function M.PetCatalog(_, class)
+    local raw = class and WK.ClassPetSpellsRaw and WK.ClassPetSpellsRaw[class]
+    if not raw then return {} end
+    local cat = petCatalog[class]
+    if cat and cat.complete then return cat end
+    local names = (WK.ClassPetFamilies or {})[class] or {}
+    cat = { complete = true }
+    for lvl, id, fl in raw:gmatch("(%d+),(%d+),([%d%.]+)") do
+        id = tonumber(id)
+        local name, icon = WK.SpellInfo(id)
+        if not name then cat.complete = false end
+        local fams = {}
+        for n in fl:gmatch("%d+") do fams[#fams + 1] = names[tonumber(n)] end
+        cat[#cat + 1] = { id = id, name = name or ("#" .. id), rank = name and subtext(id) or "", level = tonumber(lvl),
+            icon = icon, pet = true, fams = fams }
+    end
+    table.sort(cat, function(a, b) if a.level ~= b.level then return a.level < b.level end return a.id < b.id end)
+    petCatalog[class] = cat
+    return cat
+end
+
 -- Prix de base (Modules/ClassPricesDB.lua, What's Training) : { [sort] = cuivre }, lu une fois
 local basePrice
 local function baseOf(id)

@@ -196,7 +196,7 @@ UI:RegisterPage({
         b:SetScript("OnClick", function(s)
             local _, ai = CP():Active(self.class)
             if not (ai and s.e) then return end
-            CP():SetSkip(self.class, ai, s.e.name, not s.skipped)
+            CP():SetSkip(self.class, ai, s.e.skipKey or s.e.name, not s.skipped)
             self:Refresh()
         end)
         b:SetScript("OnEnter", function(s)
@@ -205,8 +205,18 @@ UI:RegisterPage({
             UI:TooltipOwner(s, "ANCHOR_RIGHT")
             if GT.SetSpellByID then pcall(GT.SetSpellByID, GT, s.e.id) else GT:SetText(s.e.name, 1, 1, 1) end
             GT:AddLine(" ")
-            GT:AddLine(s.skipped and T("Écarté : pas acheté chez le maître · clic : l'acheter")
-                or T("Acheté chez le maître · clic : l'écarter"), 0.6, 0.6, 0.6)
+            if s.e.pet then
+                GT:AddLine(string.format(T("Familier de niveau %d"), s.e.level), 1, 0.82, 0)
+                if s.e.fams and #s.e.fams > 0 then
+                    GT:AddLine(table.concat(s.e.fams, ", "), 0.85, 0.85, 0.85, true)
+                end
+                local hint = s.skipped and T("Écarté du plan · clic : le garder")
+                    or T("Dans le plan · clic : l'écarter")
+                GT:AddLine(hint, 0.6, 0.6, 0.6)
+            else
+                GT:AddLine(s.skipped and T("Écarté : pas acheté chez le maître · clic : l'acheter")
+                    or T("Acheté chez le maître · clic : l'écarter"), 0.6, 0.6, 0.6)
+            end
             GT:Show()
         end)
         b:SetScript("OnLeave", function() _G.GameTooltip:Hide() end)
@@ -344,6 +354,7 @@ UI:RegisterPage({
         local cp, CS = CP(), WK.modules.ClassSpells
         for _, r in ipairs(self.lvRows) do r:Hide() end
         for _, b in ipairs(self.chips) do b:Hide() end
+        if self.petHead then self.petHead:Hide(); self.petNote:Hide() end
         if not plan then self.right.subtitle:SetText(""); self.spells:SetContentHeight(1) return end
         local tal = cp:TalentNames(plan)
         local byLvl, levels = {}, {}
@@ -354,54 +365,87 @@ UI:RegisterPage({
             end
         end
         table.sort(levels)
+        -- familiers (démoniste : démons, grimoires du maître des démons ; chasseur : techniques du familier)
+        local petLvl, petLevels = {}, {}
+        for _, e in ipairs(CS:PetCatalog(self.class)) do
+            e.skipKey = "pet:" .. e.name
+            if not petLvl[e.level] then petLvl[e.level] = {}; petLevels[#petLevels + 1] = e.level end
+            table.insert(petLvl[e.level], e)
+        end
+        table.sort(petLevels)
         local W = math.max(200, (self.spells:GetWidth() or 400) - 16)
         self.spells.child:SetWidth(W)
-        local y, ci, total = 0, 0, 0
+        local y, ci, ri, total = 0, 0, 0, 0
         local ar, ag, ab = UI:Accent()
-        for li, lv in ipairs(levels) do
-            local row = self.lvRows[li]
-            if not row then
-                row = CreateFrame("Frame", nil, self.spells.child)
-                row.n = UI:Text(row, 14); row.n:SetPoint("TOPLEFT", 4, -4); row.n:SetWidth(30)
-                row.n:SetJustifyH("CENTER")
-                row.cost = UI:Text(row, 11, C.gold); row.cost:SetPoint("TOPRIGHT", -4, -6)
-                row.cost:SetJustifyH("RIGHT")
-                row.line = row:CreateTexture(nil, "BACKGROUND"); row.line:SetHeight(1)
-                row.line:SetPoint("BOTTOMLEFT"); row.line:SetPoint("BOTTOMRIGHT")
-                row.line:SetColorTexture(C.border[1], C.border[2], C.border[3], 1)
-                self.lvRows[li] = row
+        local function drawLevels(lvls, by)
+            for _, lv in ipairs(lvls) do
+                ri = ri + 1
+                local row = self.lvRows[ri]
+                if not row then
+                    row = CreateFrame("Frame", nil, self.spells.child)
+                    row.n = UI:Text(row, 14); row.n:SetPoint("TOPLEFT", 4, -4); row.n:SetWidth(30)
+                    row.n:SetJustifyH("CENTER")
+                    row.cost = UI:Text(row, 11, C.gold); row.cost:SetPoint("TOPRIGHT", -4, -6)
+                    row.cost:SetJustifyH("RIGHT")
+                    row.line = row:CreateTexture(nil, "BACKGROUND"); row.line:SetHeight(1)
+                    row.line:SetPoint("BOTTOMLEFT"); row.line:SetPoint("BOTTOMRIGHT")
+                    row.line:SetColorTexture(C.border[1], C.border[2], C.border[3], 1)
+                    self.lvRows[ri] = row
+                end
+                row.n:SetText(lv)
+                -- puces en lignes, entre le niveau (40 px) et le coût (78 px)
+                local cx, cy, sum = 0, 0, 0
+                local avail = W - 40 - 82
+                for _, e in ipairs(by[lv]) do
+                    ci = ci + 1
+                    local b = self:Chip(ci)
+                    b.e = e
+                    b.skipped = cp:Skipped(plan, e.skipKey or e.name)
+                    local rk = (e.rank or ""):gsub("[^%d]", "")
+                    b.t:SetText(e.name .. (rk ~= "" and (" " .. UI:Hex(C.muted) .. rk .. "|r") or ""))
+                    b.icon:SetTexture(e.icon or 134400)
+                    if b.icon.SetDesaturated then b.icon:SetDesaturated(b.skipped) end
+                    b:SetAlpha(b.skipped and 0.45 or 1)
+                    b.bg:SetColor(unpack(C.surface2))
+                    if e.talent then b.edge:SetColor(0.71, 0.55, 1, 0.8)
+                    else b.edge:SetColor(ar, ag, ab, b.skipped and 0 or 0.35) end
+                    local bw = math.min(avail, (b.t:GetStringWidth() or 60) + 30)
+                    b:SetWidth(bw)
+                    if cx > 0 and cx + bw > avail then cx = 0; cy = cy + 26 end
+                    b:ClearAllPoints(); b:SetPoint("TOPLEFT", 40 + cx, -(y + 3 + cy))
+                    b:Show()
+                    cx = cx + bw + 6
+                    if not b.skipped then
+                        -- familier : prix connu seulement (pas d'estimation d'après les sorts de classe)
+                        local pr, how = CS:Price(self.class, e)
+                        if not (e.pet and how == "est") then sum = sum + (pr or 0) end
+                    end
+                end
+                local h = cy + 30
+                row:ClearAllPoints(); row:SetPoint("TOPLEFT", 0, -y); row:SetPoint("TOPRIGHT", 0, -y); row:SetHeight(h)
+                row.cost:SetText(sum > 0 and CS:Money(sum) or UI:Hex(C.dim) .. "-|r")
+                row:Show()
+                total = total + sum
+                y = y + h + 2
             end
-            row.n:SetText(lv)
-            -- puces en lignes, entre le niveau (40 px) et le coût (78 px)
-            local cx, cy, sum = 0, 0, 0
-            local avail = W - 40 - 82
-            for _, e in ipairs(byLvl[lv]) do
-                ci = ci + 1
-                local b = self:Chip(ci)
-                b.e = e
-                b.skipped = cp:Skipped(plan, e.name)
-                local rk = (e.rank or ""):gsub("[^%d]", "")
-                b.t:SetText(e.name .. (rk ~= "" and (" " .. UI:Hex(C.muted) .. rk .. "|r") or ""))
-                b.icon:SetTexture(e.icon or 134400)
-                if b.icon.SetDesaturated then b.icon:SetDesaturated(b.skipped) end
-                b:SetAlpha(b.skipped and 0.45 or 1)
-                b.bg:SetColor(unpack(C.surface2))
-                if e.talent then b.edge:SetColor(0.71, 0.55, 1, 0.8)
-                else b.edge:SetColor(ar, ag, ab, b.skipped and 0 or 0.35) end
-                local bw = math.min(avail, (b.t:GetStringWidth() or 60) + 30)
-                b:SetWidth(bw)
-                if cx > 0 and cx + bw > avail then cx = 0; cy = cy + 26 end
-                b:ClearAllPoints(); b:SetPoint("TOPLEFT", 40 + cx, -(y + 3 + cy))
-                b:Show()
-                cx = cx + bw + 6
-                if not b.skipped then sum = sum + (CS:Price(self.class, e) or 0) end
-            end
-            local h = cy + 30
-            row:ClearAllPoints(); row:SetPoint("TOPLEFT", 0, -y); row:SetPoint("TOPRIGHT", 0, -y); row:SetHeight(h)
-            row.cost:SetText(sum > 0 and CS:Money(sum) or UI:Hex(C.dim) .. "-|r")
-            row:Show()
-            total = total + sum
-            y = y + h + 2
+        end
+        drawLevels(levels, byLvl)
+        if not self.petHead then
+            self.petHead = UI:Text(self.spells.child, 13, C.text)
+            self.petNote = UI:Text(self.spells.child, 11, C.muted)
+        end
+        self.petHead:SetShown(#petLevels > 0)
+        self.petNote:SetShown(#petLevels > 0)
+        if #petLevels > 0 then
+            y = y + 12
+            self.petHead:ClearAllPoints(); self.petHead:SetPoint("TOPLEFT", 4, -y)
+            self.petHead:SetText(self.class == "WARLOCK" and T("Démons") or T("Familier"))
+            self.petNote:ClearAllPoints(); self.petNote:SetPoint("TOPLEFT", self.petHead, "TOPRIGHT", 10, 0)
+            self.petNote:SetText(self.class == "WARLOCK"
+                and T("grimoires du maître des démons · niveau du démon")
+                or T("techniques apprises en apprivoisant · niveau du familier"))
+            y = y + 24
+            drawLevels(petLevels, petLvl)
         end
         self.spells:SetContentHeight(y + 4)
         self.right.subtitle:SetText(string.format(T("total %s"), CS:Money(total)))
