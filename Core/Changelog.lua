@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.367", date = "25/11/2026",
+        fixed = {
+            "Alerte munitions : l'icône ne peut plus sortir de l'écran. Une place notée trop loin la rendait « affichée » pour le jeu mais invisible.",
+        },
+        changed = {
+            "/wk munitions donne aussi la place de l'icône à l'écran, sa taille, son opacité et les réglages du mode édition.",
+        },
+    },
+    {
         version = "1.128.366", date = "25/11/2026",
         fixed = {
             "Buffer autour de toi : pour voir les joueurs autour, l'addon allume les plaques de nom des amis, et le jeu affichait alors aussi des barres de vie au-dessus des PNJ amis. Les barres des PNJ restent maintenant éteintes pendant que l'addon s'en sert (réglage d'avant rendu ensuite).",

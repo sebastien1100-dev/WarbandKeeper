@@ -54,6 +54,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.367 — 25/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- /wk munitions donne aussi la place de l'icône à l'écran, sa taille, son opacité et les réglages du mode édition.
+
+### Corrections
+- Alerte munitions : l'icône ne peut plus sortir de l'écran. Une place notée trop loin la rendait « affichée » pour le jeu mais invisible.
+
 ## v1.128.366 — 25/11/2026
 
 _Un /reload suffit._

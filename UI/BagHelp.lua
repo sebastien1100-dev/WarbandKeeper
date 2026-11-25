@@ -933,6 +933,8 @@ local function buildAmmo()
     local f = CreateFrame("Button", "WarbandKeeperAmmoAlert", UIParent)
     f:SetSize(AMMO_SIZE + 24, AMMO_SIZE + 36)
     f:SetFrameStrata("MEDIUM")
+    -- jamais hors de l'écran (une place notée trop loin la rendait « affichée » mais invisible)
+    f:SetClampedToScreen(true)
     f:RegisterForClicks("LeftButtonUp")
     -- anneau : fond sombre + balayage (part restante), comme l'anneau du curseur
     f.track = f:CreateTexture(nil, "BACKGROUND")
@@ -1085,6 +1087,17 @@ function UI.AmmoReport(_)
     local st = ammoState()
     WK:Print("  " .. string.format("état : %s · cadre %s", st and st.level or "rien à montrer",
         ammo and (ammo:IsShown() and "affiché" or "caché") or "pas encore créé"))
+    if ammo then
+        local l, b, w, h = ammo:GetRect()
+        local e = UI:HUDEntry("ammoAlert")
+        local where = l and string.format("%d, %d", l, b) or "aucune"
+        local size = w and string.format("%d x %d", w, h) or "?"
+        WK:Print("  " .. string.format("place : %s · taille %s · écran %d x %d · visible %s", where, size,
+            UIParent:GetWidth() or 0, UIParent:GetHeight() or 0, tostring((ammo:IsVisible()))))
+        WK:Print("  " .. string.format("mode édition : x %s, y %s, taille %s, opacité %s · opacité réelle %.2f",
+            tostring(e.x), tostring(e.y), tostring(e.scale), tostring(e.alpha),
+            tonumber(ammo.GetEffectiveAlpha and ammo:GetEffectiveAlpha() or ammo:GetAlpha()) or 1))
+    end
 end
 function UI.RefreshAmmoAlert(_)
     if not ammoCfg() then if ammo then ammo:Hide() end return end
