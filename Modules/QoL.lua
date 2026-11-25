@@ -324,11 +324,18 @@ function M:ScanAmmo()
     local id = GetInventoryItemID("player", 0)
     -- arme à distance qui ne tire rien (armes de jet du voleur et du guerrier : hache, dague, couteau ; baguette ;
     -- rien d'équipé) : les munitions du sac ne servent pas, ni compte ni icône à l'écran
-    if id and not self:AmmoKind() then id = nil end
+    local kind = self:AmmoKind()
+    if id and not kind then id = nil end
+    local n
+    -- emplacement des munitions vide (client sans cet emplacement) : munitions du bon genre dans les sacs
+    if not id and kind then
+        local bid, bn = self:AmmoInBags(kind)
+        if bid then id, n = bid, bn end
+    end
     if id then
         -- Vitesse de tir (secondes entre deux tirs) : pour estimer les minutes de tir restantes.
         local speed = UnitRangedDamage and readable((UnitRangedDamage("player")))
-        local n = GetInventoryItemCount and GetInventoryItemCount("player", 0) or 0
+        n = n or (GetInventoryItemCount and GetInventoryItemCount("player", 0)) or 0
         speed = (speed and speed > 0) and speed or (c.ammo and c.ammo.speed)
         -- même munition : mise à jour sur place (avant, une table neuve à chaque tir)
         local a = c.ammo
@@ -617,13 +624,36 @@ local function itemClass(id)
     local _, _, _, _, _, classID, subID = f(id)
     return classID, subID
 end
+-- Genre de munition de l'arme à distance (2 flèches, 3 balles) : emplacement 18, sinon 16 / 17 (un client
+-- qui range l'arc avec les armes de mêlée)
 function M:AmmoKind()
-    local weapon = GetInventoryItemID and GetInventoryItemID("player", 18)
-    local cls, sub = itemClass(weapon)
-    if cls ~= 2 then return nil end
-    if sub == 3 then return 3 end                 -- fusil : balles
-    if sub == 2 or sub == 18 then return 2 end    -- arc, arbalète : flèches
+    if not GetInventoryItemID then return nil end
+    for _, slot in ipairs({ 18, 16, 17 }) do
+        local cls, sub = itemClass(GetInventoryItemID("player", slot))
+        if cls == 2 then
+            if sub == 3 then return 3, slot end                 -- fusil : balles
+            if sub == 2 or sub == 18 then return 2, slot end    -- arc, arbalète : flèches
+        end
+    end
     return nil
+end
+-- Munitions du genre voulu dans les sacs (sans emplacement de munitions sur le client) : la pile la plus
+-- fournie, et le total de cet objet
+function M.AmmoInBags(_, want)
+    local best, counts = nil, {}
+    for bag = 0, 4 do
+        for slot = 1, (WK.Container.NumSlots(bag) or 0) do
+            local id, count = WK.Container.Info(bag, slot)
+            if id then
+                local cls, sub = itemClass(id)
+                if cls == 6 and sub == want then
+                    counts[id] = (counts[id] or 0) + (count or 1)
+                    if not best or counts[id] > counts[best] then best = id end
+                end
+            end
+        end
+    end
+    return best, best and counts[best] or 0
 end
 
 -- La meilleure munition que ce marchand vend pour l'arme du perso et à son niveau :

@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.365", date = "25/11/2026",
+        fixed = {
+            "Alerte munitions du chasseur : l'icône ne s'affichait pas quand le jeu ne mettait rien dans l'emplacement des munitions. L'addon cherche maintenant tes flèches ou balles dans les sacs (celles qui vont avec ton arme) et les compte. L'arme à distance est aussi cherchée dans les emplacements d'armes de mêlée.",
+        },
+        added = {
+            "/wk munitions (aussi dans Options > Fiabilité, diagnostics) : arme à distance, munitions trouvées, réglages et état de l'icône, pour savoir pourquoi elle s'affiche ou non.",
+        },
+    },
+    {
         version = "1.128.364", date = "25/11/2026",
         fixed = {
             "Leveling, prérequis des talents : quand les traits de la fenêtre des talents n'étaient pas relevés, l'addon reprenait les prérequis des talents d'origine, faux pour les arbres de WoW Forever. Il n'utilise plus que les traits du jeu. S'ils manquent, un message le dit sous les arbres, au lieu de montrer de faux prérequis.",

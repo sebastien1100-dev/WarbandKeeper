@@ -1052,6 +1052,40 @@ local function buildAmmo()
     })
     return f
 end
+-- Diagnostic (/wk munitions) : ce que l'addon voit de l'arme, des munitions et des réglages
+function UI.AmmoReport(_)
+    local Q = WK.modules.QoL
+    local f = (C_Item and C_Item.GetItemInfoInstant) or _G.GetItemInfoInstant
+    local function desc(slot)
+        local id = _G.GetInventoryItemID and _G.GetInventoryItemID("player", slot)
+        if not id then return "vide" end
+        local c, s
+        if f then c, s = select(6, f(id)) end
+        return string.format("%d (classe %s/%s)", id, tostring(c), tostring(s))
+    end
+    WK:Print(T("Alerte munitions : diagnostic"))
+    WK:Print("  " .. string.format("classe %s · module Classes %s", tostring(select(2, UnitClass("player"))),
+        tostring(WK:FeatureOn("classes"))))
+    WK:Print("  " .. string.format("emplacement 0 (munitions) : %s · 18 : %s · 16 : %s · 17 : %s", desc(0), desc(18),
+        desc(16), desc(17)))
+    local kind, slot = Q:AmmoKind()
+    WK:Print("  " .. string.format("genre de munition : %s (arme en %s)", tostring(kind), tostring(slot)))
+    if kind then
+        local bid, bn = Q:AmmoInBags(kind)
+        WK:Print("  " .. string.format("dans les sacs : %s × %d", tostring(bid), bn or 0))
+    end
+    local c = WK.DB:Me()
+    local seen = c.ammo and string.format("objet %s, %d, vitesse %s", tostring(c.ammo.id), c.ammo.n or 0,
+        tostring(c.ammo.speed)) or "aucun"
+    WK:Print("  relevé : " .. seen)
+    local a = ammoCfg()
+    local set = a and string.format("icône %s, toujours %s, seuil %s, minutes %s", tostring(a.hud ~= false),
+        tostring(a.hudAlways), tostring(a.min), tostring(a.minMinutes)) or "classe sans munitions"
+    WK:Print("  réglages : " .. set)
+    local st = ammoState()
+    WK:Print("  " .. string.format("état : %s · cadre %s", st and st.level or "rien à montrer",
+        ammo and (ammo:IsShown() and "affiché" or "caché") or "pas encore créé"))
+end
 function UI.RefreshAmmoAlert(_)
     if not ammoCfg() then if ammo then ammo:Hide() end return end
     ammo = ammo or buildAmmo()

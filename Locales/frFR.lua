@@ -21,6 +21,7 @@ WK.Locales.frFR.keys = {
     HELP_RELOAD     = "/wk rechargement  - Diagnostic des boutons « Recharger l'interface »",
     HELP_FP         = "/wk vol - Guidage vers le point de vol pas encore appris le plus proche",
     HELP_MICRO      = "/wk micro         - Diagnostic des raccourcis du micro menu",
+    HELP_AMMO       = "/wk munitions     - Diagnostic de l'alerte munitions (pourquoi elle ne s'affiche pas)",
     HELP_HERITAGE   = "/wk heritage      - Diagnostic du raccourci Héritages (après un clic dessus)",
     HELP_BAGS       = "/wk sacs          - Diagnostic des sacs (cadenas, étoile BiS)",
     HELP_NAV        = "/wk nav           - Diagnostic du repère de navigation (marqueur de point de passage)",

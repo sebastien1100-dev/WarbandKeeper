@@ -54,6 +54,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.365 — 25/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- /wk munitions (aussi dans Options > Fiabilité, diagnostics) : arme à distance, munitions trouvées, réglages et état de l'icône, pour savoir pourquoi elle s'affiche ou non.
+
+### Corrections
+- Alerte munitions du chasseur : l'icône ne s'affichait pas quand le jeu ne mettait rien dans l'emplacement des munitions. L'addon cherche maintenant tes flèches ou balles dans les sacs (celles qui vont avec ton arme) et les compte. L'arme à distance est aussi cherchée dans les emplacements d'armes de mêlée.
+
 ## v1.128.364 — 25/11/2026
 
 _Un /reload suffit._

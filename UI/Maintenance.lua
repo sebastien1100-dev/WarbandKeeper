@@ -331,6 +331,8 @@ UI.DIAGS = {
             "Ouvre la fenêtre d'un métier avant de lancer." },
         { "micro", "Micro menu",
             "Boutons du micro menu et horloge : ce qui est posé, ce qui manque." },
+        { "munitions", "Alerte munitions",
+            "Arme à distance, munitions trouvées, réglages : pourquoi l'icône des munitions s'affiche ou non." },
         { "heritage", "Raccourci Héritages",
             "Ce qui s'est passé au dernier clic sur le raccourci Héritages, et les onglets du journal.",
             "Clique d'abord sur le raccourci Héritages du micro menu." },
