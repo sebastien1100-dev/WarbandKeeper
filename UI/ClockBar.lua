@@ -689,6 +689,21 @@ function UI.ClockMicroButton(def)
     return nil
 end
 
+-- Cadres « interdits » du jeu (boutique, etc.) : toute lecture lève une erreur ; on les saute
+-- (IsForbidden reste permis) et chaque lecture passe par un pcall.
+local function forbidden(f)
+    if type(f) ~= "table" then return true end
+    local ok, v = pcall(function() return f.IsForbidden and f:IsForbidden() end)
+    return not ok or v and true or false
+end
+local function safe(f, m)
+    local fn = f[m]
+    if type(fn) ~= "function" then return {} end
+    local res = { pcall(fn, f) }
+    if not res[1] then return {} end
+    table.remove(res, 1)
+    return res
+end
 -- Fenêtre des héritages propre au serveur (WoW Forever : fenêtre à part, pas l'onglet du journal de Classic
 -- Era, masqué). Noms globaux avec « heirloom », « heritage » ou « héritage », sans le journal du jeu.
 -- Ordre : un bouton (Click), une fonction Toggle…, puis une fenêtre posée sur UIParent (montrée / cachée).
@@ -706,7 +721,7 @@ function UI.HeirloomCandidates()
         if heirName(k) then
             local kind
             if type(v) == "function" then kind = "fonction"
-            elseif type(v) == "table" and type(v.GetObjectType) == "function" then
+            elseif type(v) == "table" and not forbidden(v) and type(v.GetObjectType) == "function" then
                 local ok, ot = pcall(v.GetObjectType, v)
                 kind = ok and ot or "?"
             end
@@ -725,16 +740,15 @@ local function progressText(t)
         or l:find("progress track", 1, true) or l:find("legacy points", 1, true) or l:find("heirloom points", 1, true)
 end
 local function hasProgressText(f, depth)
-    if f.GetRegions then
-        for _, r in ipairs({ f:GetRegions() }) do
-            if r.GetText then
-                local ok, t = pcall(r.GetText, r)
-                if ok and progressText(t) then return true end
-            end
+    if forbidden(f) then return false end
+    for _, r in ipairs(safe(f, "GetRegions")) do
+        if not forbidden(r) and type(r.GetText) == "function" then
+            local ok, t = pcall(r.GetText, r)
+            if ok and progressText(t) then return true end
         end
     end
-    if depth > 0 and f.GetChildren then
-        for _, c in ipairs({ f:GetChildren() }) do
+    if depth > 0 then
+        for _, c in ipairs(safe(f, "GetChildren")) do
             if hasProgressText(c, depth - 1) then return true end
         end
     end
@@ -746,9 +760,9 @@ function UI.FindProgressWindow()
     UI.heirWin = nil
     local up = _G.UIParent
     if not (up and up.GetChildren) then return nil end
-    for _, c in ipairs({ up:GetChildren() }) do
-        local n = c.GetName and c:GetName()
-        if not (n and n:find("^WarbandKeeper")) and hasProgressText(c, 4) then
+    for _, c in ipairs(safe(up, "GetChildren")) do
+        local n = not forbidden(c) and safe(c, "GetName")[1]
+        if not forbidden(c) and not (type(n) == "string" and n:find("^WarbandKeeper")) and hasProgressText(c, 4) then
             UI.heirWin = c
             return c
         end
@@ -771,12 +785,16 @@ function UI.OpenForeverHeirlooms()
     end
     local cands = UI.HeirloomCandidates()
     UI.heirScan = cands
-    local function rank(c)
+    local function rank0(c)
         local v = c.obj
         if (c.kind == "Button" or c.kind == "CheckButton") and type(v.Click) == "function" then return 1 end
         if c.kind == "fonction" and (c.name:find("^Toggle") or c.name:find("Toggle$")) then return 2 end
         if c.kind == "Frame" and v.GetParent and v:GetParent() == _G.UIParent then return 3 end
         return nil
+    end
+    local function rank(c)
+        local ok, r = pcall(rank0, c)
+        return ok and r or nil
     end
     local best, br
     for _, c in ipairs(cands) do
@@ -813,7 +831,7 @@ function UI:HeirloomReport()
     local list = {}
     for i, c in ipairs(cands) do
         if i > 25 then list[#list + 1] = "…" break end
-        local shown = c.obj and type(c.obj) == "table" and c.obj.IsShown and c.obj:IsShown()
+        local shown = type(c.obj) == "table" and safe(c.obj, "IsShown")[1]
         list[#list + 1] = c.name .. " (" .. c.kind .. (shown and ", " .. T("affichée") or "") .. ")"
     end
     WK:Print("  " .. T("Noms trouvés dans le jeu :") .. " " .. (#list > 0 and table.concat(list, ", ") or T("aucun")))

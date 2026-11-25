@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.355", date = "25/11/2026",
+        fixed = {
+            "Micro menu, raccourci Héritages : le clic provoquait une erreur Lua (« Attempt to access forbidden object »). En cherchant la fenêtre « Suivi de la progression », l'addon lisait des fenêtres que le jeu lui interdit (boutique…). Elles sont maintenant sautées.",
+        },
+    },
+    {
         version = "1.128.354", date = "25/11/2026",
         fixed = {
             "Micro menu, raccourci Héritages : sur WoW Forever, les héritages sont dans la fenêtre « Suivi de la progression » (Points d'héritage). Elle n'a pas de nom reconnaissable : le raccourci la retrouve maintenant par ses textes, puis l'ouvre ou la ferme. /wk heritage dit si elle est trouvée.",
