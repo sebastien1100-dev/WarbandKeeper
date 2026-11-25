@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.358", date = "25/11/2026",
+        changed = {
+            "À venir : le raccourci Héritages du micro menu, qui n'ouvre toujours pas « Suivi de la progression », est noté pour être corrigé plus tard.",
+        },
+    },
+    {
         version = "1.128.357", date = "25/11/2026",
         changed = {
             "Mini-fenêtre « À faire » sans fond : les pastilles étaient presque transparentes et se perdaient dans le décor. Elles ont maintenant un fond foncé teinté de leur couleur et un liseré de cette couleur.",
@@ -8027,6 +8033,7 @@ WK.RoadmapPrio = {
     { label = "Basse", color = "muted" },
 }
 WK.Roadmap = {
+    { prio = 1, theme = "ui", title = "Raccourci Héritages du micro menu", text = "Il n'ouvre toujours pas la fenêtre « Suivi de la progression » (Points d'héritage) de WoW Forever. Mis de côté, à reprendre : trouver comment le jeu ouvre cette fenêtre (bouton, menu ou commande) et passer par le même chemin." },
     { prio = 2, theme = "char", title = "Enchantements du BiS", text = "Pour chaque pièce de ta liste BiS, l'enchantement conseillé (déjà connu pour les listes par spécialisation), ce qu'il manque sur ton équipement actuel, où trouver la formule ou un enchanteur de ton compte qui la connaît, et la liste des composants à réunir." },
     { prio = 3, theme = "char", title = "BiS conseillés par niveau", text = "Listes conseillées aussi pour la montée (niveaux 20, 40…) et une variante « facile à obtenir » (sans raid ni rang JcJ élevé)." },
     { prio = 2, theme = "dung", title = "Quêtes journalières", text = "Une section du module Quêtes avec les quêtes journalières et répétables (déjà relevées), classées par réputation ou par zone ; pour les métiers, à décider." },

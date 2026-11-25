@@ -8,6 +8,7 @@ Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes son
 _Prévu, pas encore commencé._
 
 ### Interface
+- **Raccourci Héritages du micro menu** (haute) — Il n'ouvre toujours pas la fenêtre « Suivi de la progression » (Points d'héritage) de WoW Forever. Mis de côté, à reprendre : trouver comment le jeu ouvre cette fenêtre (bouton, menu ou commande) et passer par le même chemin.
 - **Recherche globale** (moyenne) — Dans tout l'addon : persos, objets, recettes, quêtes et notes de carte.
 - **Chat et confort** (basse) — Filtre du spam en Commerce, zone et niveau de qui parle, /copy et numéros dans les infobulles, fenêtre des réglages cachés du jeu, masquer le fouillis.
 - **Idées d'Utilities en attente** (basse) — Macros intelligentes, jeux de barres d'action, pistages de classe et de race, inspection du groupe.
@@ -52,6 +53,13 @@ _Prévu, pas encore commencé._
 ### Guilde et partage
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.128.358 — 25/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- À venir : le raccourci Héritages du micro menu, qui n'ouvre toujours pas « Suivi de la progression », est noté pour être corrigé plus tard.
 
 ## v1.128.357 — 25/11/2026
 
