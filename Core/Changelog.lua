@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.343", date = "25/11/2026",
+        changed = {
+            "Fiche du personnage, onglet Talents : la carte « Plans de montée » et le mode plan sur les arbres sont retirés. Les plans se font maintenant à un seul endroit, la page Leveling, un par classe. Un ancien plan de perso n'est pas perdu : « Copier mon plan » de la page Leveling le reprend comme plan de la classe.",
+        },
+    },
+    {
         version = "1.128.342", date = "25/11/2026",
         changed = {
             "Données mises à jour depuis QuestieDB, Everloot, wago.tools, wowtbc.gg, What's Training et opendata : 19 quêtes retirées, 63 quêtes sans camps d'objectifs.",

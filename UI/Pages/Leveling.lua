@@ -74,7 +74,7 @@ UI:RegisterPage({
             self:Refresh()
         end)
         self.copyBtn = UI:Button(head, "Copier mon plan", nil, 26, "ghost")
-        self.copyBtn.tooltip = "Reprend le plan de montée de ce perso (fiche, onglet Talents) comme plan de la classe."
+        self.copyBtn.tooltip = "Reprend l'ancien plan de montée de ce perso (d'avant cette page) comme plan de la classe."
         self.copyBtn:SetScript("OnClick", function()
             local key = WK:CharKey()
             local pp = WK.modules.TalentPlan:Active(key)
@@ -263,7 +263,7 @@ UI:RegisterPage({
             if not b and e then
                 b = UI:Button(self.newBtn:GetParent(), "", nil, 24, "ghost")
                 b:SetScript("OnClick", function(s) cp:SetFollow(s.key, not cp:Follows(s.key)); self:Refresh() end)
-                b.tooltip = "Clic : ce perso suit le plan de sa classe, ou garde le sien (fiche, onglet Talents)."
+                b.tooltip = "Clic : ce perso suit le plan de sa classe, ou n'en suit aucun (sauf un ancien plan à lui)."
                 self.followBtns[i] = b
             end
             if b then

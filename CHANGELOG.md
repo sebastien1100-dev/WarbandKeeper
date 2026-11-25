@@ -53,6 +53,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.343 — 25/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Fiche du personnage, onglet Talents : la carte « Plans de montée » et le mode plan sur les arbres sont retirés. Les plans se font maintenant à un seul endroit, la page Leveling, un par classe. Un ancien plan de perso n'est pas perdu : « Copier mon plan » de la page Leveling le reprend comme plan de la classe.
+
 ## v1.128.342 — 25/11/2026
 
 _Un /reload suffit._
