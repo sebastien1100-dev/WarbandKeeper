@@ -3,6 +3,12 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.9.29 — 25/11/2026
+
+### Modifications
+- Page Découvertes : la plupart des « à vérifier » se règlent tout seuls. Prix d'un maître ou d'un marchand : le plus haut est gardé (l'écart vient d'une remise de réputation). Station du tram et point de récolte : la moyenne des positions. Tracé de vol ou chemin : celui vu le plus souvent, sinon le plus détaillé. Ailleurs : la valeur vue le plus souvent. Le motif s'affiche sur la ligne (« choix automatique : … »).
+- Restent à vérifier à la main : les quêtes, les chaînes de quêtes et les n° de boss, et deux valeurs vues autant de fois l'une que l'autre. Un choix fait à la main passe toujours avant.
+
 ## 1.9.28 — 25/11/2026
 
 ### Corrections

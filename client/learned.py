@@ -292,6 +292,41 @@ def _same(genre, a, b):
     return json.dumps(a, sort_keys=True) == json.dumps(b, sort_keys=True)
 
 
+def _mean(xs):
+    return sum(xs) / len(xs)
+
+
+def auto_pick(genre, groups):
+    """Choix automatique entre valeurs différentes : (valeur, raison), ou (None, None) s'il faut un humain.
+    groups = [[valeurs voisines], …] ; les quêtes, chaînes et boss restent toujours à vérifier."""
+    if genre in ("quests", "chains", "bossIds"):
+        return None, None
+    allv = [v for grp in groups for v in grp]
+    try:
+        if genre in ("trainerPrices", "vendorPrices"):
+            # écart = remise de réputation d'un perso : le prix sans remise est le plus haut
+            price = (lambda v: v[0]) if genre == "trainerPrices" else (lambda v: v["p"])
+            return max(allv, key=price), "prix le plus haut (sans remise de réputation)"
+        if genre == "tram":
+            # stations : même endroit à quelques mètres près (clé arrondie à 20 m)
+            return [allv[0][0]] + [round(_mean([v[i] for v in allv])) for i in (1, 2)], "moyenne des positions"
+        if genre == "gather":
+            v = dict(allv[0])
+            for c in ("x", "y"):
+                v[c] = round(_mean([w[c] for w in allv]), 4)
+            return v, "moyenne des positions"
+    except (TypeError, KeyError, IndexError, ValueError, ZeroDivisionError):
+        return None, None
+    # ailleurs : la valeur vue le plus souvent ; à égalité, le tracé le plus détaillé
+    groups = sorted(groups, key=len, reverse=True)
+    if len(groups[0]) > len(groups[1]):
+        return groups[0][0], "valeur vue %d fois sur %d" % (len(groups[0]), len(allv))
+    if genre in ("flightPaths", "trails"):
+        best = max((grp[0] for grp in groups), key=lambda v: len(v.get("pts") or []))
+        return best, "tracé le plus détaillé"
+    return None, None
+
+
 def short(genre, key, v):
     """Texte court d'une découverte pour la liste du client."""
     if genre == "quests":
@@ -406,6 +441,9 @@ def merge(sources, base=None, choices=None):
                         break
             elif isinstance(pick, int) and not isinstance(pick, bool) and 0 <= pick < len(row["values"]):
                 chosen = row["values"][pick]
+            auto = None
+            if chosen is None and pick is None:
+                chosen, auto = auto_pick(g, groups)
             if chosen is None:
                 reason = "%d valeurs différentes" % len(groups)
                 if pick is not None:
@@ -414,9 +452,11 @@ def merge(sources, base=None, choices=None):
                 rows.append(row)
                 continue
             row["value"] = chosen
+            if auto:
+                row["reason"] = "choix automatique : " + auto
         if known is not None and _same(g, known, row["value"]):
             row["status"] = KNOWN
-        elif e["trusted"] or g in SAFE or len(e["srcs"]) >= 2 or (g, k) in choices:
+        elif e["trusted"] or g in SAFE or len(e["srcs"]) >= 2 or (g, k) in choices or row["reason"]:
             row["status"] = INTEGRATED
         else:
             row.update(status=PENDING, reason="1 seule confirmation")
