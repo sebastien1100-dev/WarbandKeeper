@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.322", date = "25/11/2026",
+        fixed = {
+            "Fenêtre du personnage : des emplacements d'équipement (les anneaux, la relique) portaient un cadenas « objet de quête » alors qu'ils étaient vides. En reconnaissant les cases de sac d'une autre interface au survol, l'addon avait pris ces emplacements pour des cases du sac à dos (anneaux = cases 11 et 12) et affichait les verrous des objets qui s'y trouvaient. Les fenêtres de personnage, d'inspection et d'équipement sont maintenant exclues, et les cadenas déjà posés y disparaissent.",
+        },
+    },
+    {
         version = "1.128.321", date = "25/11/2026",
         added = {
             "File de fabrication : bouton « Lancer la file » dans la petite fenêtre près du métier et dans Métiers > File de fabrication. Il fabrique toute la file du métier ouvert, recette après recette, autant que tes sacs le permettent, en commençant par ce qui sert aux autres (les barres avant l'objet qui les demande). Une série finie lance la suivante ; le bouton devient « Arrêter la file ». Bouger (fabrication interrompue) ou fermer le métier arrête la file. Si le jeu refuse d'enchaîner sans clic, le bouton devient « Continuer » : un clic par recette.",

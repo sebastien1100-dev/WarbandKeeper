@@ -220,6 +220,22 @@ function UI.ItemLockPressHandled()
     return pressAt ~= nil and GetTime() - pressAt < 5
 end
 
+-- Emplacements d'équipement (fenêtre du personnage du jeu ou d'une autre interface, inspection) : jamais des cases
+-- de sac, même s'ils ont un n° (11 et 12 = anneaux, lus avant comme les cases 11 et 12 du sac à dos)
+local NOT_BAG = { "character", "paperdoll", "inspect", "equip", "gear", "dressup", "transmog" }
+local function inGearFrame(f)
+    for _ = 1, 10 do
+        if not f then return false end
+        local n = f.GetName and f:GetName()
+        if type(n) == "string" then
+            n = n:lower()
+            for _, w in ipairs(NOT_BAG) do if n:find(w, 1, true) then return true end end
+        end
+        if f == _G.UIParent then return false end
+        f = f.GetParent and f:GetParent()
+    end
+    return false
+end
 local paint
 -- Bascule du verrou d'une case (un seul passage par clic, quel que soit le chemin qui l'a vu)
 local lastToggle = 0
@@ -235,6 +251,18 @@ function UI.ItemLockAltClick(b)
 end
 
 function paint(btn)
+    -- emplacement d'équipement pris pour une case de sac (avant cette correction) : décor retiré, plus suivi
+    if inGearFrame(btn) then
+        known[btn] = nil
+        local o0 = btn.wkLock
+        if o0 then
+            for _, k in ipairs({ "badge", "ring", "icon", "bisRing", "bisBadge", "bisStar" }) do
+                if o0[k] then o0[k]:Hide() end
+            end
+            if o0.block and not inCombat() then o0.block:Hide() end
+        end
+        return
+    end
     local o = decorate(btn)
     if not o then return end
     local id = itemAt(bagSlot(btn))
@@ -265,6 +293,7 @@ local ROOT_NAMES = { "EUI_MainBagFrame", "EUI_BankFrame", "EUI_BagFrame" }
 local BUTTON_TYPES = { Button = true, ItemButton = true, CheckButton = true }
 local function isBagButton(f)
     if not (f and f.GetBagID and f.GetID) or (f.IsForbidden and f:IsForbidden()) then return false end
+    if inGearFrame(f) then return false end
     local t = f.GetObjectType and f:GetObjectType()
     if t and not BUTTON_TYPES[t] then return false end
     local bag, slot = bagSlot(f)
@@ -336,6 +365,7 @@ local function learnButton(owner, id)
     if owner and isBagButton(owner) then local r = rootOf(owner); if r then roots[r] = true end end
     if not owner or known[owner] or not owner.GetID or not WK:FeatureOn("inventory") then return end
     if owner.IsForbidden and owner:IsForbidden() then return end
+    if inGearFrame(owner) then return end
     local bag, slot = bagSlot(owner)
     if type(bag) ~= "number" or type(slot) ~= "number" or slot < 1 or bag < -3 or bag > 12 then return end
     if itemAt(bag, slot) ~= id then return end

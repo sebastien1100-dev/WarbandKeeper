@@ -53,6 +53,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.322 — 25/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Fenêtre du personnage : des emplacements d'équipement (les anneaux, la relique) portaient un cadenas « objet de quête » alors qu'ils étaient vides. En reconnaissant les cases de sac d'une autre interface au survol, l'addon avait pris ces emplacements pour des cases du sac à dos (anneaux = cases 11 et 12) et affichait les verrous des objets qui s'y trouvaient. Les fenêtres de personnage, d'inspection et d'équipement sont maintenant exclues, et les cadenas déjà posés y disparaissent.
+
 ## v1.128.321 — 25/11/2026
 
 _Un /reload suffit._
