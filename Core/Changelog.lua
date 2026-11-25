@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.319", date = "25/11/2026",
+        changed = {
+            "File de fabrication : on ne peut plus y mettre plus de fabrications que les ressources de ton compte ne le permettent (sacs, banques et courriers de tous tes persos). Ce que les autres recettes de la file utilisent déjà est décompté, et ce qu'elles produisent est compté : 10 barres en file permettent d'ajouter l'objet qui en demande. La fenêtre d'ajout dit combien tu peux encore en mettre (« Tout » = ce maximum), et le bouton devient « Ressources insuffisantes » quand il n'y a plus de quoi.",
+        },
+    },
+    {
         version = "1.128.318", date = "25/11/2026",
         changed = {
             "Rien ne change en jeu : cette version livre le client PC 1.9.28 (colonnes de la page Découvertes alignées avec leurs titres).",

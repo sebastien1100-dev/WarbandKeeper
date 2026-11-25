@@ -224,11 +224,53 @@ end
 ---------------------------------------------------------------------------
 -- Liste de courses : WK.DB.global.shopping[clé de recette] = nombre de fabrications.
 ---------------------------------------------------------------------------
+-- Nombre de fabrications de plus que la file peut prendre pour cette recette avec les ressources du compte : ce que
+-- les autres recettes de la file consomment est retiré, ce qu'elles produisent est compté (barres en file pour
+-- un objet qui en demande). nil = pas de limite connue (composants pas encore relevés).
+function M:QueueRoom(key)
+    local _, index = self:All()
+    local rec = index[key]
+    if not (rec and rec.reagents and #rec.reagents > 0) then return nil end
+    local list = WK.DB.global.shopping
+    local Inv = WK.modules.Inventory
+    local room
+    for _, rg in ipairs(rec.reagents) do
+        local id, n = rg[1], math.max(1, rg[2] or 1)
+        local avail = Inv:AccountCount(id)
+        for k, q in pairs(list) do
+            local o = k ~= key and index[k]
+            if o then
+                if o.out == id then avail = avail + (o.qty or 1) * q end
+                for _, r2 in ipairs(o.reagents or {}) do
+                    if r2[1] == id then avail = avail - (r2[2] or 1) * q end
+                end
+            end
+        end
+        local k = math.floor(math.max(0, avail) / n) - (list[key] or 0)
+        if not room or k < room then room = k end
+    end
+    return math.max(0, room or 0)
+end
+
+-- Ajoute (ou retire, n < 0) des fabrications à la file ; un ajout ne dépasse jamais ce que les ressources du
+-- compte permettent (QueueRoom). Rend le nombre réellement ajouté.
 function M:AddToList(key, n)
     local list = WK.DB.global.shopping
-    list[key] = math.max(0, (list[key] or 0) + (n or 1))
+    n = n or 1
+    if n > 0 then
+        local room = self:QueueRoom(key)
+        if room and n > room then n = room end
+        if n <= 0 then
+            local _, index = self:All()
+            local rec = index[key]
+            WK:Print(string.format(WK.T("Pas assez de ressources pour ajouter %s à la file."), rec and rec.name or key))
+            return 0
+        end
+    end
+    list[key] = math.max(0, (list[key] or 0) + n)
     if list[key] == 0 then list[key] = nil end
     WK:NotifyChanged()
+    return n
 end
 
 function M:ClearList()

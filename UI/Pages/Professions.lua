@@ -293,7 +293,7 @@ local function buildQueuePop()
     for i, q in ipairs({ 1, 5, 10, "max" }) do
         local b = UI:Button(f, q == "max" and T("Tout") or tostring(q), nil, 22, "ghost")
         b.q = q
-        b:SetScript("OnClick", function(s) f:SetN(s.q == "max" and math.max(1, f.can or 1) or s.q) end)
+        b:SetScript("OnClick", function(s) f:SetN(s.q == "max" and (f.can or 999) or s.q) end)
         if i == 1 then b:SetPoint("LEFT", f.plus, "RIGHT", 12, 0)
         else b:SetPoint("LEFT", f.quick[i - 1], "RIGHT", 4, 0) end
         f.quick[i] = b
@@ -302,8 +302,11 @@ local function buildQueuePop()
     f.add:SetPoint("TOPLEFT", 14, -90); f.add:SetPoint("TOPRIGHT", -14, -90)
     f.add:SetScript("OnClick", function()
         if f.key and f.n > 0 then
-            WK.modules.Recipes:AddToList(f.key, f.n)
-            WK:Print(string.format(T("%d x %s ajouté(s) à la file de fabrication."), f.n, f.recName or "?"))
+            local added = WK.modules.Recipes:AddToList(f.key, f.n)
+            if added > 0 then
+                WK:Print(string.format(T("%d x %s ajouté(s) à la file de fabrication."), added, f.recName or "?"))
+            end
+            f:Room()
             f:Fill()
         end
     end)
@@ -326,19 +329,37 @@ local function buildQueuePop()
         r.m = UI:IconButton(r, "minus", 20, "Un de moins"); r.m:SetPoint("RIGHT", r.q, "LEFT", -6, 0)
         r.name = UI:Text(r, 12); r.name:SetPoint("LEFT", r.ic, "RIGHT", 8, 0)
         r.name:SetPoint("RIGHT", r.m, "LEFT", -6, 0)
-        r.m:SetScript("OnClick", function(b) WK.modules.Recipes:AddToList(b:GetParent().key, -1); f:Fill() end)
-        r.p:SetScript("OnClick", function(b) WK.modules.Recipes:AddToList(b:GetParent().key, 1); f:Fill() end)
+        local function step(b, d) WK.modules.Recipes:AddToList(b:GetParent().key, d); f:Room(); f:Fill() end
+        r.m:SetScript("OnClick", function(b) step(b, -1) end)
+        r.p:SetScript("OnClick", function(b) step(b, 1) end)
         r.del:SetScript("OnClick", function(b)
             local k = b:GetParent().key
-            WK.modules.Recipes:AddToList(k, -(WK.DB.global.shopping[k] or 0)); f:Fill()
+            WK.modules.Recipes:AddToList(k, -(WK.DB.global.shopping[k] or 0)); f:Room(); f:Fill()
         end)
         f.rows[i] = r
     end
     f.more = UI:Text(f, 11, C.muted)
+    -- place restante dans la file pour cette recette (ressources du compte moins ce que la file prend déjà)
+    function f:Room()
+        if not self.key then return end
+        local room = WK.modules.Recipes:QueueRoom(self.key)
+        self.can = room
+        local inQ = WK.DB.global.shopping[self.key] or 0
+        local already = inQ > 0 and ("  ·  " .. string.format(T("déjà %d dans la file"), inQ)) or ""
+        self.sub:SetText((room and string.format(T("encore %d possible(s) avec tes ressources"), room)
+            or T("ressources inconnues")) .. already)
+        self:SetN(self.n or 1)
+    end
     function f:SetN(n)
-        self.n = math.max(1, math.min(999, n or 1))
+        local most = self.can and math.max(0, self.can) or 999
+        self.n = math.max(math.min(1, most), math.min(999, most, n or 1))
         self.num:SetText(tostring(self.n))
-        self.add:SetLabel(string.format(T("Ajouter %d à la file"), self.n))
+        if most <= 0 then
+            self.add:SetLabel(T("Ressources insuffisantes"))
+        else
+            self.add:SetLabel(string.format(T("Ajouter %d à la file"), self.n))
+        end
+        self.add:SetEnabled(most > 0)
     end
     function f:Fill()
         local idx = recipeIndex()
@@ -386,12 +407,8 @@ local function openQueuePop(anchor, key, recName, n)
     f.key, f.recName = key, recName or (rec and rec.name) or "?"
     f.icon:SetTexture(rec and rec.icon or "Interface\\Icons\\INV_Misc_QuestionMark")
     f.title:SetText(f.recName)
-    local can = rec and select(1, WK.modules.Recipes:CraftStock(rec)) or 0
-    f.can = can
-    local inQ = WK.DB.global.shopping[key] or 0
-    local already = inQ > 0 and ("  ·  " .. string.format(T("déjà %d dans la file"), inQ)) or ""
-    f.sub:SetText(string.format(T("faisable : %d"), can) .. already)
-    f:SetN((n and n > 0) and n or 1)
+    f.n = (n and n > 0) and n or 1
+    f:Room()
     f:Fill()
     f:ClearAllPoints()
     local right = anchor:GetRight() or 0

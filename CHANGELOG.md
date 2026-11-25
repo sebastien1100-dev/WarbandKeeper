@@ -53,6 +53,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.319 — 25/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- File de fabrication : on ne peut plus y mettre plus de fabrications que les ressources de ton compte ne le permettent (sacs, banques et courriers de tous tes persos). Ce que les autres recettes de la file utilisent déjà est décompté, et ce qu'elles produisent est compté : 10 barres en file permettent d'ajouter l'objet qui en demande. La fenêtre d'ajout dit combien tu peux encore en mettre (« Tout » = ce maximum), et le bouton devient « Ressources insuffisantes » quand il n'y a plus de quoi.
+
 ## v1.128.318 — 25/11/2026
 
 _Un /reload suffit._
