@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.313", date = "25/11/2026",
+        fixed = {
+            "Guidage, tracé sur la minicarte : il ne suivait pas le perso et s'étirait jusqu'à des points du trajet déjà dépassés quand la flèche ou l'épingle de guidage n'étaient pas affichées (c'étaient elles qui faisaient avancer le trajet). Le tracé avance maintenant tout seul avec toi et part du prochain point devant toi.",
+        },
+    },
+    {
         version = "1.128.312", date = "25/11/2026",
         fixed = {
             "Barre de fabrication : fermer la fenêtre du métier pendant une série arrête les fabrications restantes, mais la barre restait affichée (« 2 / 8 », « reste 0:18 »). Elle se ferme maintenant à la fin de la fabrication en cours, ou tout de suite si rien n'était en train de se faire.",

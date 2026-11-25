@@ -89,6 +89,11 @@ local function remaining()
         return out, p.cont
     end
     if not r then return nil end
+    -- la progression sur le trajet (r.leg / r.idx) n'avance que quand on demande le point suivant : la flèche et
+    -- l'épingle le font, mais coupées, le tracé repartait des points déjà dépassés et s'étirait derrière le perso
+    if N.Waypoint then pcall(N.Waypoint, N) end
+    r = N.route
+    if not r then return nil end
     -- points du trajet gardés tant que le trajet et l'étape ne changent pas (avant : une table par point, 7 fois
     -- par seconde pour la minicarte) ; seule la position du perso, en tête, est refaite
     local tc = remainingCache
@@ -97,7 +102,8 @@ local function remaining()
         for li = r.leg or 1, #r.legs do
             local l = r.legs[li]
             if l.kind == "walk" then
-                local start = (li == r.leg) and (r.idx or 1) or 1
+                -- étape en cours : depuis le point devant le perso (celui du segment où il est est déjà derrière)
+                local start = (li == r.leg) and math.min((r.idx or 1) + 1, math.max(1, #l.pts / 2)) or 1
                 for k = start, #l.pts / 2 do tail[#tail + 1] = { l.pts[k * 2 - 1], l.pts[k * 2] } end
             elseif l.kind == "fly" then
                 flyPoints(tail, l.from, l.to, l.ax, l.ay, l.bx, l.by)
