@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.354", date = "25/11/2026",
+        fixed = {
+            "Micro menu, raccourci Héritages : sur WoW Forever, les héritages sont dans la fenêtre « Suivi de la progression » (Points d'héritage). Elle n'a pas de nom reconnaissable : le raccourci la retrouve maintenant par ses textes, puis l'ouvre ou la ferme. /wk heritage dit si elle est trouvée.",
+        },
+    },
+    {
         version = "1.128.353", date = "25/11/2026",
         changed = {
             "Mini-fenêtre « À faire » : le mot « À faire » est retiré, la barre ne montre plus que les pastilles.",

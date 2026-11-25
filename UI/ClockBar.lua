@@ -716,7 +716,59 @@ function UI.HeirloomCandidates()
     table.sort(out, function(a, b) return a.name < b.name end)
     return out
 end
+-- Fenêtre « Suivi de la progression » de WoW Forever (points d'héritage, screen du joueur) : sans nom global
+-- parlant, reconnue par ses textes parmi les enfants d'UIParent (cachés compris, 4 niveaux au plus).
+local function progressText(t)
+    if type(t) ~= "string" or (_G.issecretvalue and _G.issecretvalue(t)) then return false end
+    local l = t:lower()
+    return l:find("suivi de la progression", 1, true) or (l:find("points d", 1, true) and l:find("ritage", 1, true))
+        or l:find("progress track", 1, true) or l:find("legacy points", 1, true) or l:find("heirloom points", 1, true)
+end
+local function hasProgressText(f, depth)
+    if f.GetRegions then
+        for _, r in ipairs({ f:GetRegions() }) do
+            if r.GetText then
+                local ok, t = pcall(r.GetText, r)
+                if ok and progressText(t) then return true end
+            end
+        end
+    end
+    if depth > 0 and f.GetChildren then
+        for _, c in ipairs({ f:GetChildren() }) do
+            if hasProgressText(c, depth - 1) then return true end
+        end
+    end
+    return false
+end
+function UI.FindProgressWindow()
+    local w = UI.heirWin
+    if w and hasProgressText(w, 4) then return w end
+    UI.heirWin = nil
+    local up = _G.UIParent
+    if not (up and up.GetChildren) then return nil end
+    for _, c in ipairs({ up:GetChildren() }) do
+        local n = c.GetName and c:GetName()
+        if not (n and n:find("^WarbandKeeper")) and hasProgressText(c, 4) then
+            UI.heirWin = c
+            return c
+        end
+    end
+    return nil
+end
+
 function UI.OpenForeverHeirlooms()
+    local win = UI.FindProgressWindow()
+    if win then
+        UI.heirUsed = (win.GetName and win:GetName()) or T("fenêtre « Suivi de la progression » (sans nom)")
+        if win:IsShown() then
+            if _G.HideUIPanel then pcall(_G.HideUIPanel, win) end
+            if win:IsShown() then win:Hide() end
+        else
+            if _G.ShowUIPanel then pcall(_G.ShowUIPanel, win) end
+            if not win:IsShown() then win:Show() end
+        end
+        return true
+    end
     local cands = UI.HeirloomCandidates()
     UI.heirScan = cands
     local function rank(c)
@@ -750,6 +802,13 @@ end
 function UI:HeirloomReport()
     WK:Print(T("Raccourci Héritages : diagnostic"))
     if self.heirUsed then WK:Print("  " .. T("Fenêtre du serveur utilisée :") .. " " .. self.heirUsed) end
+    local win = UI.FindProgressWindow()
+    if win then
+        WK:Print("  " .. T("Suivi de la progression :") .. " " .. tostring(win.GetName and win:GetName())
+            .. " · " .. (win:IsShown() and T("affichée") or T("cachée")))
+    else
+        WK:Print("  " .. T("Suivi de la progression : pas trouvée (ouvre-la une fois, puis relance)."))
+    end
     local cands = UI.HeirloomCandidates()
     local list = {}
     for i, c in ipairs(cands) do
