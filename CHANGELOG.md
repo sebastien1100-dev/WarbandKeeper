@@ -53,6 +53,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.348 — 25/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Micro menu, raccourci Héritages : le journal des collections restait sur Montures. Le raccourci choisit maintenant l'onglet en trois essais sur une demi-seconde, au cas où le jeu remettrait Montures juste après. L'onglet est aussi retenu par le jeu, donc le bouton Collections du compte rouvre la dernière page vue. En cas d'échec, le message donne les onglets vus (n°, nom, caché ou grisé) et l'onglet affiché.
+
 ## v1.128.347 — 25/11/2026
 
 _Un /reload suffit._

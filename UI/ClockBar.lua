@@ -228,66 +228,96 @@ local SHORTCUTS = {
           -- fenêtre du jeu plantait ; l'ancienne recherche par le nom ratait « Objets en héritage » et ouvrait les
           -- Apparences). Journal ouvert, puis l'onglet reconnu par son texte, dans sa barre d'onglets.
           if not (CollectionsJournal and CollectionsJournal:IsShown()) and ToggleCollectionsJournal then ToggleCollectionsJournal() end
-          C_Timer.After(0, function()
-              local cj = CollectionsJournal
-              if not cj then return end
-              local function isHeirloom(txt)
-                  if type(txt) ~= "string" then return false end
-                  local l = txt:lower()
-                  local h = _G.HEIRLOOMS and _G.HEIRLOOMS:lower()
-                  return (h and l == h) or l:find("ritage", 1, true) or l:find("heirloom", 1, true)
-              end
-              local function textOf(b)
-                  local t = b.GetText and b:GetText()
-                  if not t and b.Text and b.Text.GetText then t = b.Text:GetText() end
-                  if not t and b.GetRegions then
-                      for _, r in ipairs({ b:GetRegions() }) do
-                          if r.GetText and r:GetText() then t = r:GetText() break end
-                      end
-                  end
-                  return t
-              end
+          -- Plusieurs essais pendant une demi-seconde : sur WoW Forever le journal revenait sur Montures après le
+          -- clic (onglet remis par l'ouverture du journal). Échec : message avec les onglets vus (diagnostic).
+          local function tabsOf(cj)
               local tabs = {}
               for i = 1, 10 do local t = _G["CollectionsJournalTab" .. i]; if t then tabs[#tabs + 1] = t end end
               if type(cj.TabContainer) == "table" and cj.TabContainer.GetChildren then
                   for _, t in ipairs({ cj.TabContainer:GetChildren() }) do tabs[#tabs + 1] = t end
               end
-              -- page des héritages affichée ? (HeirloomsJournal, ou un cadre enfant du journal nommé « Heirloom »)
-              local function onHeirlooms()
-                  local hj = _G.HeirloomsJournal
-                  if hj and hj.IsVisible and hj:IsVisible() then return true end
-                  for _, c in ipairs({ cj:GetChildren() }) do
-                      local n = c.GetName and c:GetName()
-                      if n and n:find("Heirloom", 1, true) and c:IsVisible() then return true end
-                  end
-                  return false
-              end
-              local function pick(t)
-                  if t.Click then pcall(t.Click, t) end
-                  local sel = _G.PanelTemplates_GetSelectedTab and _G.PanelTemplates_GetSelectedTab(cj)
-                  if t.GetID and sel ~= t:GetID() and _G.CollectionsJournal_SetTab then
-                      pcall(_G.CollectionsJournal_SetTab, cj, t:GetID())
-                  end
-              end
-              -- 1) l'onglet reconnu par son texte : on le clique et on s'arrête là (avant, si la page n'était pas
-              -- reconnue juste après le clic, on cliquait tous les onglets l'un après l'autre et on finissait sur le
-              -- dernier, avec le message « introuvable »)
-              for _, t in ipairs(tabs) do
-                  if t.IsShown and t:IsShown() and isHeirloom(textOf(t)) then pick(t) return end
-              end
-              -- 2) sinon chaque onglet, jusqu'à la page des héritages
-              local names = {}
-              for _, t in ipairs(tabs) do
-                  if t.IsShown and t:IsShown() then
-                      names[#names + 1] = tostring(textOf(t))
-                      pick(t)
-                      if onHeirlooms() then return end
+              return tabs
+          end
+          local function isHeirloom(txt)
+              if type(txt) ~= "string" then return false end
+              local l = txt:lower()
+              local h = _G.HEIRLOOMS and _G.HEIRLOOMS:lower()
+              return (h and l == h) or l:find("ritage", 1, true) or l:find("heirloom", 1, true)
+          end
+          local function textOf(b)
+              local t = b.GetText and b:GetText()
+              if not t and b.Text and b.Text.GetText then t = b.Text:GetText() end
+              if not t and b.GetRegions then
+                  for _, r in ipairs({ b:GetRegions() }) do
+                      if r.GetText and r:GetText() then t = r:GetText() break end
                   end
               end
-              if tabs[1] then pick(tabs[1]) end
+              return t
+          end
+          -- page des héritages affichée ? (HeirloomsJournal, ou un cadre enfant du journal nommé « Heirloom »)
+          local function onHeirlooms(cj)
+              local hj = _G.HeirloomsJournal
+              if hj and hj.IsVisible and hj:IsVisible() then return true end
+              for _, c in ipairs({ cj:GetChildren() }) do
+                  local n = c.GetName and c:GetName()
+                  if n and n:find("Heirloom", 1, true) and c:IsVisible() then return true end
+              end
+              return false
+          end
+          local function selected(cj)
+              return _G.PanelTemplates_GetSelectedTab and _G.PanelTemplates_GetSelectedTab(cj)
+          end
+          local function pick(cj, t)
+              local id = t.GetID and t:GetID()
+              -- onglet retenu par le jeu pour la prochaine ouverture (bouton Collections compris)
+              if id and _G.SetCVar then pcall(_G.SetCVar, "petJournalTab", id) end
+              if t.Click then pcall(t.Click, t) end
+              if id and selected(cj) ~= id and _G.CollectionsJournal_SetTab then
+                  pcall(_G.CollectionsJournal_SetTab, cj, id)
+              end
+          end
+          local function heirTab(cj)
+              for _, t in ipairs(tabsOf(cj)) do if isHeirloom(textOf(t)) then return t end end
+          end
+          local function done(cj, t)
+              if onHeirlooms(cj) then return true end
+              local id = t and t.GetID and t:GetID()
+              return id ~= nil and selected(cj) == id
+          end
+          local function report(cj)
+              local seen = {}
+              for _, t in ipairs(tabsOf(cj)) do
+                  local id = t.GetID and t:GetID() or "?"
+                  local flags = (t.IsShown and not t:IsShown()) and " caché" or ""
+                  if t.IsEnabled and not t:IsEnabled() then flags = flags .. " grisé" end
+                  seen[#seen + 1] = tostring(id) .. "=" .. tostring(textOf(t)) .. flags
+              end
               WK:Print(WK.T("Onglet des héritages introuvable dans le journal des collections.")
-                  .. " (" .. table.concat(names, ", ") .. ")")
-          end)
+                  .. " (" .. table.concat(seen, ", ") .. " ; " .. tostring(selected(cj)) .. ")")
+          end
+          local DELAYS = { 0, 0.15, 0.4 }
+          local function try(n)
+              local cj = CollectionsJournal
+              if not cj or (_G.InCombatLockdown and _G.InCombatLockdown()) then return end
+              local t = heirTab(cj)
+              if done(cj, t) then return end
+              if t then
+                  pick(cj, t)
+              elseif n == #DELAYS then
+                  -- pas d'onglet reconnu par son texte : chaque onglet jusqu'à la page des héritages
+                  local tabs = tabsOf(cj)
+                  for _, b in ipairs(tabs) do
+                      if b.IsShown and b:IsShown() then pick(cj, b); if onHeirlooms(cj) then return end end
+                  end
+                  if tabs[1] then pick(cj, tabs[1]) end
+              end
+              if n < #DELAYS then
+                  _G.C_Timer.After(DELAYS[n + 1] - DELAYS[n], function() try(n + 1) end)
+              elseif not done(cj, t) then
+                  report(cj)
+              end
+          end
+          _G.C_Timer.After(0, function() try(1) end)
       end },
     { key = "prof", label = "Métier principal", icon = function() return UI.MEDIA .. "hammer" end, tint = true,
       run = function()
