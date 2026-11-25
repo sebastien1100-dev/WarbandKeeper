@@ -53,6 +53,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.329 — 25/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Hôtel des ventes, barre de gauche : les recherches se suppriment. Au survol d'une recherche, une croix la retire (enregistrée ou récente) ; la corbeille à côté de « Recherches » efface toutes les récentes d'un coup (les enregistrées restent). Avant, une recherche récente ne pouvait qu'être enregistrée.
+
 ## v1.128.328 — 25/11/2026
 
 _Un /reload suffit._

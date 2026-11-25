@@ -437,6 +437,21 @@ local function build(host)
     f.searchHead = UI:Text(side, 9, C.dim)
     f.searchHead:SetPoint("TOPLEFT", 16, -22 - #NAV * 32)
     f.searchHead:SetText(UI:Upper(T("Recherches")))
+    -- effacer les recherches récentes (les enregistrées restent)
+    f.searchClear = UI:IconButton(side, "trash", 16, "Effacer les recherches récentes (les enregistrées restent).")
+    f.searchClear:SetPoint("RIGHT", side, "TOPRIGHT", -12, -27 - #NAV * 32)
+    f.searchClear:SetScript("OnClick", function() _G.wipe(cfg().recent); f:RefreshSide() end)
+    -- retire une recherche (enregistrée ou récente)
+    local function dropSearch(r)
+        if not r.q then return end
+        local c = cfg()
+        if r.saved then table.remove(c.searches, r.index)
+        else
+            for i = #c.recent, 1, -1 do if c.recent[i].key == r.q.key then table.remove(c.recent, i) end end
+        end
+        _G.GameTooltip:Hide()
+        f:RefreshSide()
+    end
     f.srows = {}
     for i = 1, 10 do
         local r = CreateFrame("Button", nil, side)
@@ -445,18 +460,32 @@ local function build(host)
         if r.RegisterForClicks then r:RegisterForClicks("LeftButtonUp", "RightButtonUp") end
         r.bg = UI:Rounded(r, 6, 0, "BACKGROUND", 1); r.bg:SetColor(1, 1, 1, 0)
         r.icon = UI:Icon(r, "star", 11); r.icon:SetPoint("LEFT", 10, 0)
-        r.t = UI:Text(r, 11, C.muted); r.t:SetPoint("LEFT", 28, 0); r.t:SetPoint("RIGHT", -6, 0); r.t:SetJustifyH("LEFT")
+        r.t = UI:Text(r, 11, C.muted); r.t:SetPoint("LEFT", 28, 0); r.t:SetPoint("RIGHT", -22, 0)
+        r.t:SetJustifyH("LEFT")
         if r.t.SetWordWrap then r.t:SetWordWrap(false) end
+        -- croix au survol : supprimer
+        r.del = UI:IconButton(r, "close", 16, "Supprimer cette recherche")
+        r.del:SetPoint("RIGHT", -2, 0); r.del:Hide()
+        r.del:SetScript("OnClick", function() dropSearch(r) end)
+        r.del:HookScript("OnLeave", function()
+            if not r:IsMouseOver() then r.del:Hide(); r.bg:SetColor(1, 1, 1, 0) end
+        end)
         r:SetScript("OnEnter", function(s)
             local ar, ag, ab = UI:Accent(); s.bg:SetColor(ar, ag, ab, 0.08)
+            if s.q then s.del:Show() end
             if not s.q then return end
             UI:TooltipOwner(s, "ANCHOR_RIGHT")
             GameTooltip:SetText(s.q.name or s.q.text or "", 1, 1, 1)
             GameTooltip:AddLine(T("Clic : relancer cette recherche"), 0.6, 0.6, 0.6)
             GameTooltip:AddLine(s.saved and T("Clic droit : retirer") or T("Clic droit : enregistrer"), 0.6, 0.6, 0.6)
+            _G.GameTooltip:AddLine(T("Croix : supprimer"), 0.6, 0.6, 0.6)
             GameTooltip:Show()
         end)
-        r:SetScript("OnLeave", function(s) s.bg:SetColor(1, 1, 1, 0); GameTooltip:Hide() end)
+        r:SetScript("OnLeave", function(s)
+            _G.GameTooltip:Hide()
+            if s.del:IsMouseOver() then return end
+            s.bg:SetColor(1, 1, 1, 0); s.del:Hide()
+        end)
         r:SetScript("OnClick", function(s, button)
             if not s.q then return end
             if button == "RightButton" then
@@ -482,6 +511,7 @@ local function build(host)
         end
         local room = math.max(0, math.floor((side:GetHeight() - 48 - #NAV * 32) / 23))
         f.searchHead:SetShown(#list > 0)
+        f.searchClear:SetShown(#c.recent > 0)
         for i, r in ipairs(self.srows) do
             local e = i <= room and list[i]
             r.q, r.saved, r.index = e and e.q, e and e.saved, e and e.index

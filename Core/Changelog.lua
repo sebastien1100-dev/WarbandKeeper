@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.329", date = "25/11/2026",
+        added = {
+            "Hôtel des ventes, barre de gauche : les recherches se suppriment. Au survol d'une recherche, une croix la retire (enregistrée ou récente) ; la corbeille à côté de « Recherches » efface toutes les récentes d'un coup (les enregistrées restent). Avant, une recherche récente ne pouvait qu'être enregistrée.",
+        },
+    },
+    {
         version = "1.128.328", date = "25/11/2026",
         added = {
             "Hôtel des ventes, onglet À acheter : le total de chaque liste. Sous son nom dans la colonne des listes, et en tête du tableau (« 16 objets · total 512po ») : ce que coûte tout ce qui manque, au marchand quand il est moins cher, sinon au plus bas de l'HV. Les objets sans prix connu sont comptés à part (« +2 sans prix »).",
