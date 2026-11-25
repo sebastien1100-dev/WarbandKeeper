@@ -639,7 +639,7 @@ function M:MyShipments()
     local inBags = c and c.bags or {}
     -- objets liés (lié quand ramassé, ou équipé une fois) : le jeu refuse de les poster ; seuls les exemplaires libres
     -- sont proposés (avant : « Cotte d'anneaux » proposée, puis « Rien à envoyer : objets liés… » au clic)
-    -- mode fabrication des sacs, envoi au courrier en pause : les composants de la file ne sont pas proposés
+    -- mode fabrication des sacs : aucune ressource n'est proposée à l'envoi
     local PH = WK.modules.ProfHelp
     local keepCraft = PH and PH.CraftKeep and PH:CraftKeep("mail")
     local boundN = {}

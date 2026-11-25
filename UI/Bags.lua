@@ -381,7 +381,7 @@ local filter, query = "all", ""
 local hovered
 
 -- décalage vertical du contenu quand la barre des sacs est ouverte
-local CRAFT_H = 106 -- hauteur du bandeau du mode fabrication
+local CRAFT_H = 62 -- hauteur du bandeau du mode fabrication
 local function topOff()
     local o = (win and win.slotBar and win.slotBar:IsShown()) and SLOTS_H or 0
     if win and win.craftBanner and win.craftBanner:IsShown() then o = o + CRAFT_H end
@@ -898,8 +898,8 @@ local function build()
         f.craftBtn:SetScript("OnEnter", function(b)
             UI:TooltipOwner(b, "ANCHOR_BOTTOM")
             _G.GameTooltip:SetText(T("Mode fabrication"), 1, 1, 1)
-            local tip = T("Les composants de ta file de fabrication restent dans tes sacs : pas envoyés au courrier "
-                .. "ni déposés en banque (réglable dans le bandeau).")
+            local tip = T("Tant qu'il est actif, aucune ressource (composants, réactifs, gemmes) ne quitte tes sacs :"
+                .. " rien n'est envoyé au courrier ni déposé en banque. Les composants de ta file sont entourés.")
             _G.GameTooltip:AddLine(tip, 0.8, 0.8, 0.8, true)
             _G.GameTooltip:Show()
         end)
@@ -1003,9 +1003,7 @@ local function build()
             local st = UI:Text(cb, 11, C.muted); st:SetPoint("LEFT", l, "RIGHT", 8, 0)
             return t, st
         end
-        cb.mail, cb.mailSt = line(30, T("Envoi au courrier"), "mail")
-        cb.bank, cb.bankSt = line(52, T("Dépôt en banque"), "bank")
-        cb.auto = line(74, T("Se coupe en fermant le métier"), "autoOff")
+        cb.auto = line(30, T("Se coupe en fermant le métier"), "autoOff")
         cb:Hide()
         f.craftBanner = cb
         function f.PaintCraft()
@@ -1080,13 +1078,8 @@ local function build()
             if on then
                 local r, g, b = UI:Accent()
                 cb.bg:SetColor(r, g, b, 0.12)
-                cb.title:SetText(T("Les composants de ta file restent dans tes sacs"))
+                cb.title:SetText(T("Aucune ressource ne quitte tes sacs : courrier et banque en pause"))
                 cb.title:SetTextColor(r, g, b)
-                local m = PH:CraftMode()
-                for _, x in ipairs({ { cb.mail, cb.mailSt, m.mail }, { cb.bank, cb.bankSt, m.bank } }) do
-                    x[1]:Refresh()
-                    x[2]:SetText(x[3] and T("actif") or T("en pause"))
-                end
                 cb.auto:Refresh()
                 cb:ClearAllPoints()
                 local off = (f.slotBar and f.slotBar:IsShown()) and SLOTS_H or 0

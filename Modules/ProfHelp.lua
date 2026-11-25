@@ -680,33 +680,51 @@ function M:Advice(c, prof)
 end
 
 ---------------------------------------------------------------------------
--- Mode fabrication (sacs, maquette A) : les composants de la file de fabrication du perso connecté restent dans
--- ses sacs. Réglages WK.DB.global.craftMode = { on, mail, bank, autoOff } : mail / bank = vrai si l'envoi au
--- courrier / le dépôt en banque restent actifs pendant le mode (faux d'office : en pause) ; autoOff = le mode se
--- coupe en fermant la fenêtre du métier.
+-- Mode fabrication (sacs, maquette A) : tant qu'il est actif, **aucune ressource** ne quitte les sacs du perso
+-- connecté : ni envoi au courrier (règles, Rangement), ni dépôt en banque. Ressource = gemme (classe 3), réactif (5),
+-- composant d'artisanat (7), plus tout composant de la file de fabrication. Réglages WK.DB.global.craftMode =
+-- { on, autoOff } (autoOff = le mode se coupe en fermant la fenêtre du métier ; anciens interrupteurs mail / bank
+-- par envoi retirés : le mode bloque tout, à la demande du joueur).
 ---------------------------------------------------------------------------
+local RESOURCE_CLASS = { [3] = true, [5] = true, [7] = true }
+local function classOf(id)
+    local f = _G.C_Item and _G.C_Item.GetItemInfoInstant or _G.GetItemInfoInstant
+    if not (f and id) then return nil end
+    local ok, _, _, _, _, _, classID = pcall(f, id)
+    return ok and classID or nil
+end
+function M.IsResource(_, id)
+    return RESOURCE_CLASS[classOf(id) or -1] or false
+end
 function M.CraftMode(_)
     local g = WK.DB.global
     g.craftMode = g.craftMode or {}
     local c = g.craftMode
-    if c.mail == nil then c.mail = false end
-    if c.bank == nil then c.bank = false end
+    c.mail, c.bank = nil, nil
     if c.autoOff == nil then c.autoOff = true end
     return c
 end
--- Composants à garder (n° d'objet » vrai) ; kind = "mail" ou "bank" : nil si cet envoi reste actif ; nil hors mode
+-- Objets à garder (n° d'objet » vrai) ; nil hors mode. kind = "mail" ou "bank" (un envoi) : toute ressource plus
+-- les composants de la file ; sans kind (repères des sacs) : seulement les composants de la file
 function M:CraftKeep(kind)
     local c = self:CraftMode()
     if not c.on then return nil end
-    if kind and c[kind] then return nil end
-    local keep, any = {}, false
+    local keep = {}
+    if kind then
+        -- toute ressource, lue à la demande (table sans fin : métatable)
+        setmetatable(keep, { __index = function(t, id)
+            local v = M:IsResource(id)
+            rawset(t, id, v)
+            return v
+        end })
+    end
     local ok, q = pcall(self.Queue, self)
     for _, e in ipairs(ok and q or {}) do
         if e.mine and e.rec then
-            for _, rg in ipairs(e.rec.reagents or {}) do keep[rg[1]] = true; any = true end
+            for _, rg in ipairs(e.rec.reagents or {}) do keep[rg[1]] = true end
         end
     end
-    return any and keep or {}
+    return keep
 end
 function M:SetCraftMode(on)
     self:CraftMode().on = on and true or nil

@@ -129,7 +129,7 @@ local function afterSend()
     if mail.closeAfter ~= false then C_Timer.After(0.3, closeMailbox) end
 end
 
--- mode fabrication des sacs, envoi au courrier en pause : les composants de la file restent dans les sacs
+-- mode fabrication des sacs : aucune ressource n'est envoyée (elles restent dans les sacs)
 local function craftKept(id)
     local PH = WK.modules.ProfHelp
     local keep = PH and PH.CraftKeep and PH:CraftKeep("mail")

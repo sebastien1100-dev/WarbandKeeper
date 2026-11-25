@@ -53,6 +53,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.327 — 25/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Sacs, mode fabrication simplifié : tant qu'il est actif, aucune ressource (composants d'artisanat, réactifs, gemmes) ne quitte tes sacs : rien n'est envoyé au courrier (règles d'envoi et Rangement) ni déposé en banque. Avant, seuls les composants de ta file de fabrication étaient retenus, ce qui laissait partir le reste. Les interrupteurs « Envoi au courrier » et « Dépôt en banque » du bandeau disparaissent ; il ne reste que « Se coupe en fermant le métier ». L'équipement et le reste peuvent toujours partir, et les composants de ta file restent entourés dans les sacs.
+
 ## v1.128.326 — 25/11/2026
 
 _Un /reload suffit._

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.327", date = "25/11/2026",
+        changed = {
+            "Sacs, mode fabrication simplifié : tant qu'il est actif, aucune ressource (composants d'artisanat, réactifs, gemmes) ne quitte tes sacs : rien n'est envoyé au courrier (règles d'envoi et Rangement) ni déposé en banque. Avant, seuls les composants de ta file de fabrication étaient retenus, ce qui laissait partir le reste. Les interrupteurs « Envoi au courrier » et « Dépôt en banque » du bandeau disparaissent ; il ne reste que « Se coupe en fermant le métier ». L'équipement et le reste peuvent toujours partir, et les composants de ta file restent entourés dans les sacs.",
+        },
+    },
+    {
         version = "1.128.326", date = "25/11/2026",
         fixed = {
             "Hôtel des ventes, onglet À acheter : les colonnes se chevauchaient (titres « Plus bas » et « En vente » l'un sur l'autre, prix coupés, total caché sous le bouton). Les prix tiennent en deux unités (« 15pa 99pc », « 285po »), le bouton dit seulement « Acheter » (la quantité est dans « Il manque ») et la colonne « Pour » n'apparaît que si une ligne a un destinataire : le nom de l'objet a plus de place.",
