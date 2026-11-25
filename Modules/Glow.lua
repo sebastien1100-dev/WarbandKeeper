@@ -682,6 +682,7 @@ function M:Report()
     if req then WK:Print("  " .. T("compétence demandée") .. " : " .. req .. " · " .. tostring(prof or T("métier non appris")) .. " · " .. tostring(diff)) end
     if cat then WK:Print("  " .. T("effet") .. " : " .. tostring(g.fx[cat] or g.style or "halo")) end
     WK:Print("  " .. T("plaque de nom trouvée") .. " : " .. yn(findPlate() ~= nil))
+    if M.HideNpcPlate then M.HideNpcPlate(); WK:Print("  barre des PNJ amis : " .. tostring(M.npcState)) end
 end
 
 -- Les évènements de plaque donnent « nameplateN », jamais « softinteract » : on revérifie à chaque fois.
@@ -736,7 +737,8 @@ end) end)
 -- lueur des objets), et le jeu en donnait une aussi aux PNJ amis proches (garde, marchand…) avec une barre de
 -- vie. Elle est rendue invisible quand le joueur n'a pas demandé les plaques des PNJ amis.
 ---------------------------------------------------------------------------
-local npcHidden -- plaque rendue invisible (rendue visible au prochain changement)
+local npcHidden -- cadres rendus invisibles (plaque et sa barre), rendus visibles au prochain changement
+local npcTicker
 local function friendlyNpc(unit)
     local function ask(fn)
         if not fn then return nil end
@@ -749,16 +751,34 @@ local function friendlyNpc(unit)
     local atk = _G.UnitCanAttack and select(2, pcall(_G.UnitCanAttack, "player", unit))
     return plain(atk) ~= true
 end
+local function setA(list, a)
+    for _, f in ipairs(list or {}) do pcall(f.SetAlpha, f, a) end
+end
 function M.HideNpcPlate()
-    if npcHidden then pcall(npcHidden.SetAlpha, npcHidden, 1); npcHidden = nil end
+    if npcHidden then setA(npcHidden, 1); npcHidden = nil end
+    M.npcState = "rien"
     local g = M:Config()
-    if not (g.enabled and WK:FeatureOn("halo")) or M:OtherAddonLoaded() then return end
-    if getCVar("nameplateShowFriendlyNPCs") == "1" then return end -- plaques des PNJ voulues par le joueur
-    if not friendlyNpc(UNIT) then return end
+    if not (g.enabled and WK:FeatureOn("halo")) or M:OtherAddonLoaded() then M.npcState = "halo coupé" return end
+    if getCVar("nameplateShowFriendlyNPCs") == "1" then M.npcState = "plaques des PNJ voulues" return end
+    if not friendlyNpc(UNIT) then M.npcState = "pas un PNJ ami désigné" return end
     local plate = findPlate()
-    if plate then
-        local ok = pcall(plate.SetAlpha, plate, 0)
-        if ok then npcHidden = plate end
+    if not plate then M.npcState = "PNJ ami, plaque introuvable" return end
+    -- la plaque et sa barre (le jeu remet l'opacité de la plaque selon la distance : on vise aussi le cadre
+    -- de l'unité et sa barre de vie, et on réapplique tant que ce PNJ reste désigné)
+    local list = { plate }
+    local uf = plate.UnitFrame
+    if type(uf) == "table" then
+        list[#list + 1] = uf
+        for _, k in ipairs({ "healthBar", "HealthBarsContainer" }) do
+            if type(uf[k]) == "table" then list[#list + 1] = uf[k] end
+        end
+    end
+    setA(list, 0)
+    npcHidden = list
+    M.npcState = "PNJ ami, barre cachée"
+    local CT = _G.C_Timer
+    if not npcTicker and CT and CT.NewTicker then
+        npcTicker = CT.NewTicker(0.1, function() if npcHidden then setA(npcHidden, 0) end end)
     end
 end
 WK:On("PLAYER_SOFT_INTERACT_CHANGED", function() M.HideNpcPlate() end)

@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.369", date = "25/11/2026",
+        fixed = {
+            "Halo : la barre de vie du PNJ ami désigné restait visible, car le jeu remettait l'opacité de sa plaque. La barre et le cadre du PNJ sont maintenant cachés aussi, et le masquage est réappliqué tant que ce PNJ reste désigné.",
+        },
+        changed = {
+            "/wk halo : nouvelle ligne « barre des PNJ amis », qui dit si l'addon l'a cachée et pourquoi.",
+        },
+    },
+    {
         version = "1.128.368", date = "25/11/2026",
         fixed = {
             "Halo : une barre de vie s'affichait au-dessus du PNJ ami le plus proche (garde, marchand…). Pour faire briller les objets, le halo demande au jeu une plaque de nom sur ce qui est désigné, et le jeu désigne aussi les PNJ. Cette plaque est maintenant invisible quand c'est un PNJ ami (sauf si tu as allumé toi-même les plaques des PNJ amis dans le jeu).",
