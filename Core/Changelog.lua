@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.314", date = "25/11/2026",
+        added = {
+            "Rare en vue : un clic sur le bandeau cible le rare et lui pose une tête de mort au-dessus de la tête (si le marquage est actif dans les réglages des Rares). Le bouton Guider et la croix gardent leur rôle ; en style compact, le clic cible, marque et lance le guidage. Hors combat seulement : le jeu interdit de cibler d'un clic en combat (le bandeau le dit au survol).",
+        },
+    },
+    {
         version = "1.128.313", date = "25/11/2026",
         fixed = {
             "Guidage, tracé sur la minicarte : il ne suivait pas le perso et s'étirait jusqu'à des points du trajet déjà dépassés quand la flèche ou l'épingle de guidage n'étaient pas affichées (c'étaient elles qui faisaient avancer le trajet). Le tracé avance maintenant tout seul avec toi et part du prochain point devant toi.",

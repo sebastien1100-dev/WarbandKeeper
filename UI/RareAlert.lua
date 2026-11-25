@@ -4,7 +4,7 @@ local C = UI.colors
 local T = function(s) return WK.T(s) end
 
 -- Un cadre protégé ne se cache pas en combat : il devient transparent et sera caché à la sortie du combat
--- (le bandeau n'a plus de bouton protégé, garde-fou pour la suite).
+-- (le bandeau n'est jamais protégé : le bouton de ciblage est à part, voir tbCover).
 local pendingHide = {}
 local function inCombat() return InCombatLockdown and InCombatLockdown() end
 local function safeHide(f)
@@ -28,6 +28,90 @@ end)
 -- UI:RareAlertPreview(parent) fabrique un aperçu (sans bouton protégé) pour la colonne de réglages de la page Rares.
 local R = WK.modules.Rares
 local banner, compact
+
+---------------------------------------------------------------------------
+-- Cibler le rare d'un clic (le ciblage est protégé) : un seul bouton protégé `WarbandKeeperRareTarget`, enfant
+-- d'UIParent, posé par ses coordonnées sur le bandeau survolé, hors combat (jamais enfant ni ancré au bandeau, qui
+-- s'affiche aussi en combat). Macro : /targetexact <nom>, puis tête de mort si c'est bien lui (réglage skull).
+-- Retiré en partant et à l'entrée en combat. Bandeau : toute la surface sauf Guider et la croix ; compact : tout,
+-- et le clic lance aussi le guidage.
+---------------------------------------------------------------------------
+local TB
+local function macroFor(info)
+    local name = info.unitName or info.name
+    if not name or name == "" or name:find("[\n\r]") then return nil end
+    local m = "/targetexact " .. name
+    if R:Config().skull ~= false then
+        local q = name:gsub("\\", "\\\\"):gsub("\"", "\\\"")
+        m = m .. "\n/run if UnitName(\"target\")==\"" .. q .. "\" and GetRaidTargetIndex(\"target\")~=8 then"
+            .. " SetRaidTarget(\"target\",8) end"
+    end
+    return #m <= 255 and m or ("/targetexact " .. name)
+end
+local function tbHide()
+    if not TB or inCombat() then return end
+    TB.owner, TB.info = nil, nil
+    TB:SetAttribute("type", nil)
+    TB:Hide()
+end
+local function tbButton()
+    if TB then return TB end
+    local ok, b = pcall(_G.CreateFrame, "Button", "WarbandKeeperRareTarget", _G.UIParent, "SecureActionButtonTemplate")
+    if not ok or not b then return nil end
+    TB = b
+    b:Hide()
+    b:RegisterForClicks("AnyUp", "AnyDown")
+    b:SetScript("PostClick", function(s, _, down)
+        if down then return end
+        local f, info = s.owner, s.info
+        if f and f.compactStyle and info then
+            if info.rare then R:GuideTo(info.rare) end
+            R:MarkSkull(info)
+            tbHide(); safeHide(f)
+        end
+    end)
+    b:SetScript("OnEnter", function(s)
+        UI:TooltipOwner(s, "ANCHOR_BOTTOM")
+        local tt = _G.GameTooltip
+        tt:SetText(T("Clic : cibler ce rare"), 1, 1, 1)
+        if R:Config().skull ~= false then tt:AddLine(T("et le marquer d'une tête de mort"), 0.8, 0.8, 0.8) end
+        if s.owner and s.owner.compactStyle then tt:AddLine(T("et lancer le guidage"), 0.8, 0.8, 0.8) end
+        tt:Show()
+    end)
+    b:SetScript("OnLeave", function() _G.GameTooltip:Hide(); tbHide() end)
+    b:SetScript("OnUpdate", function(s)
+        local o = s.owner
+        if not o or not o:IsVisible() or o:GetAlpha() == 0 or (s.lastL and o:GetLeft() ~= s.lastL) then tbHide() end
+    end)
+    return b
+end
+-- pose le bouton sur le cadre f (survolé) ; right = largeur laissée libre à droite (Guider, croix)
+local function tbCover(f, right)
+    if inCombat() or f.sample or f.preview or not f.info then return end
+    local m = macroFor(f.info)
+    if not m then return end
+    local b = tbButton()
+    if not b then return end
+    local l, bt, w, h = f:GetRect()
+    if not l then return end
+    local k = f:GetEffectiveScale() / _G.UIParent:GetEffectiveScale()
+    b:SetAttribute("type", "macro")
+    b:SetAttribute("macrotext", m)
+    b.owner, b.info, b.lastL = f, f.info, f:GetLeft()
+    b:ClearAllPoints()
+    b:SetPoint("BOTTOMLEFT", _G.UIParent, "BOTTOMLEFT", l * k, bt * k)
+    b:SetSize(math.max(10, (w - (right or 0)) * k), h * k)
+    b:SetFrameStrata(f:GetFrameStrata())
+    b:SetFrameLevel(f:GetFrameLevel() + 20)
+    b:Show()
+end
+WK:On("PLAYER_REGEN_DISABLED", function()
+    if not TB then return end
+    -- dernier moment permis : en combat, le bouton ne pourrait plus être caché ni déplacé
+    TB.owner, TB.info = nil, nil
+    TB:SetAttribute("type", nil)
+    TB:Hide()
+end)
 
 -- Texte de la ligne de détail : butin notable, puis tué / jamais tué
 local function detail(info, short)
@@ -84,8 +168,21 @@ local function makeBanner(parent, name)
     f.close:SetPoint("TOPRIGHT", f, "TOPLEFT", 458, -2)
     f.close:SetFrameLevel(f.guide:GetFrameLevel() + 2)
     f.close:SetScript("OnClick", function() safeHide(f) end)
+    -- survol : bouton protégé posé dessus pour cibler le rare (hors combat)
+    f:EnableMouse(true)
+    f:SetScript("OnEnter", function(s)
+        if inCombat() then
+            UI:TooltipOwner(s, "ANCHOR_BOTTOM")
+            _G.GameTooltip:SetText(T("En combat : le jeu ne permet pas de cibler d'un clic"), 1, 1, 1)
+            _G.GameTooltip:Show()
+            return
+        end
+        tbCover(s, 64)
+    end)
+    f:SetScript("OnLeave", function() _G.GameTooltip:Hide() end)
 
     function f:Fill(info)
+        self.info = info
         local col = info.elite and C.gold or C.rare
         self.edge:SetColor(unpack(col))
         self.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], 0.96)
@@ -123,13 +220,17 @@ local function makeCompact(parent, name)
     f.sub:SetJustifyH("LEFT")
     f.pin = UI:Icon(f, "guide", 14, nil, "OVERLAY")
     f.pin:SetPoint("RIGHT", -12, 0)
+    f.compactStyle = true
     f:SetScript("OnEnter", function(s)
+        if not inCombat() and s.info then tbCover(s, 0) end
+        if TB and TB:IsShown() and TB.owner == s then return end
         WK.UI:TooltipOwner(s, "ANCHOR_BOTTOM")
         GameTooltip:SetText(T("Clic : guidage vers ce rare"), 1, 1, 1)
         GameTooltip:Show()
     end)
     f:SetScript("OnLeave", function() GameTooltip:Hide() end)
     function f:Fill(info)
+        self.info = info
         local col = info.elite and C.gold or C.rare
         self.edge:SetColor(unpack(col))
         self.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], 0.96)
@@ -217,9 +318,11 @@ function UI:RareAlertPreview(parent)
     local holder = CreateFrame("Frame", nil, parent)
     holder:SetSize(460, 74)
     holder.banner = makeBanner(holder, nil)
+    holder.banner.preview = true
     holder.banner:SetPoint("CENTER")
     holder.banner.close:Hide()
     holder.compact = makeCompact(holder, nil)
+    holder.compact.preview = true
     holder.compact:SetPoint("CENTER")
     function holder:Fill(state, style)
         local r = R:Get(100)
