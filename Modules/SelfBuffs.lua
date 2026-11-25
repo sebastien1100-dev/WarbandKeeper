@@ -61,7 +61,8 @@ function M.Config()
     local g = WK.modules.QoL:Config().general
     local c = g.selfBuffs
     if type(c) ~= "table" then c = {}; g.selfBuffs = c end
-    if c.bar == nil then c.bar = true end
+    -- case « buffs » de la barre des sacs retirée à la demande du joueur (avec ses réglages) : toujours coupée
+    c.bar = false
     if type(c.rules) ~= "table" then c.rules = {} end
     return c
 end

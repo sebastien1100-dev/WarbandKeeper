@@ -53,6 +53,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.339 — 25/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- QoL > Classes : « Buffer autour de toi » devient un sous-onglet de Général, commun à toutes les classes (avant : un onglet dans chacune des classes druide, mage, paladin et prêtre). Les réglages valent pour toutes ces classes. Sur un perso dont la classe n'a pas de buff à donner, la carte est grisée et l'infobulle dit pourquoi ; « Rois d'abord » est grisé hors paladin. Général a maintenant deux sous-onglets : Sorts de classe et Buffer autour.
+- Barre « Sacs, marchand et maître » : la case « buffs » est retirée, avec ses réglages (« Case des buffs », « Mettre en avant un buff absent ») et la carte « Buffs à ne pas oublier » de Classes > Général.
+
 ## v1.128.338 — 25/11/2026
 
 _Un /reload suffit._

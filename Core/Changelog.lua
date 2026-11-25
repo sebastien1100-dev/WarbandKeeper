@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.339", date = "25/11/2026",
+        changed = {
+            "QoL > Classes : « Buffer autour de toi » devient un sous-onglet de Général, commun à toutes les classes (avant : un onglet dans chacune des classes druide, mage, paladin et prêtre). Les réglages valent pour toutes ces classes. Sur un perso dont la classe n'a pas de buff à donner, la carte est grisée et l'infobulle dit pourquoi ; « Rois d'abord » est grisé hors paladin. Général a maintenant deux sous-onglets : Sorts de classe et Buffer autour.",
+            "Barre « Sacs, marchand et maître » : la case « buffs » est retirée, avec ses réglages (« Case des buffs », « Mettre en avant un buff absent ») et la carte « Buffs à ne pas oublier » de Classes > Général.",
+        },
+    },
+    {
         version = "1.128.338", date = "25/11/2026",
         fixed = {
             "Hôtel des ventes, onglet À acheter : après la suppression d'une liste, la corbeille pouvait rester affichée sur la ligne suivante (même sur « Prix surveillés »), à la place du nombre d'objets.",

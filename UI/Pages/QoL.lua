@@ -551,12 +551,11 @@ UI:RegisterPage({
         do
             local bcfg = WK.modules.BagHelp:Config()
             local function bref() if UI.RefreshBagSpace then UI:RefreshBagSpace() end end
-            local bar = card("Barre sacs, marchand et maître", 40 + 14 * 46 + 3 * 22 + 8,
+            local bar = card("Barre sacs, marchand et maître", 40 + 12 * 46 + 3 * 22 + 8,
                 "tous ses réglages ici ; position en mode édition")
             local hud = function() return UI:HUDEntry("bagSpace") end
             local function happly() if UI.HUDApply then UI:HUDApply("bagSpace") end; bref() end
             local campCfg0 = WK.modules.Camp:Config()
-            local SB = WK.modules.SelfBuffs
             local function lists()
                 bref()
                 if UI.RefreshCampKit then UI:RefreshCampKit() end
@@ -614,17 +613,12 @@ UI:RegisterPage({
                     if UI.RefreshCampChips then UI:RefreshCampChips() end
                     lists()
                 end), 80)
-            row("Case des buffs", "Buffs absents selon le lieu ; un clic déroule la liste, un clic sur une ligne lance"
-                    .. " le sort (hors combat). Buffs et lieux : QoL > Classes > Général.",
-                toggle(bar, function() return SB:Config().bar end, function(v) SB:Config().bar = v; lists() end), 80)
-            row("Mettre en avant un buff absent", "Fond rouge et liseré qui respire sur la case des buffs tant qu'il en"
-                    .. " manque un (hors combat et hors des villes).",
-                toggle(bar, function() return bcfg.buffAlert ~= false end,
-                    function(v) bcfg.buffAlert = v; bref() end), 80)
+            -- (case « buffs » et sa mise en avant retirées à la demande du joueur,
+            -- avec la carte « Buffs à ne pas oublier »)
             head("Listes déroulées")
             local dseg = UI:Segmented(bar, { { "down", "Vers le bas" }, { "up", "Vers le haut" } },
                 function(v) bcfg.dir = v; lists() end, 24)
-            row("Sens des listes", "Le kit de camp et les buffs s'ouvrent sous la barre ou au-dessus.", dseg, 200)
+            row("Sens des listes", "Le kit de camp s'ouvre sous la barre ou au-dessus.", dseg, 200)
             dseg:Select(bcfg.dir == "up" and "up" or "down")
         end
 
@@ -2508,6 +2502,7 @@ UI:RegisterPage({
         -----------------------------------------------------------------------
         do
             section("CLASSGEN", CLASSBAR_H)
+            subtab("Sorts de classe")
             local CSc = function() local M = WK.modules.ClassSpells; return M and M:Config() or {} end
             local sp = card("Sorts de classe", 3 * 48 + 56)
             local rows = {
@@ -2524,46 +2519,79 @@ UI:RegisterPage({
                 UI:SettingRow(sp, -44 - (i - 1) * 48, r[1], r[2], toggle(sp, r[3], r[4]), 80)
             end
 
-            -- buffs à ne pas oublier (Modules/SelfBuffs.lua) : case de la barre des sacs, sens, et lieux par buff
-            -- (entrées du perso connecté : classe, race, pistages de métier)
-            local SB = WK.modules.SelfBuffs
-            local ents = SB:Entries()
-            local RH = 32
-            local bc = card("Buffs à ne pas oublier", 44 + 48 + 26 + #ents * RH + 10,
-                "case « buffs » de la barre des sacs : ce qui manque selon le lieu")
-            local function bupdate()
-                if UI.RefreshBagSpace then UI:RefreshBagSpace() end
-                if UI.RefreshSelfBuffs then UI:RefreshSelfBuffs() end
-            end
-            local bgo = UI:Button(bc, T("Réglages de la barre"), nil, 24, "secondary")
-            bgo:SetWidth(bgo.label:GetStringWidth() + 28)
-            bgo:SetScript("OnClick", function() UI:OpenBagBarSettings() end)
-            UI:SettingRow(bc, -44, "Case dans la barre des sacs",
-                "La case « buffs » et le sens du déroulé se règlent avec la barre"
-                    .. " « Sacs, marchand et maître ».",
-                bgo, 200)
-            local PL = { { "w", "Monde" }, { "d", "Donjon" }, { "r", "Raid" } }
-            local hy = -44 - 48 - 6
-            for j, pl in ipairs(PL) do
-                local h = UI:Text(bc, 10, C.muted)
-                h:SetPoint("TOPRIGHT", bc, "TOPRIGHT", -16 - (3 - j) * 56, hy)
-                h:SetWidth(48); h:SetJustifyH("CENTER")
-                h:SetText(T(pl[2]))
-            end
-            for i, it in ipairs(ents) do
-                local ry = hy - 18 - (i - 1) * RH
-                local nm = UI:Text(bc, 12)
-                nm:SetPoint("TOPLEFT", bc, "TOPLEFT", 16, ry - 5)
-                local knownId
-                for _, id in ipairs(it.e.ids) do
-                    if _G.IsPlayerSpell and _G.IsPlayerSpell(id) then knownId = id break end
+            -- Buffer autour de toi (UI/BuffButton.lua) : un seul onglet pour toutes les classes qui buffent les autres
+            -- (avant : un onglet par classe) ; réglages recopiés sur chacune ; grisé pour une classe sans buff à donner
+            subtab("Buffer autour")
+            do
+                local BC = WK.BUFF_CLASSES or {}
+                local myClass = _G.UnitClass and select(2, _G.UnitClass("player")) or nil
+                local can = BC[myClass or ""] and true or false
+                local pal = myClass == "PALADIN"
+                local function ref()
+                    local first = can and myClass or next(BC)
+                    return q.classes[first] or {}
                 end
-                local miss = knownId and "" or ("  " .. UI:Hex(C.muted) .. T("(pas encore appris)") .. "|r")
-                nm:SetText(T(it.e.label) .. miss)
-                for j, pl in ipairs(PL) do
-                    local tg = toggle(bc, function() return SB:Places(it.rk, it.e):find(pl[1], 1, true) ~= nil end,
-                        function(v) SB:SetPlace(it.rk, it.e, pl[1], v); bupdate() end)
-                    tg:SetPoint("TOPRIGHT", bc, "TOPRIGHT", -20 - (3 - j) * 56, ry)
+                local function setAll(field, v)
+                    for cls in pairs(BC) do if q.classes[cls] then q.classes[cls][field] = v end end
+                    if UI.SyncBuffPlates then UI:SyncBuffPlates() end
+                    if UI.RefreshBuffButton then UI:RefreshBuffButton() end
+                end
+                local bb = card("Buffer autour de toi", 40 + 8 * 46 + 8,
+                    "druide, mage, paladin et prêtre : le joueur proche qui n'a pas ton buff, un clic ou une touche")
+                local function bt(field, def)
+                    return toggle(bb, function()
+                        local v = ref()[field]
+                        if def then return v ~= false end
+                        return v and true or false
+                    end, function(v) setAll(field, v) end)
+                end
+                local by = -40
+                UI:SettingRow(bb, by, "Bouton « Buffer le suivant »", "Se place en mode édition."
+                    .. " Touche : Options du jeu > Raccourcis > Warband Keeper. Jamais en combat, ni sur un joueur en"
+                    .. " combat ou JcJ (sauf si tu l'es). Paladin en groupe, raid ou donjon : il bénit tout le monde"
+                    .. " selon la répartition des bénédictions.", bt("buffAround", true), 80)
+                by = by - 46
+                local kr = UI:SettingRow(bb, by, "Rois d'abord (paladin)", "Si tu connais Rois ; sinon Puissance pour"
+                    .. " guerrier, voleur et chasseur, Sagesse pour les autres.", bt("kingsFirst", true), 80)
+                if can and not pal then kr:SetAlpha(0.45) end
+                by = by - 46
+                local seg = UI:Segmented(bb, { { 1, "1 min" }, { 3, "3 min" }, { 5, "5 min" }, { 10, "10 min" },
+                    { 0, "jamais" } }, function(v) setAll("buffRefresh", v) end, 26)
+                table.insert(self.dyn, function() seg:Select(ref().buffRefresh or 10) end)
+                UI:SettingRow(bb, by, "Remettre un buff qui finit dans moins de", nil, seg, 220)
+                by = by - 46
+                UI:SettingRow(bb, by, "En instance", nil, bt("buffInstance"), 80)
+                by = by - 46
+                UI:SettingRow(bb, by, "Sur une monture", nil, bt("buffMounted"), 80)
+                by = by - 46
+                local cityTip = "Regarder aussi les joueurs autour en ville et à l'auberge. "
+                    .. "Coupé : seulement toi, ta cible, ta focalisation et ton groupe "
+                    .. "(moins de calcul, beaucoup de monde passe en ville)."
+                UI:SettingRow(bb, by, "En ville", cityTip, bt("buffCity"), 80)
+                by = by - 46
+                UI:SettingRow(bb, by, "Plaques de nom des joueurs amis", "Allumées par l'addon hors combat : il en a"
+                    .. " besoin pour savoir qui est autour (rendues comme avant si tu coupes le bouton).",
+                    bt("buffPlates", true), 80)
+                by = by - 46
+                UI:SettingRow(bb, by, "Taille du repère au-dessus du joueur", "L'icône du sort qui va partir, au-dessus de la plaque de nom du joueur à buffer.",
+                    UI:Slider(bb, 220, 20, 48, 2, function() return ref().buffMarkSize or 30 end,
+                        function(v) setAll("buffMarkSize", v) end, "%d"), 240)
+                if not can then
+                    -- classe sans buff à donner : grisé, un voile prend la souris et dit pourquoi
+                    bb:SetAlpha(0.45)
+                    local cover = _G.CreateFrame("Frame", nil, bb)
+                    cover:SetPoint("TOPLEFT", 0, -34); cover:SetPoint("BOTTOMRIGHT")
+                    cover:SetFrameLevel(bb:GetFrameLevel() + 20)
+                    cover:EnableMouse(true)
+                    cover:SetScript("OnEnter", function(c)
+                        local GT = _G.GameTooltip
+                        WK.UI:TooltipOwner(c, "ANCHOR_CURSOR")
+                        GT:SetText(T("Buffer autour de toi"), 1, 1, 1)
+                        GT:AddLine(T("Ta classe n'a pas de buff à donner aux autres : réservé au druide, au"
+                            .. " mage, au paladin et au prêtre."), 0.8, 0.8, 0.8, true)
+                        GT:Show()
+                    end)
+                    cover:SetScript("OnLeave", function() _G.GameTooltip:Hide() end)
                 end
             end
         end
@@ -2998,40 +3026,7 @@ UI:RegisterPage({
                 subtab("Bénédictions", 8)
                 UI:BuildBlessingCards(card, toggle, self.dyn)
             end
-            -- Buffer les joueurs autour (UI/BuffButton.lua)
-            if WK.BUFF_CLASSES and WK.BUFF_CLASSES[class] then
-                subtab("Buffer autour", 7)
-                local pal = class == "PALADIN"
-                local bb = card("Buffer autour de toi", 40 + (pal and 8 or 7) * 46 + 8, "un bouton : le joueur proche qui n'a pas ton buff, un clic ou une touche")
-                local function bt(field) return toggle(bb, function() return cc[field] ~= false end, function(v)
-                    cc[field] = v; UI:SyncBuffPlates(); UI:RefreshBuffButton() end) end
-                local by = -40
-                UI:SettingRow(bb, by, "Bouton « Buffer le suivant »", "Se place en mode édition. Touche : Options du jeu > Raccourcis > Warband Keeper. Jamais en combat, ni sur un joueur en combat ou JcJ (sauf si tu l'es). Paladin en groupe, raid ou donjon : il bénit tout le monde selon la répartition des bénédictions.", bt("buffAround"), 80)
-                by = by - 46
-                if pal then
-                    UI:SettingRow(bb, by, "Rois d'abord", "Si tu connais Rois ; sinon Puissance pour guerrier, voleur et chasseur, Sagesse pour les autres.", bt("kingsFirst"), 80)
-                    by = by - 46
-                end
-                local seg = UI:Segmented(bb, { { 1, "1 min" }, { 3, "3 min" }, { 5, "5 min" }, { 10, "10 min" }, { 0, "jamais" } }, function(v) cc.buffRefresh = v end, 26)
-                table.insert(self.dyn, function() seg:Select(cc.buffRefresh or 10) end)
-                UI:SettingRow(bb, by, "Remettre un buff qui finit dans moins de", nil, seg, 220)
-                by = by - 46
-                UI:SettingRow(bb, by, "En instance", nil, toggle(bb, function() return cc.buffInstance end, function(v) cc.buffInstance = v end), 80)
-                by = by - 46
-                UI:SettingRow(bb, by, "Sur une monture", nil, toggle(bb, function() return cc.buffMounted end, function(v) cc.buffMounted = v end), 80)
-                by = by - 46
-                local cityTip = "Regarder aussi les joueurs autour en ville et à l'auberge. "
-                    .. "Coupé : seulement toi, ta cible, ta focalisation et ton groupe "
-                    .. "(moins de calcul, beaucoup de monde passe en ville)."
-                local cityT = toggle(bb, function() return cc.buffCity end,
-                    function(v) cc.buffCity = v; UI:RefreshBuffButton() end)
-                UI:SettingRow(bb, by, "En ville", cityTip, cityT, 80)
-                by = by - 46
-                UI:SettingRow(bb, by, "Plaques de nom des joueurs amis", "Allumées par l'addon hors combat : il en a besoin pour savoir qui est autour (rendues comme avant si tu coupes le bouton).", bt("buffPlates"), 80)
-                by = by - 46
-                UI:SettingRow(bb, by, "Taille du repère au-dessus du joueur", "L'icône du sort qui va partir, au-dessus de la plaque de nom du joueur à buffer.",
-                    UI:Slider(bb, 220, 20, 48, 2, function() return cc.buffMarkSize or 30 end, function(v) cc.buffMarkSize = v; UI:RefreshBuffButton() end, "%d"), 240)
-            end
+            -- (Buffer autour : onglet commun de Classes > Général)
         end
         closeSection()
         self:ShowSection(ui.qolSection or "general")

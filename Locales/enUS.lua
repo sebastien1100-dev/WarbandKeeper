@@ -1904,7 +1904,6 @@ WK.Locales.enUS.text = {
     ["Vert au-delà de 50, orange au-delà de 30."] = "Green above 50, orange above 30.",
     ["Latence"] = "Latency",
     ["Domicile"] = "Home",
-    ["Monde"] = "World",
     ["Vert sous 100 ms, orange sous 200 ms."] = "Green under 100 ms, orange under 200 ms.",
     -- UI/DungeonPanel.lua
     ["Maj + clic : lien dans le chat · étoile : liste d'envies"] = "Shift + click: link in chat · star: wish list",
@@ -3162,6 +3161,10 @@ WK.Locales.enUS.text = {
     ["Pas en vente à l'HV pour l'instant"] = "Not for sale at the AH right now",
     ["Clique encore pour confirmer."] = "Click again to confirm.",
     ["Liste « %s » supprimée."] = "List '%s' deleted.",
+    ["Rois d'abord (paladin)"] = "Kings first (paladin)",
+    ["druide, mage, paladin et prêtre : le joueur proche qui n'a pas ton buff, un clic ou une touche"] = "druid, mage, paladin and priest: the nearby player without your buff, one click or key",
+    ["Ta classe n'a pas de buff à donner aux autres : réservé au druide, au mage, au paladin et au prêtre."] = "Your class has no buff to give others: only druids, mages, paladins and priests.",
+    ["Le kit de camp s'ouvre sous la barre ou au-dessus."] = "The camp kit opens below or above the bar.",
     ["Barre d'XP"] = "XP bar",
     ["Avant de partir"] = "Before you go",
     ["Le meilleur objet de chaque sorte pour ton niveau ; rouge : sous le seuil. Seuils x2 en raid ; en JcJ, pas d'élixir et moitié de nourriture."] = "The best item of each kind for your level; red: below threshold. Thresholds x2 in raids; in PvP, no elixir and half the food.",
@@ -3441,17 +3444,12 @@ WK.Locales.enUS.text = {
     ["Buffer le suivant"] = "Buff the next one",
     ["Cacher"] = "Hide",
     ["Buffer autour de toi"] = "Buff around you",
-    ["un bouton : le joueur proche qui n'a pas ton buff, un clic ou une touche"] = "one button: the nearby player without your buff, one click or key",
     ["Bouton « Buffer le suivant »"] = "\"Buff the next one\" button",
     ["Se place en mode édition. Touche : Options du jeu > Raccourcis > Warband Keeper. Jamais en combat, ni sur un joueur en combat ou JcJ (sauf si tu l'es)."] = "Placed in edit mode. Key: Game options > Keybindings > Warband Keeper. Never in combat, nor on a player in combat or PvP (unless you are).",
-    ["Se place en mode édition. Touche : Options du jeu > Raccourcis > Warband Keeper. Jamais en combat, ni sur un joueur en combat ou JcJ (sauf si tu l'es). Paladin en groupe, raid ou donjon : il bénit tout le monde selon la répartition des bénédictions."] = "Placed in edit mode. Key: Game options > Keybindings > Warband Keeper. Never in combat, nor on a player in combat or PvP (unless you are). Paladin in a group, raid or dungeon: it blesses everyone following the blessing assignment.",
-    ["Rois d'abord"] = "Kings first",
-    ["Si tu connais Rois ; sinon Puissance pour guerrier, voleur et chasseur, Sagesse pour les autres."] = "If you know Kings; otherwise Might for warriors, rogues and hunters, Wisdom for the others.",
     ["Remettre un buff qui finit dans moins de"] = "Rebuff when it ends in less than",
     ["En instance"] = "In instances",
     ["Sur une monture"] = "While mounted",
     ["Plaques de nom des joueurs amis"] = "Friendly player nameplates",
-    ["Allumées par l'addon hors combat : il en a besoin pour savoir qui est autour (rendues comme avant si tu coupes le bouton)."] = "Turned on by the addon out of combat: it needs them to know who is around (restored if you turn the button off).",
     ["Clic : le proposer de nouveau"] = "Click: offer it again",
     ["Clic droit : favori · Maj + clic droit : cacher · étoile : à vendre d'après le Rangement · clic droit sur un objet des sacs du jeu : il arrive ici"] = "Right-click: favorite · Shift + right-click: hide · star: to sell according to Storage · right-click an item in the game bags: it comes here",
     ["14 jours · tirets : moyenne"] = "14 days · dashes: average",
@@ -4626,8 +4624,6 @@ WK.Locales.enUS.text = {
         "Click: fold the list",
     ["Clic : dérouler la liste"] =
         "Click: unfold the list",
-    ["(pas encore appris)"] =
-        "(not learned yet)",
     ["éteint"] =
         "off",
     ["monde"] =
@@ -4640,12 +4636,8 @@ WK.Locales.enUS.text = {
         "dungeon",
     ["raid"] =
         "raid",
-    ["Case dans la barre des sacs"] =
-        "Tile in the bags bar",
     ["Case « buffs » dans la barre « Sacs, marchand et maître » : nombre de buffs absents ; un clic déroule la liste, un clic sur une ligne lance le sort (hors combat)."] =
         "Buffs tile in the bags, vendor and trainer bar: number of missing buffs; a click unfolds the list, a click on a line casts the spell (out of combat).",
-    ["case « buffs » de la barre des sacs : ce qui manque selon le lieu"] =
-        "buffs tile of the bags bar: what is missing for the place",
     ["Donjon"] =
         "Dungeon",
     ["Une aura (au choix)"] =
@@ -4698,22 +4690,16 @@ WK.Locales.enUS.text = {
         "Camp kit tile",
     ["Temps restant des avantages du camp ; un clic déroule le kit (hors combat). Coupée : colonne près de la flamme. Contenu du kit : QoL > Feu de camp."] =
         "Camp benefits time left; a click unfolds the kit (out of combat). Off: column by the flame. Kit contents: QoL > Campfire.",
-    ["Case des buffs"] =
-        "Buffs tile",
     ["Buffs absents selon le lieu ; un clic déroule la liste, un clic sur une ligne lance le sort (hors combat). Buffs et lieux : QoL > Classes > Général."] =
         "Missing buffs for the place; a click unfolds the list, a click on a line casts the spell (out of combat). Buffs and places: QoL > Classes > General.",
     ["Sens des listes"] =
         "Lists direction",
-    ["Le kit de camp et les buffs s'ouvrent sous la barre ou au-dessus."] =
-        "The camp kit and buffs open below or above the bar.",
     ["tous ses réglages ici ; position en mode édition"] =
         "all its settings here; position in edit mode",
     ["La case « kit » et le sens du déroulé se règlent avec la barre « Sacs, marchand et maître »."] =
         "The kit tile and the unfold direction are set with the bags, vendor and trainer bar.",
     ["La case « buffs » et le sens du déroulé se règlent avec la barre « Sacs, marchand et maître »."] =
         "The buffs tile and the unfold direction are set with the bags, vendor and trainer bar.",
-    ["Mettre en avant un buff absent"] =
-        "Highlight a missing buff",
     ["Fond rouge et liseré qui respire sur la case des buffs tant qu'il en manque un (hors combat et hors des villes)."] =
         "Red background and breathing outline on the buffs tile while one is missing (out of combat and outside cities).",
     ["DPS"] =
