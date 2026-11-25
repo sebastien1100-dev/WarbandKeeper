@@ -53,6 +53,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.328 — 25/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Hôtel des ventes, onglet À acheter : le total de chaque liste. Sous son nom dans la colonne des listes, et en tête du tableau (« 16 objets · total 512po ») : ce que coûte tout ce qui manque, au marchand quand il est moins cher, sinon au plus bas de l'HV. Les objets sans prix connu sont comptés à part (« +2 sans prix »).
+
+### Corrections
+- Hôtel des ventes, onglet À acheter : le total d'une ligne était encore coupé (« 98po 48… ») et les titres « Plus bas » et « En vente » se touchaient. À partir de 10 po, le total ne montre plus que les pièces d'or, et les colonnes sont mieux espacées.
+
 ## v1.128.327 — 25/11/2026
 
 _Un /reload suffit._

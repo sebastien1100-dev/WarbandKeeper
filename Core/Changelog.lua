@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.328", date = "25/11/2026",
+        added = {
+            "Hôtel des ventes, onglet À acheter : le total de chaque liste. Sous son nom dans la colonne des listes, et en tête du tableau (« 16 objets · total 512po ») : ce que coûte tout ce qui manque, au marchand quand il est moins cher, sinon au plus bas de l'HV. Les objets sans prix connu sont comptés à part (« +2 sans prix »).",
+        },
+        fixed = {
+            "Hôtel des ventes, onglet À acheter : le total d'une ligne était encore coupé (« 98po 48… ») et les titres « Plus bas » et « En vente » se touchaient. À partir de 10 po, le total ne montre plus que les pièces d'or, et les colonnes sont mieux espacées.",
+        },
+    },
+    {
         version = "1.128.327", date = "25/11/2026",
         changed = {
             "Sacs, mode fabrication simplifié : tant qu'il est actif, aucune ressource (composants d'artisanat, réactifs, gemmes) ne quitte tes sacs : rien n'est envoyé au courrier (règles d'envoi et Rangement) ni déposé en banque. Avant, seuls les composants de ta file de fabrication étaient retenus, ce qui laissait partir le reste. Les interrupteurs « Envoi au courrier » et « Dépôt en banque » du bandeau disparaissent ; il ne reste que « Se coupe en fermant le métier ». L'équipement et le reste peuvent toujours partir, et les composants de ta file restent entourés dans les sacs.",

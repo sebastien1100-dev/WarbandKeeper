@@ -38,10 +38,10 @@ local function cfg()
 end
 local function money(v) return v and WK:FormatMoney(v) or "-" end
 -- montant court pour une colonne étroite : les deux unités principales (« 1po 52pa », « 32pa 5pc », « 84pc »)
-local function shortMoney(v)
+local function shortMoney(v, compact)
     if not v then return "-" end
     v = math.floor(v)
-    if v >= 1000000 then v = math.floor(v / 10000) * 10000      -- 100 po et plus : po seulement
+    if v >= (compact and 100000 or 1000000) then v = math.floor(v / 10000) * 10000 -- po seulement (compact : dès 10 po)
     elseif v >= 10000 then v = math.floor(v / 100) * 100 end    -- po et pa
     return WK:FormatMoney(v)
 end
@@ -1297,9 +1297,12 @@ local function build(host)
     bv.lists:SetPoint("TOPLEFT"); bv.lists:SetPoint("BOTTOMLEFT"); bv.lists:SetWidth(180)
     bv.lrows = {}
     for i = 1, 12 do
-        local r = textRow(bv.lists, 24)
-        r:SetPoint("TOPLEFT", 6, -30 - (i - 1) * 26); r:SetPoint("TOPRIGHT", -6, -30 - (i - 1) * 26)
-        r.icon:Hide(); r.a:SetPoint("LEFT", 8, 0); r.a:SetPoint("RIGHT", -34, 0)
+        -- deux lignes : nom, puis ce que coûte ce qui manque
+        local r = textRow(bv.lists, 34)
+        r:SetPoint("TOPLEFT", 6, -30 - (i - 1) * 36); r:SetPoint("TOPRIGHT", -6, -30 - (i - 1) * 36)
+        r.icon:Hide(); r.a:ClearAllPoints(); r.a:SetPoint("TOPLEFT", 8, -4); r.a:SetPoint("TOPRIGHT", -34, -4)
+        r.cost = UI:Text(r, 10, C.muted); r.cost:SetPoint("BOTTOMLEFT", 8, 4); r.cost:SetPoint("BOTTOMRIGHT", -34, 4)
+        r.cost:SetJustifyH("LEFT")
         r.pill = CreateFrame("Frame", nil, r)
         r.pill:SetSize(20, 16); r.pill:SetPoint("RIGHT", -6, 0)
         r.pill.bg = UI:Rounded(r.pill, 8, 0, "BACKGROUND", 1)
@@ -1348,7 +1351,7 @@ local function build(host)
     bv.main:SetPoint("TOPLEFT", bv.lists, "TOPRIGHT", 8, 0); bv.main:SetPoint("BOTTOMRIGHT", bv.sum, "BOTTOMLEFT", -8, 0)
     -- colonnes (bord droit de chaque colonne, depuis la droite de la ligne) : bouton « Acheter » (la quantité est
     -- dans « Il manque »), total, en vente, plus bas, il manque, pour (seulement si une ligne a un destinataire)
-    local BX = { tot = -92, d = -170, c = -228, b = -310, who = -364, name = -440 }
+    local BX = { tot = -92, d = -170, c = -244, b = -326, who = -380, name = -456 }
     local BCOLS = { { "Objet", 34, "LEFT" }, { "Pour", BX.who - 72, "LEFT2" }, { "Il manque", BX.b - 6 },
         { "Plus bas", BX.c - 6 }, { "En vente", BX.d - 6 }, { "Total", BX.tot - 6 } }
     bv.heads = {}
@@ -1556,6 +1559,36 @@ local function build(host)
         end
     end
 
+    -- coût de ce qui manque dans une liste : au marchand s'il est moins cher (prix vu par un perso, sinon ForeverDB),
+    -- sinon au plus bas de l'HV (recherche du jour, sinon scan) ; rend le total et le nombre d'objets sans prix
+    local function listCost(l)
+        local total, unknown = 0, 0
+        local vseen = WK.DB.global.vendorSeen or {}
+        local Vd = WK.modules.Vendors
+        for _, it in ipairs(l and l.items or {}) do
+            local id = it[1]
+            local need = math.max(0, (it[2] or 0) - S:Have(id))
+            if need > 0 then
+                local p = lowestOther(id) or S:Price(id)
+                local v = vseen[id] and vseen[id].p
+                if not v and Vd then
+                    local fp, src = Vd:BuyPrice(id)
+                    if src == "fdb" then v = fp end
+                end
+                if v and (not p or v < p) then p = v end
+                if p then total = total + p * need else unknown = unknown + 1 end
+            end
+        end
+        return total, unknown
+    end
+    bv.ListCost = listCost
+    local function costText(total, unknown)
+        if total <= 0 and unknown == 0 then return UI:Hex(C.positive) .. T("rien à acheter") .. "|r" end
+        local t = total > 0 and shortMoney(total) or "-"
+        if unknown > 0 then t = t .. UI:Hex(C.dim) .. "  " .. string.format(T("+%d sans prix"), unknown) .. "|r" end
+        return t
+    end
+
     function bv:Refresh()
         syncQueue()
         local q = string.lower(self.search:GetText() or "")
@@ -1584,6 +1617,8 @@ local function build(host)
                 r.pill:SetWidth(math.max(18, r.pill.t:GetStringWidth() + 10))
                 r.pill.bg:SetColor(ar, ag, ab, 1)
                 r.pill:SetShown(count > 0)
+                if n == WATCH then r.cost:SetText("")
+                else r.cost:SetText(costText(listCost(lists[n]))) end
                 r.hl:SetColorTexture(ar, ag, ab, n == cur and 0.14 or 0)
                 r:Show()
             else r:Hide() end
@@ -1640,7 +1675,7 @@ local function build(host)
                     f.buyCount = f.buyCount + 1
                     if v and (not low or v.p <= low) then
                         r.tag:Set(T("au marchand"), C.rule); r.tag:Show()
-                        r.tot:SetText(shortMoney(v.p * need))
+                        r.tot:SetText(shortMoney(v.p * need, true))
                         sVendor, nVendor = sVendor + v.p * need, nVendor + 1
                         self.skipSet[id] = true
                     elseif alt then
@@ -1652,7 +1687,7 @@ local function build(host)
                         nNone = nNone + 1; noneName = noneName or name
                         self.skipSet[id] = true
                     else
-                        r.tot:SetText(low and shortMoney(low * need) or "")
+                        r.tot:SetText(low and shortMoney(low * need, true) or "")
                         if low then sAH = sAH + low * need end
                         nAH = nAH + 1
                         r.btn:Show()
@@ -1668,7 +1703,8 @@ local function build(host)
                 r:Show()
             else r:Hide() end
         end
-        self.main.sub:SetText(l and string.format(T("%d objets"), n) or "")
+        self.main.sub:SetText(l and (string.format(T("%d objets"), n) .. "  ·  " .. T("total") .. " "
+            .. costText(listCost(l))) or "")
         -- résumé
         local lines = {
             { string.format(T("À l'HV (%d)"), nAH), nAH > 0 and money(sAH) or "-" },
