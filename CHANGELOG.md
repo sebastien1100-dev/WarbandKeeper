@@ -54,6 +54,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.361 — 25/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Leveling : un plan de montée se fait maintenant pour n'importe quelle classe, même sans perso de cette classe ni fenêtre des talents ouverte. Les arbres viennent des tables du jeu. Dès qu'un perso de la classe a relevé ses vrais arbres, le plan s'y recale tout seul, talent par talent (par le nom).
+
 ## v1.128.360 — 25/11/2026
 
 _Un /reload suffit._

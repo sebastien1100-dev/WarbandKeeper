@@ -82,7 +82,8 @@ def questie(path):
 
 
 WAGO = "https://wago.tools"
-WAGO_TABLES = ["Map", "UiMap", "DungeonEncounter", "SkillLineAbility", "SkillLine", "SpellLevels", "SpellName", "Talent"]
+WAGO_TABLES = ["Map", "UiMap", "DungeonEncounter", "SkillLineAbility", "SkillLine", "SpellLevels", "SpellName", "Talent",
+               "TalentTab"]
 
 
 def wago_tables():

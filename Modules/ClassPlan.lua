@@ -67,9 +67,62 @@ function M.RefChar(_, class)
     end
     return bk, best
 end
+-- Arbres tirés des tables du jeu (WK.ClassTalentTrees de Modules/ClassSpellsDB.lua) : un plan se fait sans perso
+-- de la classe. Même forme que c.talents ({ nom, icône, rangée, colonne, rang, max, sort, nœud = nil }), rangés
+-- par rangée puis colonne ; noms et icônes relus en jeu (refaits tant qu'un nom manque). trees.static = vrai.
+local staticTrees = {}
+function M.StaticTrees(_, class)
+    local raw = class and WK.ClassTalentTrees and WK.ClassTalentTrees[class]
+    if not raw then return nil end
+    local t = staticTrees[class]
+    if t and t.complete then return t end
+    local fr = WK.Lang() == "frFR"
+    t = { static = true, complete = true }
+    for _, tr in ipairs(raw) do
+        local tree = { name = fr and tr[1] or tr[2], points = 0, list = {} }
+        for row, col, max, sp in tr[3]:gmatch("(%d+),(%d+),(%d+),(%d+)") do
+            sp = tonumber(sp)
+            local name, icon = WK.SpellInfo(sp)
+            if not name then t.complete = false end
+            local d = { name or ("#" .. sp), icon, tonumber(row), tonumber(col), 0, tonumber(max), sp }
+            tree.list[#tree.list + 1] = d
+        end
+        tree.cols = 4
+        t[#t + 1] = tree
+    end
+    staticTrees[class] = t
+    return t
+end
+
+-- Plan fait sur les arbres des tables, recalé sur les arbres relevés en jeu dès qu'un perso de la classe les a :
+-- chaque point retrouvé par le nom du talent (arbre, n°, nœud) ; le plan garde « static » tant qu'il en manque.
+function M.Remap(_, class, trees)
+    local changed = false
+    for _, p in ipairs(store(class).list) do
+        if p.static then
+            local where = {}
+            for ti, tr in ipairs(trees) do
+                for j, d in ipairs(tr.list or {}) do if d[1] then where[d[1]] = { ti, j, d[8] } end end
+            end
+            local all = true
+            for _, st in ipairs(p.steps) do
+                local w = st[4] and where[st[4]]
+                if w then st[1], st[2], st[3] = w[1], w[2], w[3] else all = false end
+            end
+            if all then p.static = nil end
+            changed = true
+        end
+    end
+    return changed
+end
+
 function M:Trees(class)
     local _, c = self:RefChar(class)
-    return c and c.talents
+    if c and c.talents then
+        if self:Remap(class, c.talents) then WK:NotifyChanged() end
+        return c.talents
+    end
+    return self:StaticTrees(class)
 end
 
 -- Persos de la classe (clé, perso) et ceux qui suivent le plan
@@ -96,7 +149,10 @@ end
 function M:PlanFor(key)
     local c = WK.DB.global.characters[key or WK:CharKey()]
     if not (c and c.class) or not self:Follows(key or WK:CharKey()) then return nil end
-    return (self:Active(c.class))
+    local p = self:Active(c.class)
+    -- plan fait sans perso : recalé sur les arbres relevés avant de servir (n° de nœud pour placer les points)
+    if p and p.static and c.talents then self:Remap(c.class, c.talents) end
+    return p
 end
 
 -- Ajoute un point (mêmes règles que les plans par perso : rang maximum, 5 points par rangée au-dessus)
@@ -118,6 +174,7 @@ function M:AddStep(class, i, ti, j)
     end
     if #p.steps >= 51 then return false, T("Le plan a déjà tous ses points (niveau 60).") end
     table.insert(p.steps, { ti, j, d[8], d[1] })
+    if trees.static then p.static = true end
     self:Changed()
     return true
 end

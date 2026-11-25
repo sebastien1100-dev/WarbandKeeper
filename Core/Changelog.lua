@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.361", date = "25/11/2026",
+        added = {
+            "Leveling : un plan de montée se fait maintenant pour n'importe quelle classe, même sans perso de cette classe ni fenêtre des talents ouverte. Les arbres viennent des tables du jeu. Dès qu'un perso de la classe a relevé ses vrais arbres, le plan s'y recale tout seul, talent par talent (par le nom).",
+        },
+    },
+    {
         version = "1.128.360", date = "25/11/2026",
         changed = {
             "Leveling, carte « Achats chez le maître » : le coût de la sélection (sorts gardés, sans les écartés) est affiché en haut à droite de la carte. À côté du titre : le nombre de sorts choisis.",

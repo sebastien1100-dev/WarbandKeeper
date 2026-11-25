@@ -303,8 +303,7 @@ UI:RegisterPage({
         local msg
         if not plan then msg = T("Pas encore de plan pour cette classe : « + plan » pour en créer un.")
         elseif not trees then
-            msg = T("Arbres de talents pas encore relevés : connecte une fois un perso de cette classe (ils le sont"
-                .. " à la connexion).")
+            msg = T("Arbres de talents introuvables pour cette classe.")
         end
         self.leftMsg:SetText(msg or ""); self.leftMsg:SetShown(msg ~= nil)
         self.undo:SetShown(plan ~= nil and trees ~= nil)
