@@ -3,6 +3,12 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.9.30 — 25/11/2026
+
+### Modifications
+- Page Découvertes : les quêtes « à vérifier » se règlent aussi toutes seules quand c'est sûr. Nom déjà connu de l'addon : gardé. Même nom à l'écriture près (accents, majuscules) : la version avec accents, et positions du donneur et du rendu moyennées. Un nom français et un nom anglais : le français. Un nom vu plus souvent que les autres (deux fois au moins) : celui-là. Sinon la ligne reste à vérifier à la main.
+- Restent toujours à la main : les chaînes de quêtes et les n° de boss.
+
 ## 1.9.29 — 25/11/2026
 
 ### Modifications

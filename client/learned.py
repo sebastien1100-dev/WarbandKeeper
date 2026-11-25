@@ -13,6 +13,7 @@ Partagé par le client PC (page « Découvertes ») et tools/gen_learned.py :
 """
 import hashlib
 import json
+import unicodedata
 import math
 import re
 import time
@@ -296,10 +297,66 @@ def _mean(xs):
     return sum(xs) / len(xs)
 
 
-def auto_pick(genre, groups):
+def _norm(name):
+    """Nom sans accents, majuscules, ponctuation ni espaces en trop (pour comparer deux noms de quête)."""
+    t = unicodedata.normalize("NFKD", str(name or "")).encode("ascii", "ignore").decode().lower()
+    return " ".join("".join(c if c.isalnum() else " " for c in t).split())
+
+
+FR_WORDS = {"le", "la", "les", "de", "du", "des", "un", "une", "et", "au", "aux", "pour", "dans", "sur", "l", "d"}
+EN_WORDS = {"the", "of", "and", "a", "an", "to", "for", "in", "on", "with", "from"}
+
+
+def _lang(name):
+    """« fr », « en » ou None, d'après les accents et les petits mots du nom."""
+    raw = str(name or "")
+    words = set(_norm(raw).split())
+    if any(c in raw for c in "éèêàâçîôûùëïœÉÈÀÇ’") or words & FR_WORDS:
+        return None if words & EN_WORDS else "fr"
+    return "en" if words & EN_WORDS else None
+
+
+def _quest_merge(vals):
+    """Quête vue plusieurs fois sous le même nom : donneur et rendu moyennés (même PNJ, même carte)."""
+    v = dict(vals[0])
+    for w in ("g", "t"):
+        pts = [x[w] for x in vals if isinstance(x.get(w), dict) and _num(x[w].get("x")) and _num(x[w].get("y"))
+               and x[w].get("npc") == (v.get(w) or {}).get("npc") and x[w].get("map") == (v.get(w) or {}).get("map")]
+        if len(pts) > 1:
+            v[w] = dict(v[w], x=round(_mean([p["x"] for p in pts]), 4), y=round(_mean([p["y"] for p in pts]), 4))
+    return v
+
+
+def _quest_pick(groups, known):
+    names = [grp[0].get("n") for grp in groups]
+    if isinstance(known, dict) and known.get("n"):
+        for grp in groups:
+            if grp[0].get("n") == known["n"]:
+                return _quest_merge(grp), "nom déjà connu de l'addon"
+    if len({_norm(n) for n in names}) == 1:
+        # même nom à l'écriture près : celui qui a des accents (le jeu en français), sinon le plus vu
+        grp = max(groups, key=lambda g: (sum(c in str(g[0].get("n")) for c in "éèêàâçîôûùëïœ"), len(g)))
+        return _quest_merge(grp + [v for g in groups if g is not grp for v in g]), "même nom (accents ou majuscules)"
+    langs = [_lang(n) for n in names]
+    # jeu en français : un nom sans accent ni petit mot français vient d'un client anglais
+    if langs.count("fr") == 1:
+        return _quest_merge(groups[langs.index("fr")]), "nom français gardé (l'autre est en anglais)"
+    groups = sorted(groups, key=len, reverse=True)
+    if len(groups[0]) >= 2 and len(groups[0]) > len(groups[1]):
+        n = sum(len(g) for g in groups)
+        return _quest_merge(groups[0]), "nom vu %d fois sur %d" % (len(groups[0]), n)
+    return None, None
+
+
+def auto_pick(genre, groups, known=None):
     """Choix automatique entre valeurs différentes : (valeur, raison), ou (None, None) s'il faut un humain.
-    groups = [[valeurs voisines], …] ; les quêtes, chaînes et boss restent toujours à vérifier."""
-    if genre in ("quests", "chains", "bossIds"):
+    groups = [[valeurs voisines], …] ; chaînes et n° de boss toujours à vérifier."""
+    if genre == "quests":
+        try:
+            return _quest_pick(groups, known)
+        except (AttributeError, TypeError, KeyError, ValueError, ZeroDivisionError):
+            return None, None
+    if genre in ("chains", "bossIds"):
         return None, None
     allv = [v for grp in groups for v in grp]
     try:
@@ -443,7 +500,7 @@ def merge(sources, base=None, choices=None):
                 chosen = row["values"][pick]
             auto = None
             if chosen is None and pick is None:
-                chosen, auto = auto_pick(g, groups)
+                chosen, auto = auto_pick(g, groups, known)
             if chosen is None:
                 reason = "%d valeurs différentes" % len(groups)
                 if pick is not None:
