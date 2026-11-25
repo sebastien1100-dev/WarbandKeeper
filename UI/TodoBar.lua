@@ -146,15 +146,9 @@ local function barPaint(f, list)
     if f.edge then f.edge:SetShown(cfg.bg and true or false) end
     local max = (cfg.max or 0) > 0 and cfg.max or #list
     local inner = W - 2 * PAD
-    local x, row = 0, 1
-    local function place(region, w)
-        if x > 0 and x + w > inner then x, row = 0, row + 1 end
-        local y = PAD + (row - 1) * (h + 4)
-        region:ClearAllPoints()
-        if up then region:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", PAD + x, y)
-        else region:SetPoint("TOPLEFT", f, "TOPLEFT", PAD + x, -y) end
-        x = x + w + 6
-    end
+    -- 1) largeurs naturelles, 2) rangées, 3) chaque rangée remplit toute la largeur (place en trop partagée
+    -- entre ses pastilles, contenu centré)
+    local items = {}
     local shown = 0
     for _, p in ipairs(list) do
         if shown >= max then break end
@@ -172,15 +166,40 @@ local function barPaint(f, list)
         b.n:SetText(txt)
         b.n:SetTextColor(unpack(C.text))
         b.color, b.lines, b.go = p.color, p.lines, p.go
-        local bw = math.min(inner, 8 + (h - 10) + 5 + b.n:GetStringWidth() + 10)
-        b:SetWidth(bw)
-        place(b, bw)
+        items[#items + 1] = { r = b, w = math.min(inner, 8 + (h - 10) + 5 + b.n:GetStringWidth() + 10), pill = true }
     end
     f.empty:SetShown(shown == 0)
     if shown == 0 then
         f.empty:SetHeight(h)
-        place(f.empty, f.empty:GetStringWidth())
+        items[1] = { r = f.empty, w = f.empty:GetStringWidth() }
     end
+    local rows, cur, used = {}, {}, 0
+    for _, it in ipairs(items) do
+        if #cur > 0 and used + 6 + it.w > inner then rows[#rows + 1] = cur; cur, used = {}, 0 end
+        used = used + (#cur > 0 and 6 or 0) + it.w
+        cur[#cur + 1] = it
+    end
+    if #cur > 0 then rows[#rows + 1] = cur end
+    for ri, rw in ipairs(rows) do
+        local sum = 0
+        for _, it in ipairs(rw) do sum = sum + it.w end
+        local extra = rw[1].pill and math.max(0, inner - sum - 6 * (#rw - 1)) / #rw or 0
+        local x, y = 0, PAD + (ri - 1) * (h + 4)
+        for _, it in ipairs(rw) do
+            local w = it.w + extra
+            local r = it.r
+            if it.pill then
+                r:SetWidth(w)
+                r.icon:ClearAllPoints()
+                r.icon:SetPoint("LEFT", r, "LEFT", 8 + extra / 2, 0)
+            end
+            r:ClearAllPoints()
+            if up then r:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", PAD + x, y)
+            else r:SetPoint("TOPLEFT", f, "TOPLEFT", PAD + x, -y) end
+            x = x + w + 6
+        end
+    end
+    local row = math.max(1, #rows)
     f:SetSize(W, 2 * PAD + row * h + (row - 1) * 4)
     return shown
 end

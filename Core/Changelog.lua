@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.356", date = "25/11/2026",
+        changed = {
+            "Mini-fenêtre « À faire » : avec la largeur fixe, les pastilles s'étirent pour remplir toute la largeur de leur rangée (contenu centré), au lieu de laisser un vide à droite.",
+        },
+    },
+    {
         version = "1.128.355", date = "25/11/2026",
         fixed = {
             "Micro menu, raccourci Héritages : le clic provoquait une erreur Lua (« Attempt to access forbidden object »). En cherchant la fenêtre « Suivi de la progression », l'addon lisait des fenêtres que le jeu lui interdit (boutique…). Elles sont maintenant sautées.",
