@@ -33,7 +33,7 @@ from tkinter import filedialog, font as tkfont
 
 import learned  # Découvertes (client/learned.py, partagé avec tools/gen_learned.py)
 
-CLIENT_VERSION = "1.9.26"
+CLIENT_VERSION = "1.9.27"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 DATA_ADDON = "WarbandKeeper_Data"  # grosses bases, chargées à la demande (dossier à côté de l'addon)
@@ -2687,6 +2687,176 @@ def learned_files():
     return out
 
 
+# --- Découvertes sur le réseau local -----------------------------------------------------------------------
+# Un joueur sans jeton (même réseau que le mainteneur) n'a rien à faire : son client cherche, par une annonce UDP
+# sur le réseau local, le client du mainteneur (jeton qui écrit sur le dépôt) et lui passe ses découvertes
+# nouvelles (format .wkd) en TCP ; le mainteneur les garde dans decouvertes/lan-<src>.wkd (source sûre) et les
+# envoie sur GitHub avec les siennes. Adresses privées seulement, 8 Mo au plus, contenu vérifié (read_wkd).
+LAN_PORT = 47811
+LAN_ASK, LAN_ANS = b"WKLEARN?1", b"WKLEARN!1 "
+LAN_MAX = 8 * 1024 * 1024
+
+
+def _lan_private(ip):
+    import ipaddress
+    try:
+        a = ipaddress.ip_address(ip)
+        return a.is_private or a.is_loopback
+    except ValueError:
+        return False
+
+
+def lan_targets():
+    """Adresses d'annonce : diffusion générale et celle du sous-réseau de ce PC (réseau /24 supposé)."""
+    out = ["255.255.255.255"]
+    import socket
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("10.255.255.255", 1))  # aucun paquet envoyé : sert à connaître l'adresse locale
+        ip = s.getsockname()[0]
+        s.close()
+        if _lan_private(ip) and ip.count(".") == 3:
+            out.append(ip.rsplit(".", 1)[0] + ".255")
+    except OSError:
+        pass
+    return out
+
+
+def lan_find(targets=None, timeout=2.0, port=LAN_PORT):
+    """Cherche le client du mainteneur sur le réseau local : (adresse, port TCP) ou None."""
+    import socket
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        s.settimeout(timeout)
+        for t in targets or lan_targets():
+            try:
+                s.sendto(LAN_ASK, (t, port))
+            except OSError:
+                pass
+        end = time.time() + timeout
+        while time.time() < end:
+            try:
+                data, addr = s.recvfrom(256)
+            except (socket.timeout, OSError):
+                return None
+            if data.startswith(LAN_ANS) and _lan_private(addr[0]):
+                try:
+                    return addr[0], int(data[len(LAN_ANS):].strip())
+                except ValueError:
+                    pass
+        return None
+    finally:
+        s.close()
+
+
+def lan_send(text, targets=None, port=LAN_PORT):
+    """Passe un .wkd au client du mainteneur ; vrai s'il l'a gardé."""
+    import socket
+    where = lan_find(targets, port=port)
+    if not where:
+        return False
+    raw = text.encode("utf-8")
+    with socket.create_connection(where, timeout=10) as c:
+        c.sendall(len(raw).to_bytes(8, "big") + raw)
+        return c.recv(2) == b"OK"
+
+
+def lan_store(text):
+    """Mainteneur : garde un .wkd reçu (fusionné avec ce que ce joueur a déjà passé) ; rend (src, nombre)."""
+    src, data = learned.read_wkd(text)
+    safe = re.sub(r"[^A-Za-z0-9_-]", "", src)[:40] or "inconnu"
+    path = os.path.join(learned_dir(), "lan-%s.wkd" % safe)
+    old = {}
+    try:
+        with open(path, encoding="utf-8") as f:
+            old = learned.read_wkd(f.read())[1]
+    except (OSError, ValueError):
+        pass
+    n = 0
+    for g, part in data.items():
+        if part:
+            old.setdefault(g, {}).update(part)
+            n += len(part)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(learned.export_wkd(old, src))
+    return src, n
+
+
+class LanCollector:
+    """Client du mainteneur : répond aux annonces du réseau local et reçoit les découvertes (fil à part)."""
+
+    def __init__(self, on_received, port=LAN_PORT):
+        import socket
+        self.on_received = on_received
+        self.udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.udp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.udp.bind(("", port))
+        self.tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.tcp.bind(("", 0))
+        self.tcp.listen(4)
+        self.tport = self.tcp.getsockname()[1]
+        threading.Thread(target=self.answer, daemon=True).start()
+        threading.Thread(target=self.accept, daemon=True).start()
+
+    def answer(self):
+        while True:
+            try:
+                data, addr = self.udp.recvfrom(256)
+            except OSError:
+                return
+            if data.startswith(LAN_ASK) and _lan_private(addr[0]):
+                try:
+                    self.udp.sendto(LAN_ANS + str(self.tport).encode(), addr)
+                except OSError:
+                    pass
+
+    def accept(self):
+        while True:
+            try:
+                c, addr = self.tcp.accept()
+            except OSError:
+                return
+            threading.Thread(target=self.receive, args=(c, addr), daemon=True).start()
+
+    def receive(self, c, addr):
+        with c:
+            try:
+                c.settimeout(15)
+                if not _lan_private(addr[0]):
+                    return
+                head = b""
+                while len(head) < 8:
+                    part = c.recv(8 - len(head))
+                    if not part:
+                        return
+                    head += part
+                size = int.from_bytes(head, "big")
+                if size <= 0 or size > LAN_MAX:
+                    return c.sendall(b"NO")
+                buf = bytearray()
+                while len(buf) < size:
+                    part = c.recv(min(65536, size - len(buf)))
+                    if not part:
+                        return
+                    buf += part
+                src, n = lan_store(buf.decode("utf-8"))
+                c.sendall(b"OK")
+                self.on_received(src, n)
+            except (OSError, ValueError, UnicodeDecodeError):
+                try:
+                    c.sendall(b"NO")
+                except OSError:
+                    pass
+
+    def close(self):
+        for s in (self.udp, self.tcp):
+            try:
+                s.close()
+            except OSError:
+                pass
+
+
 _learn_cache = {}
 _learn_lock = threading.Lock()
 
@@ -2723,9 +2893,10 @@ def learned_sources(mine, cfg):
     if mine:
         out.append({"name": "Ce PC", "trusted": True, "data": mine})
     me = cfg.get("learnedSrc")
-    for _, src, data in learned_files():
+    for p, src, data in learned_files():
         if src != me:
-            out.append({"name": src, "trusted": False, "data": data})
+            # reçu d'un PC du réseau local (même maison) : source sûre comme ce PC
+            out.append({"name": src, "trusted": os.path.basename(p).startswith("lan-"), "data": data})
     return out
 
 
@@ -2964,7 +3135,7 @@ class LearnedPage(Page):
                     label(self.list.inner, "(détail gardé à partir du prochain envoi)", fg="dim", font="small").pack(anchor="w")
             else:
                 label(self.list.inner, "Rien ici.", fg="dim", font="small").pack(anchor="w", pady=6)
-        can = bool(new and self.app.cfg.get("token"))
+        can = bool(new)
         self.prBtn.set(text="Envoyer (%d)" % new if new else "Envoyer", enabled=can)
         files = len(learned_files())
         self.clearBtn.set(enabled=bool(files))
@@ -2981,8 +3152,8 @@ class LearnedPage(Page):
             otxt = (" L'addon contient aussi %s d'autres joueurs (pas listées ici : seulement tes sources)."
                     % plural(others, "découverte")) if others else ""
             if not cfg.get("token"):
-                txt = ("Rien n'est envoyé : pas de jeton GitHub. Crée-en un (Réglages > GitHub, « Jeton pour proposer »,"
-                       " compte GitHub gratuit) ou « Exporter » et envoie le fichier au mainteneur." + otxt)
+                txt = ("Envoi automatique : tes découvertes passent toutes seules au PC du mainteneur sur ton réseau"
+                       " local (son client ouvert), qui les envoie sur GitHub." + when + otxt)
             elif cfg.get("learnedMode") == "pr":
                 txt = ("Envoi automatique : tes découvertes partent en demande de fusion vers le mainteneur et arrivent"
                        " dans l'addon une fois acceptées." + when + otxt)
@@ -3131,8 +3302,6 @@ class LearnedPage(Page):
     def send_pr(self):
         """« Envoyer » : tout de suite, comme l'envoi automatique (sur main, sans demande de fusion)."""
         a = self.app
-        if not a.cfg.get("token"):
-            return a.show_settings("github")
         self.prBtn.set(enabled=False)
         self.note.configure(text="Envoi sur GitHub…")
         a.auto_learned(force=True, manual=True)
@@ -3436,6 +3605,7 @@ class SettingsPage(Page):
         self.app.cfg["token"] = self.token.get().strip()
         save_config(self.app.cfg)
         self.app.toast("Jeton enregistré.", "positive")
+        self.app.lan_start()
         self.app.refresh()
         self.loaded = False
         self.load_schedule()
@@ -3496,6 +3666,83 @@ class App:
         if self.cfg["checkEvery"] != "manual":
             self.refresh()
         self.root.after(60000, self.tick)
+        self.lan = None
+        self.root.after(3000, self.lan_start)
+
+    def lan_start(self):
+        """Client du mainteneur (jeton qui écrit sur le dépôt) : reçoit les découvertes des PC du réseau local."""
+        token = self.cfg.get("token")
+        if self.lan or not token:
+            return
+
+        def done(ok, err):
+            if err or not ok or self.lan:
+                return
+            try:
+                self.lan = LanCollector(lambda src, n: self.q.put(("call", self.lan_received, (src, n), None)))
+            except OSError as e:
+                print("découvertes réseau : écoute impossible :", e)
+        self.run(lambda: GitHub(token).can_push(), done)
+
+    def lan_received(self, src, n):
+        self.toast("Découvertes reçues d'un autre PC : %s." % plural(n, "ajout"), "muted")
+        p = self.pages.get("learned")
+        if p and self.current == "learned":
+            p.reload(force=False)
+        self.auto_learned()
+
+    def lan_share(self, force=False):
+        """Joueur sans jeton : passe ses découvertes nouvelles au client du mainteneur sur le réseau local."""
+        cfg, addons = self.cfg, self.addons
+        if getattr(self, "learnSending", False):
+            return self.learn_retry(60)
+        wait = 600 - (time.time() - getattr(self, "learnAt", 0))
+        if not force and wait > 0:
+            return self.learn_retry(wait + 1)
+        self.learnSending, self.learnAt = True, time.time()
+        if not cfg.get("learnedSrc"):
+            import secrets
+            cfg["learnedSrc"] = "wk-" + secrets.token_hex(4)
+            save_config(cfg)
+        src, choices = cfg["learnedSrc"], learned_choices(cfg)
+
+        def job():
+            mine = read_learned(addons)
+            if not mine:
+                return None
+            known = known_learned(addons)
+            rows = learned.merge([{"name": "Ce PC", "trusted": True, "data": mine}], known, choices)
+            added = [r for r in rows if r["status"] == learned.INTEGRATED]
+            if not added:
+                return None
+            data, per = {}, {}
+            for r in added:
+                data.setdefault(r["genre"], {})[r["key"]] = r["value"]
+                per[r["genre"]] = per.get(r["genre"], 0) + 1
+            if not lan_send(learned.export_wkd(data, src)):
+                raise NetError("aucun PC du mainteneur sur le réseau")
+            return {"n": len(added), "base": learned.build(known, rows),
+                    "what": ", ".join("%s %d" % (learned.LABEL[g].lower(), n) for g, n in per.items()),
+                    "items": [{"t": learned.short(r["genre"], r["key"], r["value"]), "s": ["Ce PC"], "c": 1}
+                              for r in added][:60]}
+
+        def done(res, err):
+            self.learnSending = False
+            if err:
+                print("découvertes réseau :", err)
+                self.learnAt = 0
+                self.learn_retry(900)  # mainteneur pas là : nouvel essai dans 15 min
+                return
+            if res:
+                save_sent_learned(res["base"])
+                cfg["learnedLast"] = {"at": int(time.time()), "n": res["n"], "items": res.get("items") or []}
+                cfg["learnedMode"] = "lan"
+                save_config(cfg)
+                self.toast("Découvertes passées au PC du mainteneur : %s." % res["what"], "muted")
+            p = self.pages.get("learned")
+            if p and self.current == "learned":
+                p.reload(force=False)
+        self.run(job, done)
 
     def tick(self):
         """Vérification régulière pendant que le client est ouvert (Réglages > Mises à jour)."""
@@ -4014,8 +4261,9 @@ class App:
         (déconnexion du jeu, /reload) : réglage learnedAuto (oui d'office), jeton en écriture. Au plus une fois
         toutes les 10 min, sauf « Envoyer »."""
         cfg, addons = self.cfg, self.addons
-        if addons and not cfg.get("token") and cfg.get("learnedAuto", True):
-            self.learnNoToken = True  # dit dans la page Découvertes : rien ne part sans jeton
+        # sans jeton : passées au client du mainteneur sur le réseau local, sans rien demander
+        if addons and not cfg.get("token") and (manual or cfg.get("learnedAuto", True)):
+            return self.lan_share(force)
         if not (addons and cfg.get("token")):
             return
         if not manual and not cfg.get("learnedAuto", True):

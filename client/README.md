@@ -35,7 +35,11 @@ l'addon et du client ; la roue en haut à droite ouvre les Réglages.
 
 Le dépôt est public : **aucun jeton n'est nécessaire pour installer l'addon et le client**.
 
-Pour **partager tes découvertes** (page Découvertes) sans être mainteneur : un jeton « classique » de ton compte
+Sur le **même réseau** que le mainteneur, rien à faire : sans jeton, le client passe tout seul tes découvertes à son
+client (ouvert sur son PC), qui les envoie sur GitHub (Windows peut lui demander une fois d'autoriser le client sur
+le réseau privé).
+
+Ailleurs, pour **partager tes découvertes** (page Découvertes) sans être mainteneur : un jeton « classique » de ton compte
 GitHub (gratuit) avec le seul droit **public_repo** (bouton « Jeton pour proposer » de Réglages > GitHub). Le client
 crée ta copie (fork) du dépôt et propose tes nouveautés par une demande de fusion ; le mainteneur les accepte (ou
 toutes seules si ton compte est dans ses « Joueurs de confiance… »).

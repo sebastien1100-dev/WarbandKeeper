@@ -3,6 +3,12 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.9.27 — 25/11/2026
+
+### Ajouts
+- Découvertes sur le même réseau, sans rien faire : un joueur sans jeton GitHub (le client de ton ami) passe tout seul ses nouvelles découvertes au client du mainteneur quand les deux PC sont sur le même réseau local, à chaque sortie du jeu ; s'il n'est pas là, nouvel essai toutes les 15 min. Le client du mainteneur les garde comme une source sûre et les envoie sur GitHub avec les siennes. Ni compte, ni jeton, ni bouton.
+- Mainteneur : Windows peut demander une fois d'autoriser le client sur le réseau privé (pare-feu) : accepter.
+
 ## 1.9.26 — 25/11/2026
 
 ### Ajouts
