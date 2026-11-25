@@ -53,6 +53,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.333 — 25/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Hôtel des ventes, onglet À acheter : dans « Ce qu'il faut », les montants et les noms se chevauchaient avec les libellés (« À l'HV (21) 682po 61pa 75pc », « Introuvable » sous le nom de l'objet). Chaque valeur a maintenant sa place à droite, les montants tiennent en deux unités, et un texte trop long est coupé au lieu de déborder.
+
 ## v1.128.332 — 25/11/2026
 
 _Un /reload suffit._

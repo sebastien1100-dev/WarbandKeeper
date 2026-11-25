@@ -1390,8 +1390,12 @@ local function build(host)
     bv.sum:SetPoint("TOPRIGHT"); bv.sum:SetPoint("BOTTOMRIGHT"); bv.sum:SetWidth(220)
     bv.sumLines = {}
     for i = 1, 5 do
-        local l = UI:Text(bv.sum, 11, C.muted); l:SetPoint("TOPLEFT", 12, -32 - (i - 1) * 24)
+        -- valeur à droite sur une largeur fixe, libellé dans le reste : plus de textes l'un sur l'autre
         local v = UI:Text(bv.sum, 11, C.text); v:SetPoint("TOPRIGHT", -12, -32 - (i - 1) * 24); v:SetJustifyH("RIGHT")
+        v:SetWidth(96); if v.SetWordWrap then v:SetWordWrap(false) end
+        local l = UI:Text(bv.sum, 11, C.muted); l:SetPoint("TOPLEFT", 12, -32 - (i - 1) * 24)
+        l:SetPoint("RIGHT", v, "LEFT", -6, 0); l:SetJustifyH("LEFT")
+        if l.SetWordWrap then l:SetWordWrap(false) end
         bv.sumLines[i] = { l, v }
     end
     bv.searchAll = UI:Button(bv.sum, "Chercher les prix", nil, 26, "secondary")
@@ -1782,8 +1786,8 @@ local function build(host)
             .. costText(listCost(l))) or "")
         -- résumé
         local lines = {
-            { string.format(T("À l'HV (%d)"), nAH), nAH > 0 and money(sAH) or "-" },
-            { string.format(T("Chez le marchand (%d)"), nVendor), nVendor > 0 and money(sVendor) or "-" },
+            { string.format(T("À l'HV (%d)"), nAH), nAH > 0 and shortMoney(sAH) or "-" },
+            { string.format(T("Chez le marchand (%d)"), nVendor), nVendor > 0 and shortMoney(sVendor) or "-" },
             { string.format(T("Chez tes persos (%d)"), nAlt), nAlt > 0 and (UI:Hex(C.info) .. T("par courrier") .. "|r") or "-" },
             { string.format(T("Introuvable (%d)"), nNone), nNone > 0 and (UI:Hex(C.negative) .. (noneName or "") .. "|r") or "-" },
             { T("Ton or"), UI:GoldText(GetMoney and GetMoney() or 0) },

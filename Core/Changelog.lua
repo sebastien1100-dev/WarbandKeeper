@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.333", date = "25/11/2026",
+        fixed = {
+            "Hôtel des ventes, onglet À acheter : dans « Ce qu'il faut », les montants et les noms se chevauchaient avec les libellés (« À l'HV (21) 682po 61pa 75pc », « Introuvable » sous le nom de l'objet). Chaque valeur a maintenant sa place à droite, les montants tiennent en deux unités, et un texte trop long est coupé au lieu de déborder.",
+        },
+    },
+    {
         version = "1.128.332", date = "25/11/2026",
         added = {
             "Hôtel des ventes : à côté de la barre de scan, le temps avant le prochain scan complet (« prochain scan complet dans 12:34 », le jeu n'en accepte qu'un toutes les 15 minutes environ), puis « scan complet possible » quand c'est le moment. Le compte à rebours avance chaque seconde.",
