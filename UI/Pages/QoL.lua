@@ -2570,7 +2570,8 @@ UI:RegisterPage({
                 UI:SettingRow(bb, by, "En ville", cityTip, bt("buffCity"), 80)
                 by = by - 46
                 UI:SettingRow(bb, by, "Plaques de nom des joueurs amis", "Allumées par l'addon hors combat : il en a"
-                    .. " besoin pour savoir qui est autour (rendues comme avant si tu coupes le bouton).",
+                    .. " besoin pour savoir qui est autour (rendues comme avant si tu coupes le bouton). Celles des PNJ"
+                    .. " amis restent éteintes. Coupé : barres de vie des amis éteintes, buffs pour toi et ton groupe.",
                     bt("buffPlates", true), 80)
                 by = by - 46
                 UI:SettingRow(bb, by, "Taille du repère au-dessus du joueur", "L'icône du sort qui va partir, au-dessus de la plaque de nom du joueur à buffer.",

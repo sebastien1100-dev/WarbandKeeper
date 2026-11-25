@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.366", date = "25/11/2026",
+        fixed = {
+            "Buffer autour de toi : pour voir les joueurs autour, l'addon allume les plaques de nom des amis, et le jeu affichait alors aussi des barres de vie au-dessus des PNJ amis. Les barres des PNJ restent maintenant éteintes pendant que l'addon s'en sert (réglage d'avant rendu ensuite).",
+        },
+    },
+    {
         version = "1.128.365", date = "25/11/2026",
         fixed = {
             "Alerte munitions du chasseur : l'icône ne s'affichait pas quand le jeu ne mettait rien dans l'emplacement des munitions. L'addon cherche maintenant tes flèches ou balles dans les sacs (celles qui vont avec ton arme) et les compte. L'arme à distance est aussi cherchée dans les emplacements d'armes de mêlée.",

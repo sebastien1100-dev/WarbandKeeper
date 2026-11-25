@@ -54,6 +54,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.366 — 25/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Buffer autour de toi : pour voir les joueurs autour, l'addon allume les plaques de nom des amis, et le jeu affichait alors aussi des barres de vie au-dessus des PNJ amis. Les barres des PNJ restent maintenant éteintes pendant que l'addon s'en sert (réglage d'avant rendu ensuite).
+
 ## v1.128.365 — 25/11/2026
 
 _Un /reload suffit._

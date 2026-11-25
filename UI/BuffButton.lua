@@ -486,9 +486,22 @@ function UI:SyncBuffPlates()
             g.buffPlatesCVar = cv
             UI.buffPlatesSet = WK.SetCVar(cv, "1")
         end
-    elseif g.buffPlatesOld then
-        WK.SetCVar(g.buffPlatesCVar or plateCVar() or "nameplateShowFriends", g.buffPlatesOld)
-        g.buffPlatesOld = nil
+        -- seulement les joueurs : les barres des PNJ amis (que ce réglage allume aussi sur ce client) coupées le
+        -- temps que l'addon s'en sert, valeur d'avant rendue ensuite
+        local npc = WK.GetCVar("nameplateShowFriendlyNPCs")
+        if npc ~= nil and npc ~= "0" and (g.buffPlatesOld or g.buffNpcOld) then
+            g.buffNpcOld = g.buffNpcOld or npc
+            WK.SetCVar("nameplateShowFriendlyNPCs", "0")
+        end
+    else
+        if g.buffPlatesOld then
+            WK.SetCVar(g.buffPlatesCVar or plateCVar() or "nameplateShowFriends", g.buffPlatesOld)
+            g.buffPlatesOld = nil
+        end
+        if g.buffNpcOld then
+            WK.SetCVar("nameplateShowFriendlyNPCs", g.buffNpcOld)
+            g.buffNpcOld = nil
+        end
     end
 end
 
