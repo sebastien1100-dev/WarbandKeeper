@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.346", date = "25/11/2026",
+        fixed = {
+            "Métiers, onglet Niveaux : un métier de récolte au plafond (Dépeçage 75/75, Minage, Herboristerie) ou la Pêche n'avait jamais l'encadré orange « Plafond atteint : va voir le maître ». Tous les métiers l'ont maintenant.",
+        },
+    },
+    {
         version = "1.128.345", date = "25/11/2026",
         changed = {
             "Filons et plantes récoltés : deux tailles d'icônes au lieu d'une, « Taille sur la minicarte » et « Taille sur la carte du monde » (de 4 à 24 px, réglage dans la roue de Métiers, onglet Récolte). On peut donc réduire les pastilles de la minicarte sans toucher à celles de la carte.",

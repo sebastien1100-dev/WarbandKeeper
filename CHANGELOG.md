@@ -53,6 +53,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.346 — 25/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Métiers, onglet Niveaux : un métier de récolte au plafond (Dépeçage 75/75, Minage, Herboristerie) ou la Pêche n'avait jamais l'encadré orange « Plafond atteint : va voir le maître ». Tous les métiers l'ont maintenant.
+
 ## v1.128.345 — 25/11/2026
 
 _Un /reload suffit._

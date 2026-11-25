@@ -463,7 +463,9 @@ local function Levels(page, parent)
         local rank, max = pr.rank or 0, pr.max or 0
         local G, R = WK.modules.Gathering, WK.modules.Recipes
         local kind = G:Kind(prof)
-        if max > 0 and max < 300 and rank >= max and not kind and prof ~= "Pêche" and prof ~= "Fishing" then
+        -- plafond atteint : tous les métiers, récolte et pêche comprises (avant, Dépeçage, Minage, Herboristerie
+        -- et Pêche n'avaient jamais l'encadré orange)
+        if max > 0 and max < 300 and rank >= max then
             return T("Plafond atteint : va voir le maître"), true
         end
         if kind then
