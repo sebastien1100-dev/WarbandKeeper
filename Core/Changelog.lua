@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.349", date = "25/11/2026",
+        fixed = {
+            "Métiers, Minage, Dépeçage et Herboristerie : le bouton « Maître le plus proche » manquait (il n'existait que pour les métiers d'artisanat). Il est maintenant dans l'en-tête de la carte « Où aller à ton niveau » et guide vers le maître de ta faction le plus proche.",
+        },
+    },
+    {
         version = "1.128.348", date = "25/11/2026",
         fixed = {
             "Micro menu, raccourci Héritages : le journal des collections restait sur Montures. Le raccourci choisit maintenant l'onglet en trois essais sur une demi-seconde, au cas où le jeu remettrait Montures juste après. L'onglet est aussi retenu par le jeu, donc le bouton Collections du compte rouvre la dernière page vue. En cas d'échec, le message donne les onglets vus (n°, nom, caché ou grisé) et l'onglet affiché.",

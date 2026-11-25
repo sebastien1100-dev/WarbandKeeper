@@ -1288,7 +1288,7 @@ local function Detail(page, parent)
     -- guidage vers le maître de ce métier le plus proche (PlacesDB : bit « prof », métier dans le champ classe)
     local trainerBtn = UI:Button(parent, "Maître le plus proche", nil, 34, "secondary", "guide")
     trainerBtn.tooltip = "Guide vers le maître de ce métier le plus proche de toi (de ta faction)."
-    trainerBtn:SetScript("OnClick", function()
+    local function goTrainer()
         local G = WK.modules.Guide
         local t = G and tab.prof and G:Nearest({ 16384 }, tab.prof)
         if not t then
@@ -1297,7 +1297,8 @@ local function Detail(page, parent)
         end
         G:Start(t, string.format(T("Maître de %s"), tab.prof), "proftrainer")
         WK:Print(string.format(T("Guidage vers %s, %s."), G:PlaceName(t), G:DistText(t)))
-    end)
+    end
+    trainerBtn:SetScript("OnClick", goTrainer)
 
     local scroll = UI:Scroll(parent)
     scroll:SetPoint("TOPLEFT", 0, fTop - 46)
@@ -1354,8 +1355,14 @@ local function Detail(page, parent)
     where:SetPoint("TOPLEFT")
     where:SetPoint("TOPRIGHT")
     -- nombre de nœuds par zone : ForeverDB (mention obligatoire)
+    -- métiers de récolte aussi : bouton du maître le plus proche dans l'en-tête de la carte
+    local whereTrainer = UI:Button(where, "Maître le plus proche", nil, 24, "secondary", "guide")
+    whereTrainer.tooltip = trainerBtn.tooltip
+    whereTrainer:SetPoint("TOPRIGHT", -12, -10)
+    whereTrainer:SetScript("OnClick", goTrainer)
+    tab.whereTrainer = whereTrainer
     local whereCredit = UI:Text(where, 10, C.dim)
-    whereCredit:SetPoint("TOPRIGHT", -16, -16)
+    whereCredit:SetPoint("RIGHT", whereTrainer, "LEFT", -12, 0)
     whereCredit:SetText(T("Nœuds par zone · ") .. WK.modules.Gathering.CREDIT)
     local whereText = UI:Text(where, 12, C.muted)
     whereText:SetPoint("TOPLEFT", 16, -40)
