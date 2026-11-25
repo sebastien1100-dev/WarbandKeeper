@@ -1662,6 +1662,32 @@ local function Detail(page, parent)
         end)
         r.make:SetScript("OnLeave", function() _G.GameTooltip:Hide() end)
         r.make:Hide()
+        -- recette pas encore apprise : guidage vers le maître (ou le marchand de la formule) le plus proche,
+        -- d'après les maîtres et marchands vus dans WoW Forever (ForeverDB, Modules/Vendors.lua)
+        r.learn = UI:Button(r, "", nil, 20, "secondary", "guide")
+        r.learn:SetPoint("BOTTOMRIGHT", -10, 6)
+        r.learn:SetScript("OnClick", function(b)
+            local Vd = WK.modules.Vendors
+            if b.target and Vd then Vd:GuideToEntry(b.target, b.kind) end
+        end)
+        r.learn:SetScript("OnEnter", function(b)
+            local Vd = WK.modules.Vendors
+            if not (b.target and Vd) then return end
+            WK.UI:TooltipOwner(b, "ANCHOR_TOP")
+            local tt = _G.GameTooltip
+            tt:SetText(string.format(T("Guider vers %s"), Vd:EntryText(b.target) or "?"), 1, 1, 1)
+            if b.price and b.price > 0 then
+                local how = b.kind == "trainer" and T("Apprendre la recette : %s") or T("Prix de la formule : %s")
+                tt:AddLine(string.format(how, WK:FormatMoney(b.price)), 1, 0.85, 0.3)
+            end
+            if b.learnAt and b.learnAt > 0 then
+                tt:AddLine(string.format(T("À partir de %d en compétence"), b.learnAt), 0.8, 0.8, 0.8)
+            end
+            tt:AddLine(T("Vu dans WoW Forever · ") .. Vd.CREDIT, 0.45, 0.45, 0.45)
+            tt:Show()
+        end)
+        r.learn:SetScript("OnLeave", function() _G.GameTooltip:Hide() end)
+        r.learn:Hide()
         r:SetScript("OnEnter", function(s)
             if not s.e then return end
             local st = s.e.step
@@ -1681,6 +1707,24 @@ local function Detail(page, parent)
                         vs[#vs + 1] = v[1] .. (v[2] and (" (" .. T(v[2]) .. ")") or "")
                     end
                     extra[#extra + 1] = { T("Vendeurs : ") .. table.concat(vs, ", "), C.muted }
+                end
+            end
+            -- où l'apprendre dans WoW Forever (ForeverDB) : maître ou marchand de la formule le plus proche, prix
+            local Vd = WK.modules.Vendors
+            local fr = Vd and Vd:Recipe(st.spell)
+            if fr then
+                local w = (st.src == "recipe" and fr.vendors[1]) or fr.trainers[1]
+                local price = (st.src == "recipe" and w and w.price) or (st.src ~= "recipe" and fr.cost) or 0
+                if w or price > 0 then
+                    if #extra == 0 then extra[#extra + 1] = "sep" end
+                    local how = st.src == "recipe" and T("Formule chez %s") or T("Apprise chez %s")
+                    local line = string.format(how, Vd:EntryText(w) or T("le maître"))
+                    if price > 0 then line = line .. " · " .. WK:FormatMoney(price) end
+                    if fr.learnAt and fr.learnAt > 0 then
+                        line = line .. " · " .. string.format(T("dès %d"), fr.learnAt)
+                    end
+                    extra[#extra + 1] = { line, C.info }
+                    extra[#extra + 1] = { T("Vu dans WoW Forever · ") .. Vd.CREDIT, C.muted }
                 end
             end
             showGuideTip(s, st, n, s.title, extra, tab.lastC)
@@ -1819,6 +1863,28 @@ local function Detail(page, parent)
                 r.make:Hide()
                 r.sub:SetPoint("TOPRIGHT", r, "TOPRIGHT", -12, -28)
             end
+            -- pas encore apprise (étape en cours ou proche) : où l'apprendre, d'après ForeverDB
+            r.learn:Hide()
+            local fdb = nil
+            if not learned and e.status ~= "done" and c == WK.DB:Me() and st.from <= rank + 25 then
+                local Vd = WK.modules.Vendors
+                fdb = Vd and Vd:Recipe(st.spell)
+                local tgt, kind, price
+                if fdb and st.src == "recipe" and fdb.vendors[1] then
+                    tgt, kind, price = fdb.vendors[1], "vendor", fdb.vendors[1].price
+                elseif fdb and st.src ~= "recipe" then
+                    tgt = fdb.trainers[1] or Vd:ProfTrainer(fdb.prof, st.from)
+                    kind, price = "trainer", fdb.cost
+                end
+                if tgt then
+                    r.learn.target, r.learn.kind, r.learn.price, r.learn.learnAt = tgt, kind, price, fdb.learnAt
+                    local lbl = kind == "trainer" and T("Maître") or T("Formule")
+                    if price and price > 0 then lbl = lbl .. " · " .. WK:FormatMoney(price) end
+                    r.learn.label:SetText(lbl)
+                    r.learn:Show()
+                    r.sub:SetPoint("TOPRIGHT", r, "TOPRIGHT", -(r.learn:GetWidth() + 18), -28)
+                end
+            end
             -- coût de l'étape (composants au prix choisi, sinon prix du guide)
             local stepCost = 0
             if e.status ~= "done" then
@@ -1835,7 +1901,12 @@ local function Detail(page, parent)
             elseif e.status == "current" then
                 local stTxt = UI:Hex(C.gold) .. T("en cours") .. "|r"
                 if c == WK.DB:Me() and not r.make:IsShown() and st.src ~= "recipe" then
-                    stTxt = UI:Hex(C.warning) .. T("à apprendre chez le maître") .. "|r"
+                    -- niveau d'apprentissage de WoW Forever (ForeverDB) pas encore atteint
+                    if fdb and fdb.learnAt and fdb.learnAt > rank then
+                        stTxt = UI:Hex(C.warning) .. string.format(T("apprenable à %d"), fdb.learnAt) .. "|r"
+                    else
+                        stTxt = UI:Hex(C.warning) .. T("à apprendre chez le maître") .. "|r"
+                    end
                 end
                 r.state:SetText(stTxt .. costTxt)
                 r:SetAlpha(1)

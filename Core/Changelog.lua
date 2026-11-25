@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.304", date = "25/11/2026", restart = true,
+        added = {
+            "Métiers > Guide : une étape dont la recette n'est pas encore apprise a un bouton « Maître · 3 pa » (ou « Formule · 5 pa » pour une recette à acheter) : un clic te guide vers le maître ou le marchand le plus proche de ton camp, d'après les maîtres et marchands vus dans WoW Forever (Data from ForeverDB.net, https://foreverdb.net).",
+            "Métiers > Guide : tant que ta compétence est trop basse pour apprendre la recette, l'étape affiche « apprenable à 105 » (niveau de WoW Forever) au lieu de « à apprendre chez le maître » ; l'infobulle de l'étape dit où l'apprendre, le prix et le niveau.",
+        },
+    },
+    {
         version = "1.128.303", date = "25/11/2026", restart = true,
         added = {
             "Marchands de WoW Forever (928 marchands, 1 541 objets vus en jeu par les joueurs ; Data from ForeverDB.net, https://foreverdb.net) : l'infobulle d'un objet dit qui le vend le plus près de toi, dans quelle zone et à quel prix (réglage « Vendu par » dans Options > Infobulles).",

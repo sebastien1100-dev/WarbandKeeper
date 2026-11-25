@@ -883,9 +883,9 @@ UI:RegisterPage({
                 "Noms français des donjons et des boss, numéros d'instance et de rencontre : tables du client WoW Forever (données du jeu, lues sur wago.tools)." },
             { "chart", "Trajets de vol, taux de drop observés", "Everloot · everloot.app", "CC BY-SA 4.0", "info",
                 "Trajets de vol (fichiers du jeu) et taux de drop observés par les joueurs : Everloot (everloot.app ; taux de drop sous licence CC BY-SA 4.0)." },
-            { "coin", "Marchands et leurs prix", "ForeverDB · foreverdb.net", "crédit", "info",
-                "Marchands vus dans WoW Forever par les joueurs, avec leur place et le prix de ce qu'ils vendent :"
-                    .. " Data from ForeverDB.net (https://foreverdb.net)." },
+            { "coin", "Marchands, maîtres et recettes", "ForeverDB · foreverdb.net", "crédit", "info",
+                "Marchands, maîtres de métier et recettes vus dans WoW Forever par les joueurs (place, prix, niveau"
+                    .. " d'apprentissage) : Data from ForeverDB.net (https://foreverdb.net)." },
             { "fire", "Objets de camp, objets de la liste BiS", "wowlayerup-forever/opendata", "CC BY 4.0", "info",
                 "Objets de camp et objets portables de la liste BiS (n° d'objet, emplacement, caractéristiques, effet selon le niveau) : wowlayerup-forever/opendata (github.com/wowlayerup-forever/opendata, licence CC BY 4.0), données reprises et traduites." },
             { "skull", "Cartes des donjons, boss, taux de drop", "Naowh Forever · Dungeon Journal", "accord", "positive",

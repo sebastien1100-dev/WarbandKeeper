@@ -117,6 +117,41 @@ def fetch(dest=CACHE):
     print("fini : %d requêtes" % api.calls, flush=True)
 
 
+PROFS = ["alchemy", "blacksmithing", "enchanting", "engineering", "leatherworking", "tailoring",
+         "herbalism", "mining", "skinning", "cooking", "first-aid", "fishing"]
+
+
+def fetch_professions(api=None, dest=CACHE):
+    """Métiers : rangs, maîtres et recettes (100 par page) ; un métier déjà lu pour la même version est gardé."""
+    api = api or Api()
+    pdir = os.path.join(dest, "professions")
+    os.makedirs(pdir, exist_ok=True)
+    build = api.get("meta")["data"]["build"]
+    for slug in PROFS:
+        path = os.path.join(pdir, slug + ".json")
+        if os.path.exists(path):
+            try:
+                with open(path, encoding="utf-8") as f:
+                    if json.load(f).get("_build") == build:
+                        continue
+            except (ValueError, OSError):
+                pass
+        off, data, recipes = 0, None, []
+        while True:
+            page = api.get("professions/%s?limit=100&offset=%d" % (slug, off))
+            data = data or page["data"]
+            recipes += page["data"].get("recipes") or []
+            off += 100
+            if not page["meta"].get("next") or off >= (page["meta"].get("total") or 0):
+                break
+        data["recipes"] = recipes
+        data["_build"] = build
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(data, f)
+        print("  %s : %d recettes, %d maîtres" % (slug, len(recipes), len(data.get("trainers") or [])), flush=True)
+    print("métiers : %d requêtes" % api.calls, flush=True)
+
+
 def fr_names(root):
     """Noms français des PNJ (QuestieDB, comme tools/gen_places.py) ; {} sans clone ni lupa."""
     try:
@@ -201,9 +236,97 @@ def generate(questie=None, src=CACHE, out=OUT):
     return {"vendors": len(npcs), "items": len(sells)}
 
 
+PROF_OUT = os.path.join(HERE, "..", "Modules", "ForeverProfDB.lua")
+
+
+def generate_prof(questie=None, src=CACHE, out=PROF_OUT):
+    """Maîtres et recettes des métiers : seulement ce que les joueurs ont vu dans Forever (lieu, prix)."""
+    pdir = os.path.join(src, "professions")
+    if not os.path.isdir(pdir):
+        print("ForeverProfDB.lua : pas de cache des métiers, rien d'écrit")
+        return None
+    fr = fr_names(questie) if questie else {}
+    npcs, trainers, recipes, build = {}, {}, {}, ""
+    side_of = {"alliance": 1, "horde": 2, "both": 3, "Alliance": 1, "Horde": 2, "Both": 3}
+
+    def npc(e):
+        nid = int(e["npcId"])
+        if nid not in npcs and e.get("mapId") is not None and e.get("x") is not None:
+            npcs[nid] = (int(e["mapId"]), round(float(e["x"]), 1), round(float(e["y"]), 1),
+                         side_of.get(e.get("side") or e.get("faction"), 3), e.get("name") or "", fr.get(nid))
+        return nid if nid in npcs else None
+
+    for pi, slug in enumerate(PROFS, 1):
+        path = os.path.join(pdir, slug + ".json")
+        if not os.path.exists(path):
+            continue
+        with open(path, encoding="utf-8") as f:
+            d = json.load(f)
+        build = d.get("_build") or build
+        tl = []
+        for t in d.get("trainers") or []:
+            if t.get("placeSeenInForever") and npc(t):
+                tl.append((int(t["npcId"]), int(t.get("trainsUpToSkill") or 0)))
+        trainers[slug] = tl
+        for r in d.get("recipes") or []:
+            lf = r.get("learnedFrom") or {}
+            so = lf.get("sources") or {}
+            tr = [npc(t) for side in (so.get("trainers") or {}).values() for t in side if t.get("seenInForever")]
+            tr = sorted(set(x for x in tr if x))
+            vd = []
+            for side in (so.get("vendors") or {}).values():
+                for v in side:
+                    if v.get("seenInForever") and not v.get("costs") and v.get("pricePerItem") and npc(v):
+                        vd.append((int(v["npcId"]), int(round(v["pricePerItem"]))))
+            vd = sorted(set(vd), key=lambda t: t[1])
+            cost = so.get("trainerCost") or (lf.get("trainer") or {}).get("cost") or 0
+            seen = 1 if str(so.get("trainerCostSource") or "").startswith("seen") else 0
+            ri = (so.get("recipeItem") or {}).get("itemId") or 0
+            learn = so.get("learnAtSkill") or (r.get("skill") or {}).get("orange") or 0
+            if not tr and not vd and not cost:
+                continue
+            recipes[int(r["spellId"])] = "%d|%d|%d|%d|%d|%s|%s" % (
+                pi, learn, cost, seen, ri, ",".join(str(x) for x in tr), ",".join("%d:%d" % t for t in vd))
+    lines = [
+        "local ADDON_NAME, WK = ...",
+        "-- GÉNÉRÉ par tools/gen_foreverdb.py : ne pas modifier à la main.",
+        "-- " + ATTRIB + " : maîtres de métier et recettes vus dans WoW Forever par les joueurs de ForeverDB",
+        "-- (API https://foreverdb.net/developers, version du jeu %s). Mention obligatoire, avec le lien," % build,
+        "-- partout où ces données sont montrées (Options > À propos, infobulles : Modules/Vendors.lua).",
+        "-- Noms français des PNJ : QuestieDB (GPLv3).",
+        "-- WK.FProfNpc[pnj] = { carte, x, y, camp (1 Alliance, 2 Horde, 3 les deux), nom anglais, nom français }",
+        "-- WK.FProfTrainers[métier] = { { pnj, enseigne jusqu'à (0 = inconnu) }, … }",
+        "-- WK.FRecipes[sort] = \"métier|apprise à|prix du maître|prix vu (1/0)|objet de recette|maîtres|pnj:prix,…\"",
+        "WK.FProfSlugs = { %s }" % ", ".join(lua_str(x) for x in PROFS),
+        "WK.FProfNpc = {",
+    ]
+    for nid in sorted(npcs):
+        m, x, y, side, en, frn = npcs[nid]
+        lines.append("    [%d] = { %d, %s, %s, %d, %s%s }," % (nid, m, x, y, side, lua_str(en),
+                                                         (", " + lua_str(frn)) if frn else ""))
+    lines.append("}")
+    lines.append("WK.FProfTrainers = {")
+    for slug in PROFS:
+        if trainers.get(slug):
+            lines.append("    [%s] = { %s }," % (lua_str(slug), ", ".join("{ %d, %d }" % t for t in trainers[slug])))
+    lines.append("}")
+    lines.append("WK.FRecipes = {")
+    for sid in sorted(recipes):
+        lines.append("    [%d] = %s," % (sid, lua_str(recipes[sid])))
+    lines.append("}")
+    with open(out, "w", encoding="utf-8", newline="\n") as f:
+        f.write("\n".join(lines) + "\n")
+    print("ForeverProfDB.lua : %d PNJ, %d recettes" % (len(npcs), len(recipes)))
+    return {"npcs": len(npcs), "recipes": len(recipes)}
+
+
 if __name__ == "__main__":
-    if "--fetch" in sys.argv:
+    if "--fetch-prof" in sys.argv:
+        fetch_professions()
+    elif "--fetch" in sys.argv:
         fetch()
+        fetch_professions()
     else:
         args = [a for a in sys.argv[1:] if not a.startswith("--")]
         generate(args[0] if args else None)
+        generate_prof(args[0] if args else None)
