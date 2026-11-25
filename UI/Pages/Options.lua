@@ -717,7 +717,7 @@ UI:RegisterPage({
         -- une seule carte (avant, « Coins de récolte » à part avec une seule ligne) ; HUD de récolte (UI/GatherHUD.lua)
         local gm = WK.DB.global.gatherMap
         local nd = WK.modules.Nodes:Config()
-        local nodesCard = card("Filons et plantes récoltés", 40 + 7 * 46 + 30,
+        local nodesCard = card("Filons et plantes récoltés", 40 + 8 * 46 + 30,
             "là où tes persos ont déjà récolté (tout le compte)")
         local function ntoggle(field)
             return gtoggle(nodesCard, function() return nd[field] end, function(v) nd[field] = v; UI:RefreshNodePins() end)
@@ -741,8 +741,13 @@ UI:RegisterPage({
             "Plantes si le perso a l'Herboristerie, filons s'il a le Minage.", ntoggle("onlyMine"), 80)
         UI:SettingRow(nodesCard, -270, "Seulement ce que je peux récolter",
             "Cache ce qui demande plus que ta compétence.", ntoggle("onlyUsable"), 80)
-        UI:SettingRow(nodesCard, -316, "Taille des icônes", nil,
-            UI:Slider(nodesCard, 220, 8, 24, 1, function() return nd.size or 14 end, function(v) nd.size = v; UI:RefreshNodePins() end, "%d px"), 240)
+        -- deux tailles : minicarte et carte du monde (avant, une seule pour les deux)
+        UI:SettingRow(nodesCard, -316, "Taille sur la minicarte", nil,
+            UI:Slider(nodesCard, 220, 4, 24, 1, function() return nd.sizeMini or nd.size or 14 end,
+                function(v) nd.sizeMini = v; UI:RefreshNodePins() end, "%d px"), 240)
+        UI:SettingRow(nodesCard, -362, "Taille sur la carte du monde", nil,
+            UI:Slider(nodesCard, 220, 4, 24, 1, function() return nd.sizeMap or nd.size or 14 end,
+                function(v) nd.sizeMap = v; UI:RefreshNodePins() end, "%d px"), 240)
         local nodesNote = UI:Text(nodesCard, 11, C.muted)
         nodesNote:SetPoint("BOTTOMLEFT", 16, 14)
         nodesNote:SetText(WK.T("Anneau : rouge trop dur · orange, jaune, vert selon la difficulté · gris sans intérêt ou métier absent."))

@@ -53,6 +53,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.345 — 25/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Filons et plantes récoltés : deux tailles d'icônes au lieu d'une, « Taille sur la minicarte » et « Taille sur la carte du monde » (de 4 à 24 px, réglage dans la roue de Métiers, onglet Récolte). On peut donc réduire les pastilles de la minicarte sans toucher à celles de la carte.
+
 ## v1.128.344 — 25/11/2026
 
 _Un /reload suffit._

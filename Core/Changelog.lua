@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.345", date = "25/11/2026",
+        changed = {
+            "Filons et plantes récoltés : deux tailles d'icônes au lieu d'une, « Taille sur la minicarte » et « Taille sur la carte du monde » (de 4 à 24 px, réglage dans la roue de Métiers, onglet Récolte). On peut donc réduire les pastilles de la minicarte sans toucher à celles de la carte.",
+        },
+    },
+    {
         version = "1.128.344", date = "25/11/2026",
         changed = {
             "Retour au corps : le bandeau de secours (« Corps sur un autre continent », « Position du corps inconnue ») est retiré, et il n'apparaît plus dans le mode édition. Le guidage vers le corps passe seulement par l'épingle à l'écran (tête de mort, conseil, temps et coût de l'ange gardien).",

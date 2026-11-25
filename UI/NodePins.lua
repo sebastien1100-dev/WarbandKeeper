@@ -87,7 +87,7 @@ local function updateMini()
                 local pin = pool:Get()
                 -- plus discret vers le bord
                 local edge = math.sqrt(d2) / limit
-                paint(pin, n, ranks, o.size or 14, edge > 0.85 and 0.55 or 1)
+                paint(pin, n, ranks, o.sizeMini or o.size or 14, edge > 0.85 and 0.55 or 1)
                 pin.ring:ClearAllPoints()
                 pin.ring:SetPoint("CENTER", Minimap, "CENTER", dx / radius * half, dy / radius * half)
                 if pool.used >= MAX_MINI then break end
@@ -147,7 +147,7 @@ function UI:DrawNodePins(cv, mapID, w, h)
     -- une icône par case et par ressource : la carte reste lisible dans les zones très fournies
     local cell = #list > MAX_MAP and 0.02 or 0.008
     local seen = {}
-    local size = (o.size or 14) * ((w / 1000) * UI.MapIconScale()) * 0.85 * UI.MapIconSize()
+    local size = (o.sizeMap or o.size or 14) * ((w / 1000) * UI.MapIconScale()) * 0.85 * UI.MapIconSize()
     for _, n in ipairs(list) do
         local key = n.id * 1000000 + math.floor(n.x / cell) * 1000 + math.floor(n.y / cell)
         if not seen[key] then
