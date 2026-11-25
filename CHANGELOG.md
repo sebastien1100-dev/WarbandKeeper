@@ -53,6 +53,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.309 — 25/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Métiers > Herboristerie et Minage : les ressources et leurs zones viennent maintenant de ForeverDB, avec la compétence du client Forever et le nombre de nœuds de chaque zone. « Où aller à ton niveau » classe les zones par nombre de nœuds orange et jaunes, et chaque tuile donne ce nombre à côté de la ressource. Data from ForeverDB.net (https://foreverdb.net).
+- Infobulle d'une herbe ou d'un minerai : la compétence pour la récolter (la tienne en rouge si elle est trop basse), les trois zones les plus fournies et ce que le filon donne aussi (pierres, gemmes). Une gemme dit dans quels filons elle se trouve. Se coupe dans Options > Infobulles > Récolte.
+- Pêche > Collection : l'atlas prend les zones de ForeverDB. Au survol d'une zone, la compétence pour y pêcher, celle où plus rien ne s'échappe et ses bancs ; au survol d'un poisson, sa chance de prise et combien de fois les joueurs l'ont pêché dans Forever. La fiche d'une espèce range ses zones de la meilleure chance à la moins bonne.
+- Mode pêche : une alerte quand ta compétence (avec la canne, les pièces de pêche et l'appât posé) est sous celle où plus rien ne s'échappe dans la zone.
+
 ## v1.128.308 — 25/11/2026
 
 _Un /reload suffit._

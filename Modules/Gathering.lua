@@ -94,6 +94,65 @@ M.DATA = {
     },
 }
 
+-- Herboristerie et minage : remplacés au chargement par les données de ForeverDB (Modules/ForeverGatherDB.lua,
+-- tools/gen_foreverdb.py : compétence du client Forever, nombre de nœuds par zone ; « Data from ForeverDB.net
+-- (https://foreverdb.net) », mention `M.CREDIT` partout où elles sont montrées). Les tables ci-dessus restent
+-- en secours sans ce fichier. Chaque ressource gagne alors counts[zone] (nœuds), maps[zone] (carte) et also.
+M.CREDIT = "foreverdb.net"
+local MAPID = {
+    elwynn = 1429, dunmorogh = 1426, durotar = 1411, mulgore = 1412, tirisfal = 1420, teldrassil = 1438,
+    darkshore = 1439, westfall = 1436, lochmodan = 1432, silverpine = 1421, barrens = 1413, redridge = 1433,
+    duskwood = 1431, ashenvale = 1440, stonetalon = 1442, hillsbrad = 1424, wetlands = 1437, arathi = 1417,
+    stv = 1434, swamp = 1435, desolace = 1443, needles = 1441, dustwallow = 1445, hinterlands = 1425,
+    badlands = 1418, alterac = 1416, searing = 1427, feralas = 1444, tanaris = 1446, azshara = 1447,
+    felwood = 1448, ungoro = 1449, burning = 1428, blasted = 1419, winterspring = 1452, silithus = 1451,
+    wpl = 1422, epl = 1423,
+}
+local NAME_OF = {
+    [1430] = "Défilé de Deuillevent", [1450] = "Reflet-de-Lune", [1453] = "Hurlevent", [1454] = "Orgrimmar",
+    [1455] = "Forgefer", [1456] = "Les Pitons-du-Tonnerre", [1457] = "Darnassus", [1458] = "Fossoyeuse",
+}
+for k, m in pairs(MAPID) do NAME_OF[m] = Z[k] end
+-- nom de zone (clé française, traduite par WK.T) d'une carte ; zones propres à Forever : nom du jeu
+local function zoneOfMap(map)
+    if NAME_OF[map] then return NAME_OF[map] end
+    local CM = _G.C_Map
+    local info = CM and CM.GetMapInfo and CM.GetMapInfo(map)
+    return info and info.name or nil
+end
+M.ZoneOfMap = zoneOfMap
+M.MAP_OF = {} -- nom de zone » carte
+local MIN_NODES = 2 -- moins de nœuds dans une zone : pas une zone où aller
+function M:ApplyForever()
+    local F = WK.FGather
+    if self.fdb or not F then return self.fdb end
+    for _, kind in ipairs({ "herb", "mining" }) do
+        local list = {}
+        for _, e in ipairs(F[kind] or {}) do
+            local d = { id = e[1], req = e[2], zones = {}, counts = {}, maps = {}, fdb = true }
+            if e[5] then d.suffix = "filon riche" end
+            if e[3] and e[3] ~= "" then
+                d.also = {}
+                for n in e[3]:gmatch("%d+") do d.also[#d.also + 1] = tonumber(n) end
+            end
+            for m, c in (e[4] or ""):gmatch("(%d+):(%d+)") do
+                m, c = tonumber(m), tonumber(c)
+                local name = c >= MIN_NODES and zoneOfMap(m)
+                if name and not d.counts[name] then
+                    d.zones[#d.zones + 1] = name
+                    d.counts[name], d.maps[name] = c, m
+                    M.MAP_OF[name] = m
+                end
+            end
+            if #d.zones > 0 then list[#list + 1] = d end
+        end
+        if #list > 0 then self.DATA[kind] = list end
+    end
+    self.fdb = true
+    return true
+end
+function M:OnInit() self:ApplyForever() end
+
 local KIND = {
     ["Minage"] = "mining", ["Mining"] = "mining",
     ["Herboristerie"] = "herb", ["Herbalism"] = "herb",
@@ -131,24 +190,27 @@ end
 function M:Rows(prof, rank)
     local kind = self:Kind(prof)
     if not kind then return nil end
+    self:ApplyForever()
     rank = rank or 0
     local rows = {}
     for _, d in ipairs(self.DATA[kind]) do
         local color = kind == "skin" and self:SkinColor(d, rank) or self:Color(d.req, rank)
         table.insert(rows, { id = d.id, suffix = d.suffix, req = d.req, min = d.min, max = d.max,
-            zones = d.zones, color = color, good = color == "optimal" or color == "medium", kind = kind })
+            zones = d.zones, counts = d.counts, color = color, good = color == "optimal" or color == "medium",
+            kind = kind })
     end
     return rows, kind
 end
 
--- Zones conseillées : celles des ressources orange et jaunes, les plus fournies d'abord.
+-- Zones conseillées : celles des ressources orange et jaunes, les plus fournies d'abord (nombre de nœuds de
+-- ForeverDB quand on l'a : orange compte double).
 function M:BestZones(rows)
     local score, order = {}, {}
     for _, r in ipairs(rows or {}) do
         if r.good then
             for _, z in ipairs(r.zones) do
                 if not score[z] then table.insert(order, z) end
-                score[z] = (score[z] or 0) + (r.color == "optimal" and 2 or 1)
+                score[z] = (score[z] or 0) + (r.color == "optimal" and 2 or 1) * ((r.counts and r.counts[z]) or 1)
             end
         end
     end
@@ -476,3 +538,78 @@ local function tourTick()
     end
 end
 if C_Timer.NewTicker then C_Timer.NewTicker(1, tourTick) end
+
+---------------------------------------------------------------------------
+-- Infobulle d'une herbe, d'un minerai ou d'une gemme de filon (réglage settings.ui.tooltipGather) :
+-- compétence requise (la tienne), zones les plus fournies, ce que le filon donne aussi. Données ForeverDB.
+---------------------------------------------------------------------------
+local byItem, alsoOf
+local function itemIndex()
+    if byItem then return end
+    byItem, alsoOf = {}, {}
+    for _, kind in ipairs({ "herb", "mining" }) do
+        for _, d in ipairs(M.DATA[kind] or {}) do
+            if d.fdb then
+                d.kind = kind
+                byItem[d.id] = byItem[d.id] or {}
+                table.insert(byItem[d.id], d)
+                for _, a in ipairs(d.also or {}) do
+                    alsoOf[a] = alsoOf[a] or {}
+                    table.insert(alsoOf[a], d)
+                end
+            end
+        end
+    end
+end
+function M:GatherInfo(id)
+    if not self:ApplyForever() then return nil end
+    itemIndex()
+    return byItem[id], alsoOf[id]
+end
+local function itemName(id)
+    local n = _G.GetItemInfo and _G.GetItemInfo(id)
+    local CI = _G.C_Item
+    if not n and CI and CI.RequestLoadItemDataByID then pcall(CI.RequestLoadItemDataByID, id) end
+    return n
+end
+function M:AddTooltip(tt, id)
+    local st = WK.DB.global.settings.ui
+    if st.tooltipGather == false or not id then return false end
+    local nodes, from = self:GatherInfo(id)
+    if not nodes and not from then return false end
+    for _, d in ipairs(nodes or {}) do
+        local mine = self:SkillFor(d.kind)
+        local label = d.kind == "herb" and T("Se cueille à %d") or T("Se mine à %d")
+        local txt = string.format(label, d.req) .. (d.suffix and (" (" .. T(d.suffix) .. ")") or "")
+        local r, g, b = 0.6, 0.8, 1
+        if mine then
+            txt = txt .. "  " .. string.format(T("(toi : %d)"), mine)
+            if mine < d.req then r, g, b = 1, 0.35, 0.3 end
+        end
+        local zs = {}
+        for i = 1, math.min(3, #d.zones) do
+            local z = d.zones[i]
+            zs[#zs + 1] = WK.T(z) .. " " .. d.counts[z]
+        end
+        tt:AddLine(txt, r, g, b)
+        if #zs > 0 then tt:AddLine("  " .. T("Surtout : ") .. table.concat(zs, ", "), 0.85, 0.85, 0.85, true) end
+        local also = {}
+        for _, a in ipairs(d.also or {}) do
+            local n = itemName(a)
+            if n then also[#also + 1] = n end
+        end
+        if #also > 0 then
+            tt:AddLine("  " .. T("Donne aussi : ") .. table.concat(also, ", "), 0.85, 0.85, 0.85, true)
+        end
+    end
+    if not nodes and from then
+        local ores = {}
+        for _, d in ipairs(from) do
+            local n = itemName(d.id)
+            if n then ores[#ores + 1] = n .. " (" .. d.req .. ")" end
+        end
+        if #ores > 0 then tt:AddLine(T("Se trouve en minant : ") .. table.concat(ores, ", "), 0.6, 0.8, 1, true) end
+    end
+    tt:AddLine(T("Nœuds de récolte · ") .. M.CREDIT, 0.45, 0.45, 0.45)
+    return true
+end

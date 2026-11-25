@@ -602,6 +602,9 @@ UI:RegisterPage({
                 { "Vendu par", "Dans l'infobulle d'un objet : le marchand le plus proche qui le vend dans WoW Forever"
                     .. " et son prix, d'après les marchands vus par les joueurs (ForeverDB.net).",
                     function() return cfg.tooltipVendors ~= false end, function(v) cfg.tooltipVendors = v end },
+                { "Récolte", "Dans l'infobulle d'une herbe, d'un minerai ou d'une gemme : la compétence requise,"
+                    .. " la tienne, les zones les plus fournies et ce que le filon donne aussi (ForeverDB.net).",
+                    function() return cfg.tooltipGather ~= false end, function(v) cfg.tooltipGather = v end },
                 { "Numéro de l'objet ou du sort",
                     "En bas de l'infobulle d'un objet, d'un sort ou d'un effet : son numéro (ID),"
                         .. " pour signaler un souci.",
@@ -883,9 +886,9 @@ UI:RegisterPage({
                 "Noms français des donjons et des boss, numéros d'instance et de rencontre : tables du client WoW Forever (données du jeu, lues sur wago.tools)." },
             { "chart", "Trajets de vol, taux de drop observés", "Everloot · everloot.app", "CC BY-SA 4.0", "info",
                 "Trajets de vol (fichiers du jeu) et taux de drop observés par les joueurs : Everloot (everloot.app ; taux de drop sous licence CC BY-SA 4.0)." },
-            { "coin", "Marchands, maîtres, recettes, quêtes, BiS", "ForeverDB · foreverdb.net", "crédit", "info",
+            { "coin", "Marchands, métiers, quêtes, BiS, récolte", "ForeverDB · foreverdb.net", "crédit", "info",
                 "Marchands, maîtres de métier, recettes, place des donneurs et des rendus de quêtes,"
-                    .. " listes BiS par spécialisation vus dans WoW Forever par les joueurs"
+                    .. " listes BiS par spécialisation, récolte et pêche par zone vus dans WoW Forever par les joueurs"
                     .. " (place, prix, niveau d'apprentissage) :"
                     .. " Data from ForeverDB.net (https://foreverdb.net)." },
             { "fire", "Objets de camp, objets de la liste BiS", "wowlayerup-forever/opendata", "CC BY 4.0", "info",

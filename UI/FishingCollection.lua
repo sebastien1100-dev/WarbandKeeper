@@ -168,6 +168,8 @@ function UI:FishCollection(card, onHeight)
     local ahRate = UI:Text(atlas, 10, C.dim)
     ahRate:SetPoint("TOPRIGHT", -40, 0)
     ahRate:SetText(T("RYTHME"))
+    local atlasCredit = UI:Text(atlas, 10, C.dim)
+    atlasCredit:SetText(T("Compétences, prises et bancs par zone : Data from ForeverDB.net (https://foreverdb.net)"))
     local rows = UI:Pool(function()
         local r = CreateFrame("Frame", nil, atlas)
         r:SetHeight(ROW_H - 4)
@@ -190,6 +192,25 @@ function UI:FishCollection(card, onHeight)
         r.guide = UI:GuideButton(r, 22, "Guider vers ton dernier coin de pêche de cette zone")
         r.guide:SetPoint("RIGHT", -4, 0)
         r.guide:SetScript("OnClick", function() FL:GuideZone(r.map) end)
+        -- survol de la ligne : compétences de la zone et bancs (ForeverDB)
+        r:EnableMouse(true)
+        r:SetScript("OnEnter", function(s)
+            local zr = s.zr
+            if not (zr and zr.fdb) then return end
+            local tt = _G.GameTooltip
+            UI:TooltipOwner(s, "ANCHOR_RIGHT")
+            tt:SetText(FL:ZoneName(s.map), 1, 1, 1)
+            if zr.min and zr.min > 0 then
+                tt:AddLine(string.format(T("Pêche possible dès %d"), zr.min), 0.85, 0.85, 0.85)
+            end
+            tt:AddLine(string.format(T("Plus rien ne s'échappe à %d"), zr[1]), 0.85, 0.85, 0.85)
+            local pools = {}
+            for _, n in ipairs(zr.pools or {}) do pools[#pools + 1] = T(WK.FishDB.POOLS[n] or "?") end
+            if #pools > 0 then tt:AddLine(T("Bancs : ") .. table.concat(pools, ", "), 0.6, 0.8, 1, true) end
+            tt:AddLine(T("Pêche par zone · ") .. FL.CREDIT, 0.45, 0.45, 0.45)
+            tt:Show()
+        end)
+        r:SetScript("OnLeave", function() _G.GameTooltip:Hide() end)
         return r
     end)
     local function rowIcon(r, i)
@@ -205,6 +226,18 @@ function UI:FishCollection(card, onHeight)
                 UI:TooltipOwner(s, "ANCHOR_TOP")
                 GameTooltip:SetText((UI:ItemInfo(s.id)), 1, 1, 1)
                 GameTooltip:AddLine(s.have and T("Déjà pêché dans cette zone") or T("Pas encore pêché ici"), 0.7, 0.7, 0.7)
+                local zr = s:GetParent().zr
+                local ch = zr and zr.chance and zr.chance[s.id]
+                if ch then
+                    local tt = _G.GameTooltip
+                    tt:AddLine(string.format(T("Chance de prise ici : %s %%"), FL.Pct(ch)), 0.6, 0.8, 1)
+                    local seen = zr.seen and zr.seen[s.id]
+                    if seen then
+                        local txt = string.format(T("Pêché %d fois dans WoW Forever par les joueurs"), seen)
+                        tt:AddLine(txt, 0.6, 0.8, 1)
+                    end
+                    tt:AddLine(T("Pêche par zone · ") .. FL.CREDIT, 0.45, 0.45, 0.45)
+                end
                 GameTooltip:Show()
             end)
             ic:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -288,7 +321,8 @@ function UI:FishCollection(card, onHeight)
         for _, r in ipairs(mine) do table.insert(lines, { FL:ZoneName(r.map), r.pct .. " %", C.text }) end
         for _, r in ipairs(refz) do
             if #lines >= #det.where then break end
-            table.insert(lines, { FL:ZoneName(r.map), string.format(T("conseillé %d"), r.skill), C.muted })
+            table.insert(lines, { FL:ZoneName(r.map), (r.chance and (FL.Pct(r.chance) .. " %  ·  ") or "")
+                .. string.format(T("conseillé %d"), r.skill), C.muted })
         end
         for i, row in ipairs(det.where) do
             local l = lines[i]
@@ -319,7 +353,7 @@ function UI:FishCollection(card, onHeight)
         local maxIcons = math.max(1, math.floor(iconsW / 21))
         for i, z in ipairs(FL:Atlas()) do
             local r = rows:Get()
-            r.map = z.map
+            r.map, r.zr = z.map, z.ref
             r:ClearAllPoints()
             r:SetPoint("TOPLEFT", 0, -(20 + (i - 1) * ROW_H))
             r:SetPoint("RIGHT")
@@ -348,7 +382,11 @@ function UI:FishCollection(card, onHeight)
             r.rate:SetText(rate and (rate .. "/h") or "-")
             r.guide:SetShown(z.pos ~= nil)
         end
-        return 20 + rows.used * ROW_H
+        local fdb = WK.FFish ~= nil
+        atlasCredit:SetShown(fdb)
+        atlasCredit:ClearAllPoints()
+        atlasCredit:SetPoint("TOPLEFT", 0, -(20 + rows.used * ROW_H + 4))
+        return 20 + rows.used * ROW_H + (fdb and 18 or 0)
     end
 
     function col:Refresh()

@@ -383,6 +383,15 @@ local function onTooltip(tooltip, data)
         if not any then tooltip:AddLine(" "); tooltip:AddLine(WK:Tag()); any = true end
         Vd:AddTooltip(tooltip, itemID)
     end
+    -- récolte : compétence, zones les plus fournies (Modules/Gathering.lua, données ForeverDB)
+    local Ga = WK.modules.Gathering
+    if Ga and Ga.GatherInfo and ui.tooltipGather ~= false then
+        local nodes, from = Ga:GatherInfo(itemID)
+        if nodes or from then
+            if not any then tooltip:AddLine(" "); tooltip:AddLine(WK:Tag()); any = true end
+            Ga:AddTooltip(tooltip, itemID)
+        end
+    end
     -- prix relevés par notre scan de l'HV (Modules/AHScan.lua)
     local S = WK.modules.AHScan
     local scanned = false

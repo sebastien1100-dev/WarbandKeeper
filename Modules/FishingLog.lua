@@ -173,6 +173,45 @@ local function ref()
     end
     return REF_BY_ID
 end
+-- Zones de pêche : celles de ForeverDB (Modules/ForeverGatherDB.lua) d'abord, sinon la référence de FishDB.
+-- { [carte] = { sans fuite, { poissons }, chance = { [objet] = % }, pools = { n° de FishDB.POOLS }, min, seen,
+-- fdb } } :
+-- [1] = compétence à partir de laquelle plus rien ne s'échappe (comme la référence), min = celle de la zone.
+-- « Data from ForeverDB.net (https://foreverdb.net) » : mention `M.CREDIT` partout où c'est montré.
+M.CREDIT = "foreverdb.net"
+local ZONES
+local function zonesRef()
+    if ZONES then return ZONES end
+    if not WK.FFish then ZONES = WK.FishDB.zones; return ZONES end
+    local R = ref()
+    ZONES = {}
+    for map, z in pairs(WK.FFish) do
+        local e = { z[2], {}, chance = {}, pools = {}, min = z[1], seen = {}, fdb = true }
+        for id, c in (z[3] or ""):gmatch("(%d+):(%d+)") do
+            id, c = tonumber(id), tonumber(c) / 100
+            e.chance[id] = c
+            local sp = R[id]
+            if (sp and sp.cat == "fish") or (not sp and c >= 5) then table.insert(e[2], id) end
+        end
+        for n in (z[4] or ""):gmatch("%d+") do table.insert(e.pools, tonumber(n)) end
+        for id, c in (z[5] or ""):gmatch("(%d+):(%d+)") do e.seen[tonumber(id)] = tonumber(c) end
+        ZONES[map] = e
+    end
+    for map, z in pairs(WK.FishDB.zones) do if not ZONES[map] then ZONES[map] = z end end
+    return ZONES
+end
+M.Zones = zonesRef
+-- pourcentage court : 58, 7.5, 0.06
+function M.Pct(p)
+    if p >= 10 then return tostring(math.floor(p + 0.5)) end
+    if p >= 1 then return (string.format("%.1f", p):gsub("%.0$", "")) end
+    return (string.format("%.2f", p):gsub("0+$", ""):gsub("%.$", ""))
+end
+-- Zone de pêche où se trouve le perso (ou nil) et sa carte
+function M.HereZone(_)
+    local map = zoneOf()
+    return map and zonesRef()[map], map
+end
 M.NEW_DAYS = 7 -- point « nouveau » sur les espèces pêchées pour la première fois depuis moins d'une semaine
 
 -- Espèces : { { id, cat, tier, n, first, by, ref } } ; les prises hors référence sont en « other »
@@ -189,7 +228,7 @@ function M:Collection()
         if not R[id] then
             local tier
             for map, z in pairs(d.zones) do
-                local zr = z.items[id] and WK.FishDB.zones[map]
+                local zr = z.items[id] and zonesRef()[map]
                 if zr then
                     local t = zr[1] >= 205 and 4 or zr[1] >= 130 and 3 or zr[1] >= 55 and 2 or 1
                     if not tier or t < tier then tier = t end
@@ -221,12 +260,23 @@ function M:SpeciesZones(id)
     table.sort(out, function(a, b) return a.n > b.n end)
     for _, r in ipairs(out) do r.pct = math.floor(r.n * 100 / sum + 0.5) end
     local refZones = {}
-    for map, zr in pairs(WK.FishDB.zones) do
+    for map, zr in pairs(zonesRef()) do
         local seen = false
         for _, r in ipairs(out) do if r.map == map then seen = true end end
-        if not seen then for _, f in ipairs(zr[2]) do if f == id then table.insert(refZones, { map = map, skill = zr[1] }) end end end
+        if not seen then
+            for _, f in ipairs(zr[2]) do
+                if f == id then
+                    table.insert(refZones, { map = map, skill = zr[1], chance = zr.chance and zr.chance[id] })
+                end
+            end
+        end
     end
-    table.sort(refZones, function(a, b) if a.skill ~= b.skill then return a.skill < b.skill end return a.map < b.map end)
+    -- là où ça mord le mieux d'abord (chance de ForeverDB), puis la compétence la plus basse
+    table.sort(refZones, function(a, b)
+        if (a.chance or 0) ~= (b.chance or 0) then return (a.chance or 0) > (b.chance or 0) end
+        if a.skill ~= b.skill then return a.skill < b.skill end
+        return a.map < b.map
+    end)
     return out, refZones
 end
 
@@ -236,9 +286,10 @@ function M:Atlas()
     local d, R = self:Data(), ref()
     local rows = {}
     local function row(map)
-        local zr = WK.FishDB.zones[map]
+        local zr = zonesRef()[map]
         local z = d.zones[map]
-        local r = { map = map, skill = zr and zr[1], fish = {}, have = {}, n = z and z.n or 0, time = z and z.time or 0, pos = z and z.pos }
+        local r = { map = map, skill = zr and zr[1], fish = {}, have = {}, n = z and z.n or 0, time = z and z.time or 0,
+            pos = z and z.pos, ref = zr }
         local seen = {}
         if zr then for _, id in ipairs(zr[2]) do table.insert(r.fish, id); seen[id] = true end end
         if z then
@@ -250,8 +301,8 @@ function M:Atlas()
         end
         return r
     end
-    for map in pairs(WK.FishDB.zones) do table.insert(rows, row(map)) end
-    for map in pairs(d.zones) do if not WK.FishDB.zones[map] then table.insert(rows, row(map)) end end
+    for map in pairs(zonesRef()) do table.insert(rows, row(map)) end
+    for map in pairs(d.zones) do if not zonesRef()[map] then table.insert(rows, row(map)) end end
     table.sort(rows, function(a, b)
         local sa, sb = a.skill or 999, b.skill or 999
         if sa ~= sb then return sa < sb end

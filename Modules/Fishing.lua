@@ -70,6 +70,22 @@ end
 M.IsPole = isPole
 
 local function equippedID(slot) return GetInventoryItemID and GetInventoryItemID("player", slot) or nil end
+-- Compétence avec les bonus : canne et pièces équipées, appât posé (celui qu'on poserait, sinon le plus faible)
+function M:EffectiveSkill()
+    local s = self:Skill()
+    if not s then return nil end
+    local pole = equippedID(MAINHAND)
+    s = s + ((pole and POLES[pole]) or 0)
+    for id, slot in pairs(EXTRA) do
+        if equippedID(slot) == id then s = s + 5 end -- chapeau porte-bonheur, bottes de Nat Pagle : +5
+    end
+    if self:LureLeft() then
+        local pick, bonus = self:PickLure(), 25
+        for _, l in ipairs(M.LURES) do if l.id == pick then bonus = l.bonus end end
+        s = s + bonus
+    end
+    return s
+end
 local function equippedLink(slot) return GetInventoryItemLink and GetInventoryItemLink("player", slot) or nil end
 
 local function eachBagItem(fn)
@@ -351,6 +367,13 @@ function M:Warn()
     UI:SetAlert("fish.gear", needGear, { text = T("Canne non équipée : équipe ta tenue de pêche"), color = C.warning, prio = 2, icon = icon })
     local noLure = on and self:PoleEquipped() and not self:LureLeft() and not self:PickLure() and (self:Skill() or 0) < 300
     UI:SetAlert("fish.lure", noLure and o.autoLure, { text = T("Plus d'appât dans les sacs"), color = C.warning, prio = 3, icon = icon })
+    -- compétence trop basse pour la zone (ForeverDB) : des poissons s'échapperont
+    local FL = WK.modules.FishingLog
+    local zr = on and FL and FL.HereZone and FL:HereZone()
+    local eff = zr and self:EffectiveSkill()
+    UI:SetAlert("fish.zone", zr ~= nil and eff ~= nil and eff < zr[1], { text = zr and eff and string.format(
+        T("Ici, des poissons s'échappent sous %d de Pêche (toi : %d avec la canne et l'appât)"), zr[1], eff) or "",
+        color = C.warning, prio = 3, icon = icon })
     UI:SetAlert("fish.bags", on and self:FreeSlots() == 0, { text = T("Sacs pleins : la prise ne pourra pas être ramassée"), color = C.negative, prio = 1, icon = icon })
 end
 
@@ -459,3 +482,6 @@ function M:OnLogin()
         if not inCombat() and M:PoleEquipped() and M:Config().autoOpen and M:Knows() then M:Start(true) end
     end)
 end
+WK:On("ZONE_CHANGED_NEW_AREA", function()
+    if M.active then _G.C_Timer.After(1, function() M:Warn() end) end
+end)

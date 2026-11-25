@@ -1322,6 +1322,10 @@ local function Detail(page, parent)
     where:SetHeight(86)
     where:SetPoint("TOPLEFT")
     where:SetPoint("TOPRIGHT")
+    -- nombre de nœuds par zone : ForeverDB (mention obligatoire)
+    local whereCredit = UI:Text(where, 10, C.dim)
+    whereCredit:SetPoint("TOPRIGHT", -16, -16)
+    whereCredit:SetText(T("Nœuds par zone · ") .. WK.modules.Gathering.CREDIT)
     local whereText = UI:Text(where, 12, C.muted)
     whereText:SetPoint("TOPLEFT", 16, -40)
     whereText:SetPoint("TOPRIGHT", -16, -40)
@@ -1425,6 +1429,7 @@ local function Detail(page, parent)
         local perRow = math.max(2, math.min(4, math.floor((w - 32 + 10) / 210)))
         local tw = (w - 32 - (perRow - 1) * 10) / perRow
         local shown = math.min(#best, perRow * 2)
+        whereCredit:SetShown(kind ~= "skin" and G.fdb == true)
         whereText:SetShown(#best == 0)
         whereText:SetText(T("Plus rien ne fait monter ce métier : il est au maximum pour ces ressources."))
         for i = 1, shown do
@@ -1440,7 +1445,9 @@ local function Detail(page, parent)
             local parts = {}
             for _, d in ipairs(perZone[z] or {}) do
                 local col = DIFF[d.color] and DIFF[d.color].color or C.text
-                table.insert(parts, UI:Hex(col) .. "•|r " .. ((UI:ItemInfo(d.id)) or "?"))
+                local n = d.counts and d.counts[z]
+                table.insert(parts, UI:Hex(col) .. "•|r " .. ((UI:ItemInfo(d.id)) or "?")
+                    .. (n and (" " .. UI:Hex(C.muted) .. n .. "|r") or ""))
             end
             t.res:SetText(table.concat(parts, "   "))
             local e = rates[z] or rates[T(z)]

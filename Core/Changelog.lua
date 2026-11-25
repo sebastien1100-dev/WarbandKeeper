@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.309", date = "25/11/2026", restart = true,
+        added = {
+            "Métiers > Herboristerie et Minage : les ressources et leurs zones viennent maintenant de ForeverDB, avec la compétence du client Forever et le nombre de nœuds de chaque zone. « Où aller à ton niveau » classe les zones par nombre de nœuds orange et jaunes, et chaque tuile donne ce nombre à côté de la ressource. Data from ForeverDB.net (https://foreverdb.net).",
+            "Infobulle d'une herbe ou d'un minerai : la compétence pour la récolter (la tienne en rouge si elle est trop basse), les trois zones les plus fournies et ce que le filon donne aussi (pierres, gemmes). Une gemme dit dans quels filons elle se trouve. Se coupe dans Options > Infobulles > Récolte.",
+            "Pêche > Collection : l'atlas prend les zones de ForeverDB. Au survol d'une zone, la compétence pour y pêcher, celle où plus rien ne s'échappe et ses bancs ; au survol d'un poisson, sa chance de prise et combien de fois les joueurs l'ont pêché dans Forever. La fiche d'une espèce range ses zones de la meilleure chance à la moins bonne.",
+            "Mode pêche : une alerte quand ta compétence (avec la canne, les pièces de pêche et l'appât posé) est sous celle où plus rien ne s'échappe dans la zone.",
+        },
+    },
+    {
         version = "1.128.308", date = "25/11/2026",
         fixed = {
             "Munitions : avec une arme de jet (hache, dague ou couteau de lancer du voleur ou du guerrier), une baguette ou sans arme à distance, les flèches et balles du sac ne comptent plus : l'icône des munitions ne s'affiche plus à l'écran et aucune alerte « munitions basses ». Elle revient dès qu'un arc, une arbalète ou un fusil est équipé.",

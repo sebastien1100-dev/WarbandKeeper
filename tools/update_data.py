@@ -32,7 +32,7 @@ CACHE = os.path.join(HERE, ".cache")
 QUESTIE_URL = "https://github.com/Questie/QuestieDB"
 WOWTBC = "https://wowtbc.gg/page-data/warcraftforever"
 UA = "WarbandKeeper-data-update"
-TARGETS = ["PlacesDB", "RoadsDB", "RaresDB", "QuestsDB", "QuestObjDB", "DungeonsDB", "Guides", "RecipeDB", "EverlootDB", "ItemsDB", "BoatLinesDB", "MapRevealDB", "ClassSpellsDB", "DataLogDB", "WayZonesDB", "ClassPricesDB", "ForeverVendorsDB", "ForeverProfDB", "RepeatQuestsDB", "BiSSpecDB"]
+TARGETS = ["PlacesDB", "RoadsDB", "RaresDB", "QuestsDB", "QuestObjDB", "DungeonsDB", "Guides", "RecipeDB", "EverlootDB", "ItemsDB", "BoatLinesDB", "MapRevealDB", "ClassSpellsDB", "DataLogDB", "WayZonesDB", "ClassPricesDB", "ForeverVendorsDB", "ForeverProfDB", "RepeatQuestsDB", "BiSSpecDB", "ForeverGatherDB"]
 KEEP = [os.path.join(HERE, "guides"), os.path.join(HERE, "dungeons")]  # données importées, versionnées
 DROP_LIMIT = 0.20
 
@@ -205,6 +205,9 @@ def metrics():
         elif name == "ForeverVendorsDB":
             out["Marchands vus dans Forever (ForeverDB)"] = size(WK.FVendorNpc)
             out["Objets vendus par ces marchands"] = size(WK.FVendorSells)
+        elif name == "ForeverGatherDB":
+            out["Plantes et filons (ForeverDB)"] = size(WK.FGather.herb) + size(WK.FGather.mining)
+            out["Zones de pêche (ForeverDB)"] = size(WK.FFish)
         elif name == "BiSSpecDB":
             out["Listes BiS conseillées (ForeverDB)"] = size(WK.BiSSpecItems)
         elif name == "RepeatQuestsDB":
@@ -353,7 +356,7 @@ def main():
                 try:
                     run(os.path.join(HERE, "gen_foreverdb.py"), "--fetch")
                     run(os.path.join(HERE, "gen_foreverdb.py"), qpath)
-                    sources.append("ForeverDB (marchands, métiers, quêtes, listes BiS)")
+                    sources.append("ForeverDB (marchands, métiers, quêtes, listes BiS, récolte, pêche)")
                 except subprocess.CalledProcessError as e:
                     log("  ! ForeverDB indisponible, fichier gardé tel quel :", e)
             else:

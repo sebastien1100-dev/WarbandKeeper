@@ -99,3 +99,13 @@ WK.FishDB = {
         [1452] = { 330, { 13758, 13759, 13760, 13889, 13757 } },  -- Berceau-de-l'Hiver
     },
 }
+-- Bancs de pêche (n° des données de ForeverDB, Modules/ForeverGatherDB.lua : ordre de FISH_POOLS dans
+-- tools/gen_foreverdb.py ; libellés écrits pour Warband Keeper)
+WK.FishDB.POOLS = {
+    "Banc de poissons bleus", "Banc mixte d'eau saumâtre", "Banc de lutjans aileron de feu", "Débris flottants",
+    "Épave flottante", "Banc de grands sagefish", "Banc mixte des hautes-terres", "Eaux boueuses tourbillonnantes",
+    "Banc de poissons-boue", "Nappe de pétrole", "Banc de bouches-noires huileux", "Flaque d'eau élémentaire",
+    "Eau pure", "Banc de sagefish", "Banc de dards", "Banc de poissons déviants", "Banc de poissons",
+    "Banc de poissons savoureux", "Banc de poissons-spores", "Débris de la pompe à vapeur",
+    "Nuée d'anguilles pierreécaille", "Bassin étrange",
+}

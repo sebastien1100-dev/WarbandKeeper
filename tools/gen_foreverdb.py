@@ -234,6 +234,29 @@ def fetch_bis(api=None, dest=CACHE):
     print("BiS : %d spécialisations (%d requêtes)" % (len(specs), api.calls), flush=True)
 
 
+def fetch_gathering(api=None, dest=CACHE):
+    """Récolte : herboristerie, minage, pêche (et dépeçage, pour plus tard) ; 4 requêtes, gardées pour la même
+    version du jeu."""
+    api = api or Api()
+    gdir = os.path.join(dest, "gathering")
+    os.makedirs(gdir, exist_ok=True)
+    build = api.get("meta")["data"]["build"]
+    for slug in ("herbalism", "mining", "fishing", "skinning"):
+        path = os.path.join(gdir, slug + ".json")
+        if os.path.exists(path):
+            try:
+                with open(path, encoding="utf-8") as f:
+                    if json.load(f).get("_build") == build:
+                        continue
+            except (ValueError, OSError):
+                pass
+        d = api.get("gathering/" + slug)
+        d["_build"] = build
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(d, f)
+    print("Récolte : %d requêtes" % api.calls, flush=True)
+
+
 def fr_names(root):
     """Noms français des PNJ (QuestieDB, comme tools/gen_places.py) ; {} sans clone ni lupa."""
     try:
@@ -403,6 +426,14 @@ def generate_prof(questie=None, src=CACHE, out=PROF_OUT):
 
 
 BIS_OUT = os.path.join(HERE, "..", "Data", "BiSSpecDB.lua")
+GATHER_OUT = os.path.join(HERE, "..", "Modules", "ForeverGatherDB.lua")
+# Bancs de pêche, dans l'ordre des libellés de WK.FishDB.POOLS (Modules/FishDB.lua) : n° = position (1 = premier)
+FISH_POOLS = ["Bluefish School", "Brackish Mixed School", "Firefin Snapper School", "Floating Debris",
+              "Floating Wreckage", "Greater Sagefish School", "Highland Mixed School", "Muddy Churning Waters",
+              "Mudfish School", "Oil Spill", "Oily Blackmouth School", "Patch of Elemental Water", "Pure Water",
+              "Sagefish School", "School of Darter", "School of Deviate Fish", "School of Fish",
+              "School of Tastyfish", "Sporefish School", "Steam Pump Flotsam", "Stonescale Eel Swarm", "Strange Pool"]
+CONTINENTS = {1414, 1415}
 BIS_SLOT = {"head": 1, "neck": 2, "shoulder": 3, "back": 15, "chest": 5, "wrist": 9, "hands": 10, "waist": 6,
             "legs": 7, "feet": 8, "finger1": 11, "finger2": 12, "trinket1": 13, "trinket2": 14, "main": 16, "off": 17,
             "ranged": 18}
@@ -491,6 +522,97 @@ def generate_bis(src=CACHE, out=BIS_OUT):
     return {"specs": sum(len(v) for v in by_class.values()), "lists": len(items)}
 
 
+def generate_gather(src=CACHE, out=GATHER_OUT):
+    """Modules/ForeverGatherDB.lua : compétence de chaque plante et filon (client Forever), nombre de nœuds par zone,
+    pêche par zone (compétence, seuil sans fuite, prises en centièmes de %, bancs, prises vues dans Forever).
+    Seulement des nombres, jamais leurs textes (les bancs sont des n° de FISH_POOLS)."""
+    gdir = os.path.join(src, "gathering")
+
+    def load(slug):
+        fp = os.path.join(gdir, slug + ".json")
+        if not os.path.exists(fp):
+            return None
+        with open(fp, encoding="utf-8") as f:
+            d = json.load(f)
+        return d.get("data") or d, d.get("_build") or ""
+    herb, mining, fish = load("herbalism"), load("mining"), load("fishing")
+    if not (herb and mining and fish):
+        print("ForeverGatherDB.lua : pas de cache de récolte, rien d'écrit")
+        return None
+    build = herb[1] or fish[1]
+    lines = [
+        "local _, WK = ...",
+        "-- FICHIER GÉNÉRÉ par tools/gen_foreverdb.py : ne pas modifier à la main.",
+        "-- Récolte et pêche : " + ATTRIB + ", API https://foreverdb.net/developers, version du jeu %s." % build,
+        "-- Mention obligatoire, avec le lien, partout où ces données sont montrées. Compétences : client Forever ;",
+        "-- nombre de nœuds et prises de pêche : données Classic tant que les joueurs ne les ont pas vus dans Forever.",
+        "-- WK.FGather[genre] = { { objet, compétence, \"autres objets\", \"carte:nœuds,…\", riche }, … }",
+        "-- WK.FFish[carte] = { compétence, sans fuite, \"objet:centièmes de %,…\", \"bancs\", \"objet:prises vues,…\" }",
+        "WK.FGather = {",
+    ]
+    counts = {"nodes": 0, "fish": 0}
+    for kind, (d, _) in (("herb", herb), ("mining", mining)):
+        nodes = {}
+        order = []
+        byname = {}
+        for n in d.get("nodes") or []:
+            item = (n.get("item") or {}).get("itemId")
+            if not item:
+                continue
+            key = (item, int(n.get("skill") or 0))
+            if key not in nodes:
+                nodes[key] = {"also": [a["itemId"] for a in n.get("alsoGives") or [] if a.get("itemId")], "z": {}}
+                order.append(key)
+            byname[n.get("name")] = key
+        for z in d.get("zones") or []:
+            m = z.get("mapId")
+            if not m or m in CONTINENTS:
+                continue
+            for zn in z.get("nodes") or []:
+                key = byname.get(zn.get("name"))
+                c = int(zn.get("spawnPoints") or 0)
+                if key and c > 0:
+                    nodes[key]["z"][m] = nodes[key]["z"].get(m, 0) + c
+        order.sort(key=lambda k: (k[1], k[0]))
+        seen_item = set()
+        lines.append("    %s = {" % kind)
+        for key in order:
+            e = nodes[key]
+            if not e["z"]:
+                continue
+            rich = key[0] in seen_item
+            seen_item.add(key[0])
+            zs = ",".join("%d:%d" % (m, c) for m, c in sorted(e["z"].items(), key=lambda x: (-x[1], x[0])))
+            lines.append("        { %d, %d, %s, %s%s }," % (key[0], key[1], lua_str(",".join(map(str, e["also"]))),
+                                                          lua_str(zs), ", true" if rich else ""))
+            counts["nodes"] += 1
+        lines.append("    },")
+    lines.append("}")
+    lines.append("WK.FFish = {")
+    for z in sorted(fish[0].get("zones") or [], key=lambda z: z.get("mapId") or 0):
+        m = z.get("mapId")
+        if not m or m in CONTINENTS:
+            continue
+        loot = ",".join("%d:%d" % (l["itemId"], round(float(l.get("chance") or 0) * 100))
+                        for l in z.get("loot") or [] if l.get("itemId") and round(float(l.get("chance") or 0) * 100) > 0)
+        pools = []
+        for p in z.get("pools") or []:
+            if p in FISH_POOLS:
+                pools.append(str(FISH_POOLS.index(p) + 1))
+            else:
+                print("  banc inconnu, ignoré : %s (à ajouter à FISH_POOLS et WK.FishDB.POOLS)" % p)
+        caught = ",".join("%d:%d" % (c["itemId"], int(c.get("count") or 0))
+                          for c in z.get("caughtInForever") or [] if c.get("itemId"))
+        lines.append("    [%d] = { %d, %d, %s, %s, %s }," % (m, int(z.get("skill") or 0), int(z.get("noEscapeSkill") or 0),
+                                                         lua_str(loot), lua_str(",".join(pools)), lua_str(caught)))
+        counts["fish"] += 1
+    lines.append("}")
+    with open(out, "w", encoding="utf-8", newline="\n") as f:
+        f.write("\n".join(lines) + "\n")
+    print("ForeverGatherDB.lua : %d nœuds, %d zones de pêche" % (counts["nodes"], counts["fish"]))
+    return counts
+
+
 if __name__ == "__main__":
     if "--fetch-prof" in sys.argv:
         fetch_professions()
@@ -498,13 +620,17 @@ if __name__ == "__main__":
         fetch_quests()
     elif "--fetch-bis" in sys.argv:
         fetch_bis()
+    elif "--fetch-gather" in sys.argv:
+        fetch_gathering()
     elif "--fetch" in sys.argv:
         fetch()
         fetch_professions()
         fetch_quests()
         fetch_bis()
+        fetch_gathering()
     else:
         args = [a for a in sys.argv[1:] if not a.startswith("--")]
         generate(args[0] if args else None)
         generate_prof(args[0] if args else None)
         generate_bis()
+        generate_gather()
