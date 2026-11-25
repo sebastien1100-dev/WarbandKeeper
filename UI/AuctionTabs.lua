@@ -251,6 +251,16 @@ local function available(id)
     for _, row in ipairs(r.rows) do if not row.mine then n = n + row.qty end end
     return n
 end
+-- « En vente » : la recherche du jour si elle a été faite, sinon la quantité vue au dernier scan (en gris)
+local function availText(id, av)
+    if av then return tostring(av) end
+    local e = WK.modules.AHScan:Entry(id)
+    if e and e.q and e.q > 0 then return UI:Hex(C.dim) .. tostring(e.q) .. "|r" end
+    return ""
+end
+-- ligne absente (hors de la fenêtre du tableau) : tout appel est ignoré
+local NOROW = {}
+setmetatable(NOROW, { __index = function() return NOROW end, __newindex = function() end, __call = function() end })
 
 ---------------------------------------------------------------------------
 -- Sacs : objets vendables
@@ -1404,6 +1414,8 @@ local function build(host)
         end
     end
     bv.irows = {}
+    bv.main:EnableMouseWheel(true)
+    bv.main:SetScript("OnMouseWheel", function(_, d) bv.off = math.max(0, (bv.off or 0) - d * 3); bv:Refresh() end)
     for i = 1, 16 do
         local r = textRow(bv.main, 26)
         r:SetPoint("TOPLEFT", 6, -44 - (i - 1) * 28); r:SetPoint("TOPRIGHT", -6, -44 - (i - 1) * 28)
@@ -1536,7 +1548,7 @@ local function build(host)
                 local low = lowestOther(id) or S:Price(id)
                 local av = available(id)
                 r.c:SetText(low and shortMoney(low) or "-")
-                r.d:SetText(av and tostring(av) or "")
+                r.d:SetText(availText(id, av))
                 r.tot:SetText("")
                 r.tag:Hide(); r.btn:Show(); r.add:Show()
                 if not isCommodity(id) then r.btn:SetLabel(T("Chercher"))
@@ -1668,8 +1680,16 @@ local function build(host)
         local sAH, nAH, sVendor, nVendor, nAlt, nNone, noneName, n = 0, 0, 0, 0, 0, 0, nil, 0
         f.buyCount = 0
         local anyWho = false
-        for i, r in ipairs(self.irows) do
-            local it = l and l.items[i]
+        -- toute la liste est comptée (résumé, total, objets passés par « Tout acheter ») ; seules les lignes de la
+        -- fenêtre (molette : self.off) sont dessinées, les autres passent par NOROW qui ignore tout
+        local items = l and l.items or {}
+        if self.offList ~= cur then self.off, self.offList = 0, cur end
+        local nRows = #self.irows
+        self.off = math.max(0, math.min(self.off or 0, #items - nRows))
+        for k = 1, math.max(#items, nRows) do
+            local it = items[k]
+            local vis = k > self.off and k <= self.off + nRows
+            local r = vis and self.irows[k - self.off] or NOROW
             r.watch = nil
             if it then
                 local id = it[1]
@@ -1687,7 +1707,7 @@ local function build(host)
                 local av = available(id)
                 local none = results[id] ~= nil and not lowestOther(id)
                 r.c:SetText(none and (UI:Hex(C.negative) .. T("aucun") .. "|r") or (low and shortMoney(low) or "-"))
-                r.d:SetText(av and tostring(av) or "")
+                r.d:SetText(availText(id, av))
                 -- prix vu par un de tes persos, sinon marchand vu dans WoW Forever (ForeverDB, Modules/Vendors.lua)
                 local v = vseen[id]
                 if not v then
@@ -1731,8 +1751,9 @@ local function build(host)
                 end
                 n = n + 1
                 r:Show()
-            else r:Hide() end
+            elseif vis or k <= nRows then r:Hide() end
         end
+        for j = #items - self.off + 1, nRows do if self.irows[j] then self.irows[j]:Hide() end end
         self.main.sub:SetText(l and (string.format(T("%d objets"), n) .. "  ·  " .. T("total") .. " "
             .. costText(listCost(l))) or "")
         -- résumé

@@ -53,6 +53,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.331 — 25/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Hôtel des ventes, onglet À acheter : une liste de plus de 16 objets était coupée sans le dire (« 16 objets » alors qu'elle en avait 24). Les objets cachés manquaient au résumé (« À l'HV »), et c'est parmi eux qu'étaient les objets « sans prix ». Le tableau défile maintenant à la molette, et le nombre d'objets, le total et le résumé comptent toute la liste.
+- Hôtel des ventes, onglet À acheter : la colonne « En vente » restait vide tant qu'on n'avait pas cliqué « Chercher les prix ». Elle montre maintenant, en gris, la quantité vue au dernier scan, remplacée par celle de la recherche quand elle est faite.
+
 ## v1.128.330 — 25/11/2026
 
 _Un /reload suffit._

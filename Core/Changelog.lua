@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.331", date = "25/11/2026",
+        fixed = {
+            "Hôtel des ventes, onglet À acheter : une liste de plus de 16 objets était coupée sans le dire (« 16 objets » alors qu'elle en avait 24). Les objets cachés manquaient au résumé (« À l'HV »), et c'est parmi eux qu'étaient les objets « sans prix ». Le tableau défile maintenant à la molette, et le nombre d'objets, le total et le résumé comptent toute la liste.",
+            "Hôtel des ventes, onglet À acheter : la colonne « En vente » restait vide tant qu'on n'avait pas cliqué « Chercher les prix ». Elle montre maintenant, en gris, la quantité vue au dernier scan, remplacée par celle de la recherche quand elle est faite.",
+        },
+    },
+    {
         version = "1.128.330", date = "25/11/2026",
         fixed = {
             "Sacs : pendant un scan de l'HV, le sac à munitions se fondait dans les autres sacs, puis revenait, en boucle. Le scan fait passer des milliers d'objets par la mémoire du jeu, et le jeu oubliait un instant que ton sac est un carquois ou une giberne. Un sac reconnu comme sac à munitions le reste maintenant tant que c'est le même sac.",
