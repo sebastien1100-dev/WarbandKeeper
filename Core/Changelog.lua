@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.364", date = "25/11/2026",
+        fixed = {
+            "Leveling, prérequis des talents : quand les traits de la fenêtre des talents n'étaient pas relevés, l'addon reprenait les prérequis des talents d'origine, faux pour les arbres de WoW Forever. Il n'utilise plus que les traits du jeu. S'ils manquent, un message le dit sous les arbres, au lieu de montrer de faux prérequis.",
+            "Leveling : un prérequis sur la même rangée (talent à côté) est dessiné par un trait horizontal entre les deux talents, au lieu d'un trait qui passait par en dessous.",
+        },
+        added = {
+            "/wk talents : nombre de prérequis relevés et un exemple (« X demande Y »), à comparer avec la fenêtre des talents du jeu.",
+        },
+    },
+    {
         version = "1.128.363", date = "25/11/2026",
         changed = {
             "Sorts du maître : un sort s'écarte maintenant rang par rang, au lieu de tous ses rangs d'un coup. Dans Leveling, un clic sur un rang l'écarte avec les rangs suivants (« j'achète jusqu'au rang 2, puis j'arrête »), et un clic sur un rang écarté le reprend avec ceux d'avant. Maj + clic ne change que ce rang. Chez le maître et dans l'onglet Sorts de la fiche, la coche ou le clic droit ne touche que le rang choisi. Les sorts déjà écartés en entier le restent.",

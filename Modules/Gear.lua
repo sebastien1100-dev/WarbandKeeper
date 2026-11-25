@@ -430,6 +430,21 @@ function M:TalentDiag()
     add("placer un point : " .. tostring(C_Traits and C_Traits.PurchaseRank ~= nil) .. " · valider : " .. tostring(C_Traits and C_Traits.CommitConfig ~= nil))
     local c = WK.DB:Me()
     add("relevé : " .. (c and c.talents and (#c.talents .. " arbre(s), détail : " .. tostring(c.talents[1] and c.talents[1].list and #c.talents[1].list)) or "aucun"))
+    -- prérequis lus sur les traits de la fenêtre des talents : nombre et un exemple (à comparer au jeu)
+    local nReq, ex = 0, nil
+    for _, t in ipairs(c and c.talents or {}) do
+        for _, d in ipairs(t.list or {}) do
+            if d[9] then
+                nReq = nReq + 1
+                if not ex then
+                    for _, p in ipairs(t.list) do
+                        if p[8] == d[9] then ex = d[1] .. " demande " .. tostring(p[1]) end
+                    end
+                end
+            end
+        end
+    end
+    add("prérequis relevés : " .. nReq .. (ex and (" (ex. : " .. ex .. ")") or ""))
     return out
 end
 WK:On("UPDATE_FACTION", function() later({ reps = true }) end)

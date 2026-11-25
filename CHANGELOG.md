@@ -54,6 +54,17 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.364 — 25/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- /wk talents : nombre de prérequis relevés et un exemple (« X demande Y »), à comparer avec la fenêtre des talents du jeu.
+
+### Corrections
+- Leveling, prérequis des talents : quand les traits de la fenêtre des talents n'étaient pas relevés, l'addon reprenait les prérequis des talents d'origine, faux pour les arbres de WoW Forever. Il n'utilise plus que les traits du jeu. S'ils manquent, un message le dit sous les arbres, au lieu de montrer de faux prérequis.
+- Leveling : un prérequis sur la même rangée (talent à côté) est dessiné par un trait horizontal entre les deux talents, au lieu d'un trait qui passait par en dessous.
+
 ## v1.128.363 — 25/11/2026
 
 _Un /reload suffit._

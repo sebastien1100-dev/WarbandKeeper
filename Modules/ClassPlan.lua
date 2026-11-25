@@ -97,10 +97,23 @@ function M.StaticTrees(_, class)
 end
 
 -- Prérequis d'un talent (arbre ti, n° j) : n° du talent demandé (même arbre) et son rang max, ou nil.
--- Arbres relevés : 9e champ (nœud source du trait de la fenêtre des talents) ; arbres des tables : d.req
--- (rangée, colonne) ; sinon le talent de même nom des tables donne le nom du prérequis.
+-- Arbres relevés : 9e champ seulement (nœud source du trait de la fenêtre des talents du jeu) ; s'ils n'ont aucun
+-- trait relevé, pas de prérequis (avant : on reprenait ceux des tables d'origine, faux pour les arbres de WoW
+-- Forever). Arbres des tables : d.req (rangée, colonne).
+local edgeCache = setmetatable({}, { __mode = "k" }) -- (pas de champ posé dans les talents sauvegardés)
+function M.HasEdges(_, trees)
+    if not trees or trees.static then return false end
+    if edgeCache[trees] == nil then
+        local has = false
+        for _, t in ipairs(trees) do
+            for _, d in ipairs(t.list or {}) do if d[9] then has = true break end end
+        end
+        edgeCache[trees] = has
+    end
+    return edgeCache[trees]
+end
 local function findIn(list, test) for j, d in ipairs(list or {}) do if test(d) then return j, d end end end
-function M:Prereq(class, trees, ti, j)
+function M.Prereq(_, _class, trees, ti, j)
     local tree = trees and trees[ti]
     local d = tree and tree.list and tree.list[j]
     if not d then return nil end
@@ -111,20 +124,6 @@ function M:Prereq(class, trees, ti, j)
     if d.req then
         local pj, pd = findIn(tree.list, function(x) return x[3] == d.req[1] and x[4] == d.req[2] end)
         if pj then return pj, pd[6] or 1, pd end
-    end
-    if not trees.static then
-        local st = self:StaticTrees(class)
-        for _, stree in ipairs(st or {}) do
-            local _, sd = findIn(stree.list, function(x) return x[1] == d[1] end)
-            if sd then
-                if not sd.req then return nil end
-                local _, sp = findIn(stree.list, function(x) return x[3] == sd.req[1] and x[4] == sd.req[2] end)
-                local pj, pd
-                if sp then pj, pd = findIn(tree.list, function(x) return x[1] == sp[1] end) end
-                if pj then return pj, pd[6] or 1, pd end
-                return nil
-            end
-        end
     end
     return nil
 end

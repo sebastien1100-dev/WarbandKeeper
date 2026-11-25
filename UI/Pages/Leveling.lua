@@ -422,8 +422,13 @@ UI:RegisterPage({
         self.leftMsg:SetText(msg or ""); self.leftMsg:SetShown(msg ~= nil)
         self.undo:SetShown(plan ~= nil and trees ~= nil)
         self.left.subtitle:SetText(plan and string.format(T("%d / 51 points prévus"), #plan.steps) or "")
-        self.leftFoot:SetText(plan and trees and T("Chiffre doré : niveaux où le point est pris. Rangée fermée :"
-            .. " 5 points par rangée dans l'arbre. Trait : prérequis (au rang max).") or "")
+        local foot = T("Chiffre doré : niveaux où le point est pris. Rangée fermée : 5 points par rangée dans"
+            .. " l'arbre. Trait : prérequis (au rang max).")
+        if trees and not trees.static and not cp:HasEdges(trees) then
+            foot = UI:Hex(C.warning) .. T("Prérequis pas encore relevés : connecte un perso de cette classe (ils sont"
+                .. " lus dans la fenêtre des talents du jeu).") .. "|r"
+        end
+        self.leftFoot:SetText(plan and trees and foot or "")
         if msg then return end
         local TP = WK.modules.TalentPlan
         local labels = TP:LevelLabels(plan)
@@ -488,7 +493,7 @@ UI:RegisterPage({
                 n:SetSize(size, size)
                 local x = x0 + ((d[4] or 1) - 1) * cell + (cell - size) / 2
                 local y = 24 + ((d[3] or 1) - 1) * cell + (cell - size) / 2 - 6
-                pos[j] = { x + size / 2, y, y + size }
+                pos[j] = { x + size / 2, y, y + size, size / 2 }
                 n:ClearAllPoints(); n:SetPoint("TOPLEFT", x, -y)
                 n.icon:SetTexture(d[2] or 134400)
                 local locked = r == 0 and (not open or not preOk)
@@ -521,9 +526,17 @@ UI:RegisterPage({
                     local ok = (ranks[ti .. ":" .. pj] or 0) >= pmax
                     local col = ok and { C.gold[1], C.gold[2], C.gold[3], 1 }
                         or { C.muted[1], C.muted[2], C.muted[3], 0.6 }
-                    local xa, ya, xb, yb = pos[pj][1], pos[pj][3] + 6, pos[j][1], pos[j][2] - 1
-                    local ym = (ya + yb) / 2
-                    seg(xa, ya, xa, ym, col); seg(xa, ym, xb, ym, col); seg(xb, ym, xb, yb, col)
+                    local a, b = pos[pj], pos[j]
+                    if math.abs(a[2] - b[2]) < 1 then
+                        -- même rangée : trait horizontal entre les deux bords, à mi-hauteur
+                        local dir = b[1] > a[1] and 1 or -1
+                        local ym = (a[2] + a[3]) / 2
+                        seg(a[1] + dir * a[4], ym, b[1] - dir * b[4], ym, col)
+                    else
+                        local xa, ya, xb, yb = a[1], a[3] + 6, b[1], b[2] - 1
+                        local ym = (ya + yb) / 2
+                        seg(xa, ya, xa, ym, col); seg(xa, ym, xb, ym, col); seg(xb, ym, xb, yb, col)
+                    end
                 end
             end
         end

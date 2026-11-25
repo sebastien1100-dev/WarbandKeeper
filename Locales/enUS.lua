@@ -3229,6 +3229,7 @@ WK.Locales.enUS.text = {
     ["Écarté : pas acheté chez le maître · clic : le reprendre, avec les rangs d'avant"] = "Left out: not bought at the trainer · click: take it back, with the ranks before",
     ["Acheté chez le maître · clic : l'écarter, avec les rangs suivants"] = "Bought at the trainer · click: leave it out, with the next ranks",
     ["Maj + clic : ce rang seul"] = "Shift + click: this rank only",
+    ["Prérequis pas encore relevés : connecte un perso de cette classe (ils sont lus dans la fenêtre des talents du jeu)."] = "Prerequisites not read yet: log in a character of this class (they are read from the game's talent window).",
     ["Barre d'XP"] = "XP bar",
     ["Avant de partir"] = "Before you go",
     ["Le meilleur objet de chaque sorte pour ton niveau ; rouge : sous le seuil. Seuils x2 en raid ; en JcJ, pas d'élixir et moitié de nourriture."] = "The best item of each kind for your level; red: below threshold. Thresholds x2 in raids; in PvP, no elixir and half the food.",
