@@ -54,6 +54,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.363 — 25/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Sorts du maître : un sort s'écarte maintenant rang par rang, au lieu de tous ses rangs d'un coup. Dans Leveling, un clic sur un rang l'écarte avec les rangs suivants (« j'achète jusqu'au rang 2, puis j'arrête »), et un clic sur un rang écarté le reprend avec ceux d'avant. Maj + clic ne change que ce rang. Chez le maître et dans l'onglet Sorts de la fiche, la coche ou le clic droit ne touche que le rang choisi. Les sorts déjà écartés en entier le restent.
+
 ## v1.128.362 — 25/11/2026
 
 _Un /reload suffit._

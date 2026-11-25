@@ -257,11 +257,44 @@ function M:RemoveLast(class, i)
     if p and #p.steps > 0 then table.remove(p.steps); self:Changed() end
 end
 
--- Sorts écartés (pas achetés chez le maître)
-function M.Skipped(_, plan, name) return plan and plan.skip and plan.skip[name] or false end
-function M:SetSkip(class, i, name, v)
+-- Sorts écartés (pas achetés chez le maître), rang par rang : skip[« nom#rang »] ; skip[nom] = tous les rangs
+-- (ancienne forme, encore lue). Un rang remis alors que tout le sort était écarté : les autres rangs restent
+-- écartés un par un (`ExpandSkip`, d'après le catalogue de la classe et celui des familiers).
+local function rankDigits(r) local d = tostring(r or ""):gsub("%D", ""); return d end
+function M.SkipKey(_, name, rank)
+    local d = rankDigits(rank)
+    return d ~= "" and (name .. "#" .. d) or name
+end
+function M.SkipIn(_, skip, name, rank)
+    if not skip then return false end
+    if skip[name] then return true end
+    local d = rankDigits(rank)
+    return d ~= "" and skip[name .. "#" .. d] or false
+end
+function M.ExpandSkip(_, skip, class, name)
+    if not (skip and skip[name]) then return end
+    local CS = WK.modules.ClassSpells
+    local list = {}
+    for _, e in ipairs(CS:Catalog(class)) do list[#list + 1] = { e.name, e.rank } end
+    for _, e in ipairs(CS:PetCatalog(class)) do list[#list + 1] = { "pet:" .. e.name, e.rank } end
+    local ranked = false
+    for _, e in ipairs(list) do
+        local d = rankDigits(e[2])
+        if e[1] == name and d ~= "" then skip[name .. "#" .. d] = true; ranked = true end
+    end
+    if ranked then skip[name] = nil end
+end
+function M:Skipped(plan, name, rank) return self:SkipIn(plan and plan.skip, name, rank) end
+function M:SetSkip(class, i, name, v, rank)
     local p = store(class).list[i]
-    if p then p.skip[name] = v and true or nil; self:Changed() end
+    if not p then return end
+    if rankDigits(rank) ~= "" then
+        if not v then self:ExpandSkip(p.skip, class, name) end
+        p.skip[self:SkipKey(name, rank)] = v and true or nil
+    else
+        p.skip[name] = v and true or nil
+    end
+    self:Changed()
 end
 -- Noms des talents pris dans le plan : leurs sorts (rangs appris chez le maître) font partie des achats
 function M.TalentNames(_, plan)

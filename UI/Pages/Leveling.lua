@@ -301,10 +301,25 @@ UI:RegisterPage({
         b.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
         b.t = UI:Text(b, 11, C.text); b.t:SetPoint("LEFT", 24, 0)
         if b.t.SetWordWrap then b.t:SetWordWrap(false) end
+        -- clic : ce rang et les suivants écartés (ou ce rang et ceux d'avant remis) ; Maj + clic : ce rang seul
         b:SetScript("OnClick", function(s)
-            local _, ai = CP():Active(self.class)
+            local cp = CP()
+            local plan, ai = cp:Active(self.class)
             if not (ai and s.e) then return end
-            CP():SetSkip(self.class, ai, s.e.skipKey or s.e.name, not s.skipped)
+            local base = s.e.skipKey or s.e.name
+            local function rn(e) return tonumber((tostring(e.rank or ""):gsub("%D", ""))) end
+            local mine = rn(s.e)
+            local v = not s.skipped
+            if not mine or (_G.IsShiftKeyDown and _G.IsShiftKeyDown()) then
+                cp:SetSkip(self.class, ai, base, v, s.e.rank)
+            else
+                for _, e in ipairs(self.allSpells or {}) do
+                    local r = rn(e)
+                    if (e.skipKey or e.name) == base and r and ((v and r >= mine) or (not v and r <= mine)) then
+                        if cp:Skipped(plan, base, e.rank) ~= v then cp:SetSkip(self.class, ai, base, v, e.rank) end
+                    end
+                end
+            end
             self:Refresh()
         end)
         b:SetScript("OnEnter", function(s)
@@ -322,8 +337,10 @@ UI:RegisterPage({
                     or T("Dans le plan · clic : l'écarter")
                 GT:AddLine(hint, 0.6, 0.6, 0.6)
             else
-                GT:AddLine(s.skipped and T("Écarté : pas acheté chez le maître · clic : l'acheter")
-                    or T("Acheté chez le maître · clic : l'écarter"), 0.6, 0.6, 0.6)
+                local back = T("Écarté : pas acheté chez le maître · clic : le reprendre, avec les rangs d'avant")
+                local how = s.skipped and back or T("Acheté chez le maître · clic : l'écarter, avec les rangs suivants")
+                GT:AddLine(how, 0.6, 0.6, 0.6, true)
+                GT:AddLine(T("Maj + clic : ce rang seul"), 0.6, 0.6, 0.6)
             end
             GT:Show()
         end)
@@ -538,6 +555,10 @@ UI:RegisterPage({
             table.insert(petLvl[e.level], e)
         end
         table.sort(petLevels)
+        -- tous les sorts affichés (clic sur un rang : les rangs du même sort)
+        self.allSpells = {}
+        for _, lv in ipairs(levels) do for _, e in ipairs(byLvl[lv]) do table.insert(self.allSpells, e) end end
+        for _, lv in ipairs(petLevels) do for _, e in ipairs(petLvl[lv]) do table.insert(self.allSpells, e) end end
         local W = math.max(200, (self.spells:GetWidth() or 400) - 16)
         self.spells.child:SetWidth(W)
         local y, ci, ri, total, kept = 0, 0, 0, 0, 0
@@ -565,7 +586,7 @@ UI:RegisterPage({
                     ci = ci + 1
                     local b = self:Chip(ci)
                     b.e = e
-                    b.skipped = cp:Skipped(plan, e.skipKey or e.name)
+                    b.skipped = cp:Skipped(plan, e.skipKey or e.name, e.rank)
                     local rk = (e.rank or ""):gsub("[^%d]", "")
                     b.t:SetText(e.name .. (rk ~= "" and (" " .. UI:Hex(C.muted) .. rk .. "|r") or ""))
                     b.icon:SetTexture(e.icon or 134400)

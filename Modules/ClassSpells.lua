@@ -220,7 +220,7 @@ function M:ForChar(key)
         if not learned and (not e.talent or hasName[e.name]) then
             local cost, src = self:Price(class, e)
             local item = { id = e.id, name = e.name, rank = e.rank, level = e.level, icon = e.icon, cost = cost, src = src, talent = e.talent }
-            if skip[e.name] then
+            if WK.modules.ClassPlan:SkipIn(skip, e.name, e.rank) then
                 table.insert(r.skipped, item)
             else
                 if not cost then r.unknownPrice = r.unknownPrice + 1 elseif src == "est" then r.estimated = (r.estimated or 0) + 1 end
@@ -244,26 +244,24 @@ function M:ForChar(key)
 end
 
 
-function M:Skip(key, name, v)
+-- Écarter un sort : un rang (« nom#rang ») si `rank` est donné, sinon tous ses rangs (Modules/ClassPlan.lua)
+function M:Skip(key, name, v, rank)
     local cfg = self:Config()
     key = key or WK:CharKey()
+    local CP = WK.modules.ClassPlan
     local cp = classPlanOf(key)
-    if cp then
-        cp.skip[name] = v and true or nil
-        WK.modules.ClassPlan:Changed()
-        self:Changed()
-        return
-    end
-    cfg.skip[key] = cfg.skip[key] or {}
-    cfg.skip[key][name] = v and true or nil
+    local skip = cp and cp.skip
+    if not skip then cfg.skip[key] = cfg.skip[key] or {}; skip = cfg.skip[key] end
+    local k = CP:SkipKey(name, rank)
+    if k ~= name and not v then CP:ExpandSkip(skip, classOf(key), name) end
+    skip[k] = v and true or nil
+    if cp then CP:Changed() end
     self:Changed()
 end
-function M:Skipped(key, name)
+function M:Skipped(key, name, rank)
     key = key or WK:CharKey()
     local cp = classPlanOf(key)
-    if cp then return cp.skip[name] or false end
-    local s = self:Config().skip[key]
-    return s and s[name] or false
+    return WK.modules.ClassPlan:SkipIn(cp and cp.skip or self:Config().skip[key], name, rank)
 end
 
 ---------------------------------------------------------------------------
@@ -339,7 +337,7 @@ function M:TrainerAvailable(later)
             if LR then local ok, v = pcall(LR, i); if ok then lvl = v end end
             table.insert(out, { index = i, name = name, rank = rank or "", later = category ~= "available", level = lvl,
                 cost = _G.GetTrainerServiceCost and (_G.GetTrainerServiceCost(i)) or 0,
-                skipped = self:Skipped(nil, name) })
+                skipped = self:Skipped(nil, name, rank) })
         end
     end
     return out

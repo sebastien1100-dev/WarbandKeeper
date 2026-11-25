@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.363", date = "25/11/2026",
+        changed = {
+            "Sorts du maître : un sort s'écarte maintenant rang par rang, au lieu de tous ses rangs d'un coup. Dans Leveling, un clic sur un rang l'écarte avec les rangs suivants (« j'achète jusqu'au rang 2, puis j'arrête »), et un clic sur un rang écarté le reprend avec ceux d'avant. Maj + clic ne change que ce rang. Chez le maître et dans l'onglet Sorts de la fiche, la coche ou le clic droit ne touche que le rang choisi. Les sorts déjà écartés en entier le restent.",
+        },
+    },
+    {
         version = "1.128.362", date = "25/11/2026",
         changed = {
             "Leveling, page refaite (maquettes A et 1) : deux onglets, « Talents » et « Sorts du maître », chacun sur toute la largeur. Les talents sont bien plus grands.",

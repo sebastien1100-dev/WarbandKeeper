@@ -28,7 +28,7 @@ local function build()
         b.hl = b:CreateTexture(nil, "BACKGROUND"); b.hl:SetAllPoints(); b.hl:SetColorTexture(1, 1, 1, 0.05); b.hl:Hide()
         -- coche : à apprendre (oui) ou écarté (non)
         b.check = UI:Toggle(b, function() return b.e and not b.e.skipped end, function(v)
-            if b.e then CS():Skip(nil, b.e.name, not v) end
+            if b.e then CS():Skip(nil, b.e.name, not v, b.e.rank) end
             UI:RefreshClassTrainer()
         end)
         b.check:SetScale(0.7); b.check:SetPoint("LEFT", 2 / 0.7, 0)
