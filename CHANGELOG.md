@@ -53,6 +53,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.320 — 25/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- File de fabrication : la petite fenêtre près du métier (« Fonte du cuivre 10 / 14 ») restait affichée après avoir vidé la file ou retiré la recette, et parfois après avoir fermé la fenêtre du métier. Elle suit maintenant la file tout de suite et se ferme avec la fenêtre du métier.
+
 ## v1.128.319 — 25/11/2026
 
 _Un /reload suffit._

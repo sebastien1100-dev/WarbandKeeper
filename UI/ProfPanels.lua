@@ -563,7 +563,15 @@ local function buildHUD()
         s2.awayAcc = (s2.awayAcc or 0) + el
         if s2.awayAcc < 1 then return end
         s2.awayAcc = 0
-        if not hudAnchor or UI.editing then return end
+        if UI.editing then return end
+        -- fenêtre du métier du jeu fermée sans que l'évènement soit vu (autre interface, fonte…) : on suit
+        local seen, open = false, false
+        for _, n in ipairs({ "ProfessionsFrame", "TradeSkillFrame", "CraftFrame" }) do
+            local gf = _G[n]
+            if gf then seen = true; if gf:IsShown() then open = true end end
+        end
+        if seen and not open then s2:Hide() return end
+        if not hudAnchor then return end
         local x, y, inst = playerPos()
         if not x then return end
         local dx, dy = x - hudAnchor[1], y - hudAnchor[2]

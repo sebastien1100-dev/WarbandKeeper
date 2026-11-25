@@ -270,12 +270,15 @@ function M:AddToList(key, n)
     list[key] = math.max(0, (list[key] or 0) + n)
     if list[key] == 0 then list[key] = nil end
     WK:NotifyChanged()
+    -- petite fenêtre « File de fabrication » près du métier : suit la file tout de suite (vidée, recette retirée)
+    if WK.UI and WK.UI.RefreshCraftHUD then WK.UI:RefreshCraftHUD() end
     return n
 end
 
 function M:ClearList()
     wipe(WK.DB.global.shopping)
     WK:NotifyChanged()
+    if WK.UI and WK.UI.RefreshCraftHUD then WK.UI:RefreshCraftHUD() end
 end
 
 -- Composants nécessaires : { { itemID, need, have, missing, cost }, ... } et coût total manquant.

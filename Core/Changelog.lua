@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.320", date = "25/11/2026",
+        fixed = {
+            "File de fabrication : la petite fenêtre près du métier (« Fonte du cuivre 10 / 14 ») restait affichée après avoir vidé la file ou retiré la recette, et parfois après avoir fermé la fenêtre du métier. Elle suit maintenant la file tout de suite et se ferme avec la fenêtre du métier.",
+        },
+    },
+    {
         version = "1.128.319", date = "25/11/2026",
         changed = {
             "File de fabrication : on ne peut plus y mettre plus de fabrications que les ressources de ton compte ne le permettent (sacs, banques et courriers de tous tes persos). Ce que les autres recettes de la file utilisent déjà est décompté, et ce qu'elles produisent est compté : 10 barres en file permettent d'ajouter l'objet qui en demande. La fenêtre d'ajout dit combien tu peux encore en mettre (« Tout » = ce maximum), et le bouton devient « Ressources insuffisantes » quand il n'y a plus de quoi.",
