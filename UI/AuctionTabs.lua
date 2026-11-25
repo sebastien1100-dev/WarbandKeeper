@@ -1403,7 +1403,8 @@ local function build(host)
         end)
         local function deletable() return r.name and r.name ~= QNAME and r.name ~= WATCH end
         r:HookScript("OnEnter", function()
-            if deletable() then r.del:Show(); r.pill:Hide() end
+            r.del:SetShown(deletable() and true or false)
+            if deletable() then r.pill:Hide() end
         end)
         r:HookScript("OnLeave", function()
             if r.del:IsMouseOver() then return end
@@ -1745,7 +1746,10 @@ local function build(host)
                 r.pill.t:SetText(count)
                 r.pill:SetWidth(math.max(18, r.pill.t:GetStringWidth() + 10))
                 r.pill.bg:SetColor(ar, ag, ab, 1)
-                r.pill:SetShown(count > 0)
+                -- ligne réutilisée par une autre liste (après une suppression) : pas de corbeille restée affichée
+                local hov = r:IsMouseOver() and n ~= QNAME and n ~= WATCH
+                r.del:SetShown(hov and true or false); if not hov then r.del.armed = nil end
+                r.pill:SetShown(count > 0 and not hov)
                 if n == WATCH then r.cost:SetText("")
                 else r.cost:SetText(costText(listCost(lists[n]))) end
                 r.hl:SetColorTexture(ar, ag, ab, n == cur and 0.14 or 0)

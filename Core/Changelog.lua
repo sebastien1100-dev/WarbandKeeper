@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.338", date = "25/11/2026",
+        fixed = {
+            "Hôtel des ventes, onglet À acheter : après la suppression d'une liste, la corbeille pouvait rester affichée sur la ligne suivante (même sur « Prix surveillés »), à la place du nombre d'objets.",
+        },
+    },
+    {
         version = "1.128.337", date = "25/11/2026",
         added = {
             "Hôtel des ventes, onglet À acheter : les listes se suppriment. Au survol d'une liste, une corbeille remplace le nombre d'objets ; un clic l'arme (« Clique encore pour confirmer », pendant 3 s), un 2e clic supprime la liste. La file de fabrication (refaite d'office depuis la page Métiers) et les prix surveillés n'en ont pas.",
