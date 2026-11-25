@@ -3416,8 +3416,8 @@
 "i":2318,
 "k":"skin",
 "m":1437,
-"x":0.3719,
-"y":0.4321
+"x":0.3717,
+"y":0.4319
 },
 "1437:skin:2318:74:87":{
 "i":2318,
@@ -3815,8 +3815,8 @@
 "i":2319,
 "k":"skin",
 "m":1437,
-"x":0.3708,
-"y":0.4232
+"x":0.3711,
+"y":0.4234
 },
 "1437:skin:2319:74:87":{
 "i":2319,
@@ -4326,7 +4326,7 @@
 "i":2770,
 "k":"ore",
 "m":1442,
-"x":0.7224,
+"x":0.7225,
 "y":0.437
 },
 "1442:ore:2770:145:87":{
@@ -32513,7 +32513,7 @@
 "0:-242:-66":[
 0,
 -4840,
--1324
+-1326
 ],
 "0:-418:26":[
 0,
@@ -32548,7 +32548,7 @@
 },
 "11284":{
 "npc":"Murndan Derth",
-"p":4
+"p":5
 },
 "11291":{
 "npc":"Jessara Cordell",
@@ -32560,11 +32560,11 @@
 },
 "11362":{
 "npc":"Naela Trance",
-"p":900
+"p":1000
 },
 "117":{
-"npc":"Helbrek l'aubergiste",
-"p":4
+"npc":"Toddrick",
+"p":5
 },
 "1179":{
 "npc":"Belm l'aubergiste",
@@ -32903,16 +32903,16 @@
 "p":3285
 },
 "2209":{
-"npc":"Gunther Weller",
-"p":6404
+"npc":"Brak Durnad",
+"p":7115
 },
 "22307":{
 "npc":"Jessara Cordell",
 "p":6000
 },
 "2287":{
-"npc":"Helbrek l'aubergiste",
-"p":22
+"npc":"Toddrick",
+"p":25
 },
 "2320":{
 "npc":"Alexandra Bolero",
@@ -32992,7 +32992,7 @@
 },
 "2507":{
 "npc":"Naela Trance",
-"p":1576
+"p":1751
 },
 "2509":{
 "npc":"Hegnar Rumbleshot",
@@ -33044,19 +33044,19 @@
 },
 "2593":{
 "npc":"Mikhail",
-"p":135
+"p":150
 },
 "2594":{
 "npc":"Mikhail",
-"p":1350
+"p":1500
 },
 "2595":{
 "npc":"Mikhail",
-"p":1800
+"p":2000
 },
 "2596":{
 "npc":"Mikhail",
-"p":108
+"p":120
 },
 "2604":{
 "npc":"Alexandra Bolero",
@@ -33080,7 +33080,7 @@
 },
 "2723":{
 "npc":"Mikhail",
-"p":45
+"p":50
 },
 "273636":{
 "npc":"Catherine Leland",
@@ -33128,15 +33128,15 @@
 },
 "3023":{
 "npc":"Murndan Derth",
-"p":3394
+"p":3771
 },
 "3024":{
 "npc":"Murndan Derth",
-"p":6389
+"p":7098
 },
 "3026":{
 "npc":"Naela Trance",
-"p":3431
+"p":3812
 },
 "3030":{
 "npc":"Gruham Rumdnul",
@@ -33148,11 +33148,11 @@
 },
 "3107":{
 "npc":"Gruham Rumdnul",
-"p":1647
+"p":1830
 },
 "3108":{
 "npc":"Gruham Rumdnul",
-"p":6834
+"p":7593
 },
 "3111":{
 "npc":"Drake Lindgren",
@@ -33164,11 +33164,11 @@
 },
 "3135":{
 "npc":"Gruham Rumdnul",
-"p":1647
+"p":1830
 },
 "3137":{
 "npc":"Gruham Rumdnul",
-"p":6834
+"p":7593
 },
 "3355":{
 "npc":"Kixxle",
@@ -33187,8 +33187,8 @@
 "p":4
 },
 "3372":{
-"npc":"Fahran Silentblade",
-"p":36
+"npc":"Kersok Prond",
+"p":40
 },
 "3466":{
 "npc":"Thrawn Boltar",
@@ -33243,12 +33243,12 @@
 "p":1440
 },
 "3770":{
-"npc":"Helbrek l'aubergiste",
-"p":90
+"npc":"Toddrick",
+"p":100
 },
 "3771":{
-"npc":"Helbrek l'aubergiste",
-"p":180
+"npc":"Toddrick",
+"p":200
 },
 "3857":{
 "npc":"Kaita Deepforge",
@@ -33311,12 +33311,12 @@
 "p":1400
 },
 "4399":{
-"npc":null,
-"p":180
+"npc":"Kersok Prond",
+"p":200
 },
 "4400":{
-"npc":null,
-"p":1800
+"npc":"Kersok Prond",
+"p":2000
 },
 "4470":{
 "npc":"Jessara Cordell",
@@ -33332,7 +33332,7 @@
 },
 "4497":{
 "npc":"Gruham Rumdnul",
-"p":18000
+"p":20000
 },
 "4498":{
 "npc":"Drake Lindgren",
@@ -33371,8 +33371,8 @@
 "p":200
 },
 "4599":{
-"npc":"Helbrek l'aubergiste",
-"p":360
+"npc":"Toddrick",
+"p":400
 },
 "4601":{
 "npc":"Belm l'aubergiste",
@@ -33416,7 +33416,7 @@
 },
 "5439":{
 "npc":"Naela Trance",
-"p":90
+"p":100
 },
 "5441":{
 "npc":"Hegnar Rumbleshot",
@@ -33631,48 +33631,48 @@
 "p":90
 },
 "8925":{
-"npc":"Fahran Silentblade",
-"p":450
+"npc":"Kixxle",
+"p":500
 },
 "8950":{
 "npc":"Belm l'aubergiste",
 "p":800
 },
 "8952":{
-"npc":"Helbrek l'aubergiste",
-"p":720
+"npc":"Toddrick",
+"p":800
 },
 "8953":{
 "npc":"Maliynn",
 "p":720
 },
 "922":{
-"npc":"Gunther Weller",
-"p":10835
+"npc":"Brak Durnad",
+"p":12038
 },
 "923":{
-"npc":"Gunther Weller",
-"p":7869
+"npc":"Brak Durnad",
+"p":8743
 },
 "924":{
-"npc":"Gunther Weller",
-"p":9875
+"npc":"Brak Durnad",
+"p":10972
 },
 "925":{
-"npc":"Gunther Weller",
-"p":7018
+"npc":"Brak Durnad",
+"p":7797
 },
 "926":{
-"npc":"Gunther Weller",
-"p":8806
+"npc":"Brak Durnad",
+"p":9784
 },
 "927":{
-"npc":"Gunther Weller",
-"p":6258
+"npc":"Brak Durnad",
+"p":6953
 },
 "928":{
-"npc":"Gunther Weller",
-"p":8874
+"npc":"Brak Durnad",
+"p":9860
 }
 }
 },
