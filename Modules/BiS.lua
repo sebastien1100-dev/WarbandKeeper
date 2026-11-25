@@ -61,6 +61,50 @@ function M:NewList(key, name, items)
     WK:NotifyChanged()
     return s.active
 end
+-- Listes conseillées par spécialisation (ForeverDB, Data/BiSSpecDB.lua, chargé à la demande ; mention
+-- « Data from ForeverDB.net (https://foreverdb.net) » partout où elles sont montrées : M.SPEC_CREDIT).
+-- Lecture seule : « Copier dans mes listes » en fait une liste à nous, modifiable comme les autres.
+M.SPEC_CREDIT = "foreverdb.net"
+function M.Specs(_, class)
+    if not WK:NeedData("listes BiS") then return {} end
+    return (WK.BiSSpecs and WK.BiSSpecs[class or ""]) or {}
+end
+-- mode : « pve » ou « pvp » (camp du perso : objets JcJ propres à l'Alliance ou à la Horde)
+local specCache = {}
+function M.SpecList(_, id, mode, faction)
+    if not (id and WK:NeedData("listes BiS")) then return nil end
+    local k = id .. ":" .. (mode == "pvp" and ("pvp-" .. (faction == "Horde" and "h" or "a")) or "pve")
+    if specCache[k] then return specCache[k] end
+    local raw = WK.BiSSpecItems and WK.BiSSpecItems[k]
+    if not raw then return nil end
+    local out = {}
+    for part in raw:gmatch("[^;]+") do
+        local slot, ids, enh = part:match("^(%d+)=([^|]*)|?(.*)$")
+        slot = tonumber(slot)
+        if slot then
+            local e = { alts = {} }
+            for iid, ease in ids:gmatch("(%d+):(%a?%??)") do
+                if not e.id then e.id, e.ease = tonumber(iid), ease
+                else table.insert(e.alts, { id = tonumber(iid), ease = ease }) end
+            end
+            local kind, n = enh:match("^(%a)(%d+)$")
+            if kind then e.enh = { kind = kind == "s" and "spell" or "item", id = tonumber(n) } end
+            if e.id then out[slot] = e end
+        end
+    end
+    specCache[k] = out
+    return out
+end
+-- copie d'une liste conseillée dans les listes du perso (objets seulement), affichée tout de suite
+function M:AdoptSpec(key, id, mode, faction, name)
+    local l = self:SpecList(id, mode, faction)
+    if not l then return nil end
+    local items = {}
+    for slot, e in pairs(l) do items[slot] = e.id end
+    return self:NewList(key, name, items)
+end
+M.EASE = { e = "facile", m = "un peu d'effort", h = "difficile", u = "source inconnue" }
+
 function M:RenameList(key, i, name)
     local l = store(key).lists[i]
     if l and name and name ~= "" then l.name = name; WK:NotifyChanged() end

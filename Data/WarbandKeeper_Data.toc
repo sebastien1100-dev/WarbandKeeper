@@ -1,8 +1,8 @@
 ## Interface: 16001
 ## Title: Warband Keeper Data
-## Notes: Grosses bases de Warband Keeper (objectifs de quête, objets des listes BiS, recettes, quêtes répétables), chargées à la demande.
+## Notes: Grosses bases de Warband Keeper (objectifs de quête, objets des listes BiS, recettes, quêtes répétables, listes BiS par spécialisation), chargées à la demande.
 ## Author: sebastien1100-dev
-## Version: 1.128.306
+## Version: 1.128.307
 ## LoadOnDemand: 1
 ## Dependencies: WarbandKeeper
 ## IconTexture: Interface\Icons\INV_Misc_Bag_10
@@ -11,4 +11,5 @@ RecipeDB.lua
 QuestObjDB.lua
 ItemsDB.lua
 RepeatQuestsDB.lua
+BiSSpecDB.lua
 Loaded.lua

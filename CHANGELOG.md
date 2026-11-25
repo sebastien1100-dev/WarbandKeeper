@@ -24,6 +24,7 @@ _Prévu, pas encore commencé._
 - **Annonce de métier** (basse) — Une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
 ### Personnages
+- **BiS conseillés par niveau** (basse) — Listes conseillées aussi pour la montée (niveaux 20, 40…) et une variante « facile à obtenir » (sans raid ni rang JcJ élevé).
 - **Comparer deux persos** (basse) — Équipement, stats et métiers côte à côte.
 - **Expérience, suite** (basse) — Temps passé à chaque niveau par perso, barre de réputation au même endroit, barre fine sous le micro menu.
 - **Feu de camp, plus tard** (basse) — Camps des autres joueurs lus dans Happy Camper s'il est installé, annonce de ton camp, endroits où tu as campé.
@@ -50,6 +51,13 @@ _Prévu, pas encore commencé._
 ### Guilde et partage
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.128.307 — 25/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Fiche du perso > BiS : des sous-onglets en haut, « Mes listes » (tes listes, comme avant) puis une par spécialisation de ta classe (Armes, Fureur, Protection…). Une spécialisation montre la liste conseillée au niveau maximum dans le même mannequin, en JcE ou en JcJ (objets de ton camp) : au survol d'un emplacement, la facilité d'obtention, deux autres choix et le meilleur enchantement. « Copier dans mes listes » en fait une de tes listes, modifiable, partageable et à équiper. Data from ForeverDB.net (https://foreverdb.net).
 
 ## v1.128.306 — 25/11/2026
 

@@ -206,6 +206,34 @@ def quest_points(src=CACHE):
     return out
 
 
+def fetch_bis(api=None, dest=CACHE):
+    """Listes BiS par spécialisation (niveau max) : JcE, et JcJ pour chaque camp ; gardées pour la même version."""
+    api = api or Api()
+    bdir = os.path.join(dest, "bis")
+    os.makedirs(bdir, exist_ok=True)
+    build = api.get("meta")["data"]["build"]
+    specs = api.get("bis")["data"]
+    with open(os.path.join(dest, "bis.json"), "w", encoding="utf-8") as f:
+        json.dump(specs, f)
+    for sp in specs:
+        for mode, side in (("pve", None), ("pvp", "a"), ("pvp", "h")):
+            name = "%s-%s%s.json" % (sp["id"], mode, ("-" + side) if side else "")
+            path = os.path.join(bdir, name)
+            if os.path.exists(path):
+                try:
+                    with open(path, encoding="utf-8") as f:
+                        if json.load(f).get("_build") == build:
+                            continue
+                except (ValueError, OSError):
+                    pass
+            q = "bis/%s?mode=%s" % (sp["id"], mode) + (("&side=" + side) if side else "")
+            d = api.get(q)["data"]
+            d["_build"] = build
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(d, f)
+    print("BiS : %d spécialisations (%d requêtes)" % (len(specs), api.calls), flush=True)
+
+
 def fr_names(root):
     """Noms français des PNJ (QuestieDB, comme tools/gen_places.py) ; {} sans clone ni lupa."""
     try:
@@ -374,16 +402,109 @@ def generate_prof(questie=None, src=CACHE, out=PROF_OUT):
     return {"npcs": len(npcs), "recipes": len(recipes)}
 
 
+BIS_OUT = os.path.join(HERE, "..", "Data", "BiSSpecDB.lua")
+BIS_SLOT = {"head": 1, "neck": 2, "shoulder": 3, "back": 15, "chest": 5, "wrist": 9, "hands": 10, "waist": 6,
+            "legs": 7, "feet": 8, "finger1": 11, "finger2": 12, "trinket1": 13, "trinket2": 14, "main": 16, "off": 17,
+            "ranged": 18}
+BIS_EASE = {"easy": "e", "some effort": "m", "hard": "h", "very hard": "h", "source not known yet": "u"}
+SPEC_FR = {"arms": "Armes", "fury": "Fureur", "protection": "Protection", "holy": "Sacré", "retribution": "Vindicte",
+           "beast-mastery": "Maîtrise des bêtes", "marksmanship": "Précision", "survival": "Survie",
+           "assassination": "Assassinat", "combat": "Combat", "subtlety": "Finesse", "discipline": "Discipline",
+           "shadow": "Ombre", "elemental": "Élémentaire", "enhancement": "Amélioration",
+           "restoration": "Restauration", "arcane": "Arcanes", "fire": "Feu", "frost": "Givre",
+           "affliction": "Affliction", "demonology": "Démonologie", "destruction": "Destruction",
+           "balance": "Équilibre", "feral": "Combat farouche", "feral-cat": "Farouche (félin)",
+           "feral-bear": "Farouche (ours)", "guardian": "Gardien"}
+
+
+def generate_bis(src=CACHE, out=BIS_OUT):
+    """Listes BiS de ForeverDB par spécialisation (Data/BiSSpecDB.lua, chargé à la demande) : seulement des n°
+    d'objets, d'enchantements et une note de difficulté, jamais leurs textes."""
+    path = os.path.join(src, "bis.json")
+    if not os.path.exists(path):
+        print("BiSSpecDB.lua : pas de cache BiS, rien d'écrit")
+        return None
+    with open(path, encoding="utf-8") as f:
+        specs = json.load(f)
+    by_class, items, build = {}, {}, ""
+
+    def ease(e):
+        return BIS_EASE.get(str(e or "").lower(), "?")
+    for sp in specs:
+        cls = str(sp.get("class") or "").upper().replace(" ", "")
+        sid = sp["id"]
+        suffix = sid.split("-", 1)[1] if "-" in sid else sid
+        role = ""
+        for mode, side in (("pve", None), ("pvp", "a"), ("pvp", "h")):
+            name = "%s-%s%s.json" % (sid, mode, ("-" + side) if side else "")
+            fp = os.path.join(src, "bis", name)
+            if not os.path.exists(fp):
+                continue
+            with open(fp, encoding="utf-8") as f:
+                d = json.load(f)
+            build = d.get("_build") or build
+            role = role or d.get("role") or ""
+            parts = []
+            for sl in d.get("slots") or []:
+                n = BIS_SLOT.get(sl.get("slot"))
+                best = sl.get("best") or {}
+                if not n or not best.get("itemId"):
+                    continue
+                ids = ["%d:%s" % (best["itemId"], ease(best.get("ease")))]
+                for a in (sl.get("alternatives") or [])[:2]:
+                    if a.get("itemId"):
+                        ids.append("%d:%s" % (a["itemId"], ease(a.get("ease"))))
+                enh = ""
+                for e in sl.get("enhancements") or []:
+                    if e.get("rank") == 1:
+                        if e.get("spellId"):
+                            enh = "s%d" % e["spellId"]
+                        elif e.get("itemId"):
+                            enh = "i%d" % e["itemId"]
+                        break
+                parts.append("%d=%s%s" % (n, ",".join(ids), ("|" + enh) if enh else ""))
+            if parts:
+                items["%s:%s" % (sid, mode + ("-" + side if side else ""))] = ";".join(parts)
+        by_class.setdefault(cls, []).append((sid, sp.get("spec") or suffix, SPEC_FR.get(suffix), role))
+    lines = [
+        "-- FICHIER GÉNÉRÉ par tools/gen_foreverdb.py : ne pas modifier à la main.",
+        "-- Listes BiS par spécialisation (niveau max) : " + ATTRIB + ", API https://foreverdb.net/developers,",
+        "-- version du jeu %s. Mention obligatoire, avec le lien, partout où elles sont montrées." % build,
+        "local WK = WarbandKeeper -- table de l'addon principal (dossier chargé à la demande)",
+        "-- WK.BiSSpecs[CLASSE] = { { id, spécialisation (anglais), français, rôle }, … }",
+        "-- WK.BiSSpecItems[\"id:pve\" | \"id:pvp-a\" | \"id:pvp-h\"] = \"emplacement=objet:facilité,alt:f,alt:f|i/s enchant;…\"",
+        "--   facilité : e facile, m un peu d'effort, h difficile, u source inconnue ; enchant : i = objet, s = sort",
+        "WK.BiSSpecs = {",
+    ]
+    for cls in sorted(by_class):
+        rows = ", ".join("{ %s, %s, %s, %s }" % (lua_str(a), lua_str(b), lua_str(c) if c else "nil", lua_str(r))
+                         for a, b, c, r in by_class[cls])
+        lines.append("    %s = { %s }," % (cls, rows))
+    lines.append("}")
+    lines.append("WK.BiSSpecItems = {")
+    for k in sorted(items):
+        lines.append("    [%s] = %s," % (lua_str(k), lua_str(items[k])))
+    lines.append("}")
+    with open(out, "w", encoding="utf-8", newline="\n") as f:
+        f.write("\n".join(lines) + "\n")
+    print("BiSSpecDB.lua : %d classes, %d listes" % (len(by_class), len(items)))
+    return {"specs": sum(len(v) for v in by_class.values()), "lists": len(items)}
+
+
 if __name__ == "__main__":
     if "--fetch-prof" in sys.argv:
         fetch_professions()
     elif "--fetch-quests" in sys.argv:
         fetch_quests()
+    elif "--fetch-bis" in sys.argv:
+        fetch_bis()
     elif "--fetch" in sys.argv:
         fetch()
         fetch_professions()
         fetch_quests()
+        fetch_bis()
     else:
         args = [a for a in sys.argv[1:] if not a.startswith("--")]
         generate(args[0] if args else None)
         generate_prof(args[0] if args else None)
+        generate_bis()

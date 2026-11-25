@@ -719,6 +719,42 @@ local function build(parent)
     f.bisTabLine = bsc.child:CreateTexture(nil, "ARTWORK")
     f.bisTabLine:SetTexture("Interface\\Buttons\\WHITE8X8"); f.bisTabLine:SetHeight(1)
     f.bisTabLine:SetVertexColor(C.border[1], C.border[2], C.border[3], 1)
+    -- sous-onglets : « Mes listes » (notre système) puis une liste conseillée par spécialisation de la classe
+    -- (ForeverDB, lecture seule : f.bisSpec = id de la spécialisation affichée, nil = mes listes)
+    f.bisSpecTabs = UI:Pool(function()
+        local b = _G.CreateFrame("Button", nil, bsc.child)
+        b:SetHeight(28)
+        b.label = UI:Text(b, 12); b.label:SetPoint("CENTER", 0, 1)
+        b.bg = UI:Rounded(b, 14, 0, "BACKGROUND", 1)
+        b:SetScript("OnEnter", function(x) x.hover = true; x:Paint() end)
+        b:SetScript("OnLeave", function(x) x.hover = false; x:Paint() end)
+        function b:Paint()
+            local r, g, bl = UI:Accent()
+            if self.sel then
+                self.bg:SetColor(r, g, bl, 1); self.label:SetTextColor(unpack(C.onAccent or C.bg))
+            else
+                self.bg:SetColor(r, g, bl, self.hover and 0.22 or 0.12); self.label:SetTextColor(r, g, bl, 1)
+            end
+        end
+        return b
+    end)
+    f.bisMode = "pve"
+    f.bisPve = UI:Button(bsc.child, "JcE", 54, 24, "primary")
+    f.bisPvp = UI:Button(bsc.child, "JcJ", 54, 24, "secondary")
+    f.bisPve:SetScript("OnClick", function() f.bisMode = "pve"; f:Refresh() end)
+    f.bisPvp:SetScript("OnClick", function() f.bisMode = "pvp"; f:Refresh() end)
+    f.bisAdopt = UI:Button(bsc.child, "Copier dans mes listes", nil, 24, "primary", "plus")
+    f.bisAdopt.tooltip = "Crée une de tes listes à partir de celle-ci : tu pourras la modifier, la partager, l'équiper."
+    f.bisAdopt:SetScript("OnClick", function()
+        local sp = f.bisSpecRow
+        if not sp then return end
+        local name = (sp[3] or sp[2]) .. " · " .. (f.bisMode == "pvp" and T("JcJ") or T("JcE"))
+        local c = WK.DB.global.characters[f.key] or {}
+        if B:AdoptSpec(f.key, sp[1], f.bisMode, c.faction, name) then
+            f.bisSpec = nil
+            WK:Print(string.format(T("Liste « %s » ajoutée à tes listes."), name))
+        end
+    end)
     f.bisNew = CreateFrame("Button", nil, bsc.child)
     f.bisNew:SetHeight(28)
     f.bisNew.label = UI:Text(f.bisNew, 12); f.bisNew.label:SetPoint("LEFT", 12, 1); f.bisNew.label:SetText(T("+ Nouvelle"))
@@ -841,17 +877,40 @@ local function build(parent)
             UI:TooltipOwner(s, "ANCHOR_RIGHT")
             if s.id and GameTooltip.SetItemByID then GameTooltip:SetItemByID(s.id) else GameTooltip:SetText(T(s.label or ""), 1, 1, 1) end
             GameTooltip:AddLine(" ")
-            GameTooltip:AddLine(s.id and T("Clic : changer · clic droit : retirer") or T("Clic : choisir un objet (ou glisse-le ici)"), 0.6, 0.6, 0.6)
+            local sp = s.spec
+            local tt = _G.GameTooltip
+            if sp then
+                -- liste conseillée : facilité, deux autres choix, meilleur enchantement (ForeverDB)
+                if sp.ease and B.EASE[sp.ease] then
+                    tt:AddLine(T("Obtention : ") .. T(B.EASE[sp.ease]), 0.8, 0.8, 0.8)
+                end
+                for i, a in ipairs(sp.alts or {}) do
+                    local an = WK.GetItemInfo(a.id) or ("#" .. a.id)
+                    local ez = B.EASE[a.ease or ""] and (" · " .. T(B.EASE[a.ease])) or ""
+                    tt:AddLine(string.format(T("Choix n° %d : %s"), i + 1, an) .. ez, 0.7, 0.7, 0.7)
+                end
+                if sp.enh then
+                    local en = sp.enh.kind == "spell" and WK.SpellInfo(sp.enh.id) or WK.GetItemInfo(sp.enh.id)
+                    tt:AddLine(T("Enchantement conseillé : ") .. (en or ("#" .. sp.enh.id)), 0.5, 0.8, 1)
+                end
+                tt:AddLine(T("Liste conseillée · ") .. B.SPEC_CREDIT, 0.45, 0.45, 0.45)
+            else
+                local how = s.id and T("Clic : changer · clic droit : retirer")
+                    or T("Clic : choisir un objet (ou glisse-le ici)")
+                tt:AddLine(how, 0.6, 0.6, 0.6)
+            end
             GameTooltip:Show()
         end)
         b:SetScript("OnLeave", function() GameTooltip:Hide() end)
         local function drop(s)
+            if f.bisSpec then return true end -- liste conseillée : lecture seule
             local kind, id
             if GetCursorInfo then kind, id = GetCursorInfo() end
             if kind == "item" and id then B:Set(f.key, s.slot, id); if ClearCursor then ClearCursor() end return true end
         end
         b:SetScript("OnReceiveDrag", drop)
         b:SetScript("OnClick", function(s, btn)
+            if f.bisSpec then return end -- liste conseillée : « Copier dans mes listes » pour la modifier
             if drop(s) then return end
             if btn == "RightButton" then B:Set(f.key, s.slot, nil) return end
             f:OpenPicker(s.slot, s.label)
@@ -1557,11 +1616,37 @@ local function refreshBis(f, c)
     end
     local r1, g1, b1 = UI:Accent()
     local d1, d2, d3 = viewAccent(f, c)
-    -- onglets des listes
+    -- sous-onglets : « Mes listes » puis les spécialisations de la classe (listes conseillées par ForeverDB)
+    local specs = c.class and B:Specs(c.class) or {}
+    f.bisSpecTabs:Reset()
+    local oy, sx = 0, 0
+    f.bisSpecRow = nil
+    if #specs > 0 then
+        oy = 36
+        local function stab(text, sel, onClick)
+            local tb = f.bisSpecTabs:Get()
+            tb.label:SetText(text)
+            tb:SetWidth(tb.label:GetStringWidth() + 28)
+            tb.sel = sel; tb:Paint()
+            tb:SetScript("OnClick", onClick)
+            tb:ClearAllPoints(); tb:SetPoint("TOPLEFT", sx, -2)
+            sx = sx + tb:GetWidth() + 6
+        end
+        stab(T("Mes listes"), f.bisSpec == nil, function() f.bisSpec = nil; f:Refresh() end)
+        for _, sp in ipairs(specs) do
+            local name = (WK.Lang() == "frFR" and sp[3]) or sp[2]
+            if f.bisSpec == sp[1] then f.bisSpecRow = sp end
+            stab(name, f.bisSpec == sp[1], function() f.bisSpec = sp[1]; f.bisMenu:Hide(); f:Refresh() end)
+        end
+    end
+    if not f.bisSpecRow then f.bisSpec = nil end
+    local spec = f.bisSpec and B:SpecList(f.bisSpec, f.bisMode, c.faction)
+    if f.bisSpec and not spec then spec = {} end
+    -- onglets des listes (seulement sur « Mes listes »)
     local lists, active = B:Lists(f.key), B:ActiveIndex(f.key)
     f.bisTabs:Reset()
     local tx = 0
-    for i, l in ipairs(lists) do
+    for i, l in ipairs(spec and {} or lists) do
         local tb = f.bisTabs:Get()
         local n, worn = counts(l.items)
         tb.label:SetText(l.name or "?")
@@ -1570,24 +1655,38 @@ local function refreshBis(f, c)
         tb.sel = i == active
         tb:Paint()
         tb:SetScript("OnClick", function() f.bisMenu:Hide(); B:SetActiveList(f.key, i) end)
-        tb:ClearAllPoints(); tb:SetPoint("TOPLEFT", tx, -2)
+        tb:ClearAllPoints(); tb:SetPoint("TOPLEFT", tx, -2 - oy)
         tx = tx + tb:GetWidth() + 2
     end
-    f.bisNew:ClearAllPoints(); f.bisNew:SetPoint("TOPLEFT", tx, -2)
+    f.bisNew:ClearAllPoints(); f.bisNew:SetPoint("TOPLEFT", tx, -2 - oy)
     f.bisNew.label:SetTextColor(r1, g1, b1, 0.85)
-    f.bisTabLine:ClearAllPoints(); f.bisTabLine:SetPoint("TOPLEFT", 0, -31); f.bisTabLine:SetPoint("TOPRIGHT", 0, -31)
-    -- actions à droite des onglets
-    f.bisMore:ClearAllPoints(); f.bisMore:SetPoint("TOPRIGHT", f.bsc.child, "TOPRIGHT", -2, -2)
+    f.bisNew:SetShown(not spec)
+    f.bisTabLine:ClearAllPoints()
+    f.bisTabLine:SetPoint("TOPLEFT", 0, -31 - oy); f.bisTabLine:SetPoint("TOPRIGHT", 0, -31 - oy)
+    -- actions à droite des onglets (mes listes) ; liste conseillée : JcE / JcJ et « Copier dans mes listes »
+    f.bisMore:ClearAllPoints(); f.bisMore:SetPoint("TOPRIGHT", f.bsc.child, "TOPRIGHT", -2, -2 - oy)
     f.bisCopy:ClearAllPoints(); f.bisCopy:SetPoint("RIGHT", f.bisMore, "LEFT", -6, 0)
     f.bisShare:ClearAllPoints(); f.bisShare:SetPoint("RIGHT", f.bisCopy, "LEFT", -6, 0)
     f.bisEquip:ClearAllPoints(); f.bisEquip:SetPoint("RIGHT", f.bisShare, "LEFT", -8, 0)
-    f.bisEquip:SetShown(mine)
+    f.bisEquip:SetShown(mine and not spec)
+    for _, b in ipairs({ f.bisMore, f.bisCopy, f.bisShare }) do b:SetShown(not spec) end
+    if spec then f.bisMenu:Hide() end
+    f.bisPve:ClearAllPoints(); f.bisPve:SetPoint("TOPLEFT", 0, -2 - oy)
+    f.bisPvp:ClearAllPoints(); f.bisPvp:SetPoint("LEFT", f.bisPve, "RIGHT", 4, 0)
+    f.bisPve:SetStyle(f.bisMode == "pvp" and "secondary" or "primary")
+    f.bisPvp:SetStyle(f.bisMode == "pvp" and "primary" or "secondary")
+    f.bisAdopt:ClearAllPoints(); f.bisAdopt:SetPoint("TOPRIGHT", f.bsc.child, "TOPRIGHT", -2, -2 - oy)
+    for _, b in ipairs({ f.bisPve, f.bisPvp, f.bisAdopt }) do b:SetShown(spec and true or false) end
     f.bisMenu:ClearAllPoints(); f.bisMenu:SetPoint("TOPRIGHT", f.bisMore, "BOTTOMRIGHT", 0, -4)
-    -- progression de la liste affichée
+    -- progression de la liste affichée (la mienne, ou la conseillée : n° d'objet par emplacement)
     local list = B:List(f.key)
+    if spec then
+        list = {}
+        for slot, e in pairs(spec) do list[slot] = e.id end
+    end
     local n, worn, bags = counts(list)
     f.bisTitle:Hide()
-    f.bisProg:ClearAllPoints(); f.bisProg:SetPoint("TOPLEFT", 2, -44); f.bisProg:SetWidth(160)
+    f.bisProg:ClearAllPoints(); f.bisProg:SetPoint("TOPLEFT", 2, -44 - oy); f.bisProg:SetWidth(160)
     f.bisProg.color = { d1, d2, d3 }; f.bisProg:SetValue(n > 0 and worn / n or 0)
     f.bisInfo:ClearAllPoints(); f.bisInfo:SetPoint("LEFT", f.bisProg, "RIGHT", 10, 0)
     f.bisInfo:SetText(string.format(T("%d / %d obtenus · %d dans les sacs ou la banque"), worn, n, bags))
@@ -1596,12 +1695,13 @@ local function refreshBis(f, c)
     local x0 = math.floor((W - DW) / 2)
     local colW = 230
     local MIDW = DW - 2 * colW - 28
-    local top, step = 64, 50
+    local top, step = 64 + oy, 50
     local li, ri = 0, 0
     for _, t in ipairs(f.bisTiles) do
         t.label = SLOT_LABEL[t.slot]
         local id = list[t.slot]
         t.id = id
+        t.spec = spec and spec[t.slot] or nil
         local e = id and B:Info(id)
         local name, _, q = nil, nil, nil
         if id then name, _, q = WK.GetItemInfo(id) end
@@ -1623,10 +1723,12 @@ local function refreshBis(f, c)
             if id then
                 t.name:SetText(name or (e and e[8]) or ("#" .. id)); t.name:SetTextColor(qc[1], qc[2], qc[3])
                 local _, where = B:SourceOf(id)
-                t.sub:SetText(T(t.label) .. " · " .. where)
+                -- liste conseillée : facilité d'obtention plutôt que la source
+                local ez = t.spec and B.EASE[t.spec.ease or ""]
+                t.sub:SetText(T(t.label) .. " · " .. (ez and T(ez) or where))
             else
                 t.name:SetText(T(t.label)); t.name:SetTextColor(unpack(C.muted))
-                t.sub:SetText(T("vide · choisir"))
+                t.sub:SetText(spec and T("rien de conseillé") or T("vide · choisir"))
             end
         end
         t:ClearAllPoints()
@@ -1679,7 +1781,15 @@ local function refreshBis(f, c)
     f.bisNote:ClearAllPoints(); f.bisNote:SetPoint("TOPLEFT", 4, -(bottom + 8))
     f.bisNote:SetPoint("TOPRIGHT", -4, -(bottom + 8))
     f.bisNote:SetJustifyH("LEFT")
-    f.bisNote:SetText(T("Pastilles : vert porté, jaune dans les sacs ou la banque, gris à obtenir. Clic sur un emplacement : choisir · clic droit : retirer · glisser-déposer un objet. Objets du jeu : wowlayerup-forever/opendata (CC BY 4.0)."))
+    if spec then
+        f.bisNote:SetText(T("Liste conseillée pour cette spécialisation au niveau maximum (survol : facilité,"
+            .. " deux autres choix, meilleur enchantement). « Copier dans mes listes » pour la modifier."
+            .. " Data from ForeverDB.net (https://foreverdb.net)."))
+    else
+        f.bisNote:SetText(T("Pastilles : vert porté, jaune dans les sacs ou la banque, gris à obtenir. Clic sur un"
+            .. " emplacement : choisir · clic droit : retirer · glisser-déposer un objet. Objets du jeu :"
+            .. " wowlayerup-forever/opendata (CC BY 4.0)."))
+    end
     f.bsc:SetContentHeight(bottom + 34)
     if f.picker:IsShown() then f.picker:Fill() end
 end

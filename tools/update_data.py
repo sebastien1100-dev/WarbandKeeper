@@ -32,7 +32,7 @@ CACHE = os.path.join(HERE, ".cache")
 QUESTIE_URL = "https://github.com/Questie/QuestieDB"
 WOWTBC = "https://wowtbc.gg/page-data/warcraftforever"
 UA = "WarbandKeeper-data-update"
-TARGETS = ["PlacesDB", "RoadsDB", "RaresDB", "QuestsDB", "QuestObjDB", "DungeonsDB", "Guides", "RecipeDB", "EverlootDB", "ItemsDB", "BoatLinesDB", "MapRevealDB", "ClassSpellsDB", "DataLogDB", "WayZonesDB", "ClassPricesDB", "ForeverVendorsDB", "ForeverProfDB", "RepeatQuestsDB"]
+TARGETS = ["PlacesDB", "RoadsDB", "RaresDB", "QuestsDB", "QuestObjDB", "DungeonsDB", "Guides", "RecipeDB", "EverlootDB", "ItemsDB", "BoatLinesDB", "MapRevealDB", "ClassSpellsDB", "DataLogDB", "WayZonesDB", "ClassPricesDB", "ForeverVendorsDB", "ForeverProfDB", "RepeatQuestsDB", "BiSSpecDB"]
 KEEP = [os.path.join(HERE, "guides"), os.path.join(HERE, "dungeons")]  # données importées, versionnées
 DROP_LIMIT = 0.20
 
@@ -205,6 +205,8 @@ def metrics():
         elif name == "ForeverVendorsDB":
             out["Marchands vus dans Forever (ForeverDB)"] = size(WK.FVendorNpc)
             out["Objets vendus par ces marchands"] = size(WK.FVendorSells)
+        elif name == "BiSSpecDB":
+            out["Listes BiS conseillées (ForeverDB)"] = size(WK.BiSSpecItems)
         elif name == "RepeatQuestsDB":
             out["Quêtes répétables (journalières, réputation)"] = size(WK.RepeatQuests)
         elif name == "ForeverProfDB":
@@ -351,7 +353,7 @@ def main():
                 try:
                     run(os.path.join(HERE, "gen_foreverdb.py"), "--fetch")
                     run(os.path.join(HERE, "gen_foreverdb.py"), qpath)
-                    sources.append("ForeverDB (marchands, maîtres et recettes des métiers, donneurs et rendus des quêtes)")
+                    sources.append("ForeverDB (marchands, métiers, quêtes, listes BiS)")
                 except subprocess.CalledProcessError as e:
                     log("  ! ForeverDB indisponible, fichier gardé tel quel :", e)
             else:
