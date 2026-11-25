@@ -54,6 +54,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.373 — 25/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Cadenas sur des cases vides, des boutons « + » ou des objets d'un marchand quand les sacs sont ceux d'un autre addon : l'addon devinait mal le sac et la case et dessinait le verrou d'un autre objet. Le cadenas n'apparaît plus que si la case montre bien l'objet verrouillé (même chose pour l'étoile BiS, le blocage chez le marchand et Alt + clic).
+
 ## v1.128.372 — 25/11/2026
 
 _Un /reload suffit._

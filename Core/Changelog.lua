@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.373", date = "25/11/2026",
+        fixed = {
+            "Cadenas sur des cases vides, des boutons « + » ou des objets d'un marchand quand les sacs sont ceux d'un autre addon : l'addon devinait mal le sac et la case et dessinait le verrou d'un autre objet. Le cadenas n'apparaît plus que si la case montre bien l'objet verrouillé (même chose pour l'étoile BiS, le blocage chez le marchand et Alt + clic).",
+        },
+    },
+    {
         version = "1.128.372", date = "25/11/2026",
         changed = {
             "Rien ne change en jeu : cette version livre le client PC 1.9.30 (quêtes « à vérifier » tranchées toutes seules quand c'est sûr).",

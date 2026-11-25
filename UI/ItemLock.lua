@@ -243,17 +243,51 @@ function UI.ItemLockAltClick(b)
     local now = GetTime()
     if now - lastToggle < 0.25 then return end
     local id = itemAt(bagSlot(b))
-    if not id then return end
+    if not id or UI.ItemLockForeignMismatch(b, id) then return end
     lastToggle = now
     if CursorHasItem and CursorHasItem() and ClearCursor then ClearCursor() end
     L:Toggle(id)
     paint(b) -- cadenas montré tout de suite, sans attendre le prochain passage du repeint
 end
 
+-- Case d'une autre interface : le sac et la case sont devinés (champs, parent) et peuvent désigner un autre
+-- objet (bouton « + », case recyclée, marchand maison) ; on ne dessine que si la case montre bien l'icône
+-- de cet objet. Avant : cadenas sur des cases vides ou des boutons qui n'étaient pas des cases.
+local function iconOf(id)
+    local f = _G.C_Item and _G.C_Item.GetItemIconByID
+    local ok, v = pcall(f or function() end, id)
+    if ok and v then return v end
+    if _G.GetItemIcon then ok, v = pcall(_G.GetItemIcon, id); if ok then return v end end
+end
+local function showsIcon(f, want, depth)
+    for _, r in ipairs({ f:GetRegions() }) do
+        if r.GetTexture and r:IsShown() then
+            local ok, t = pcall(r.GetTexture, r)
+            if ok and t ~= nil and (t == want or tostring(t):lower() == tostring(want):lower()) then return true end
+        end
+    end
+    if depth > 0 and f.GetChildren then
+        for _, ch in ipairs({ f:GetChildren() }) do
+            if ch:IsShown() and showsIcon(ch, want, depth - 1) then return true end
+        end
+    end
+    return false
+end
+local function foreignMismatch(btn, id)
+    if not (known[btn] or btn.wkForeign) then return false end
+    if not id then return true end
+    local want = iconOf(id)
+    if not want then return false end
+    return not showsIcon(btn, want, 1)
+end
+UI.ItemLockForeignMismatch = foreignMismatch
+
 function paint(btn)
-    -- emplacement d'équipement pris pour une case de sac (avant cette correction) : décor retiré, plus suivi
-    if inGearFrame(btn) then
-        known[btn] = nil
+    -- emplacement d'équipement pris pour une case de sac (avant cette correction) : décor retiré, plus suivi ;
+    -- case d'une autre interface qui ne montre pas l'objet deviné : décor retiré (repris s'il revient)
+    local gear = inGearFrame(btn)
+    if gear or foreignMismatch(btn, btn.GetID and itemAt(bagSlot(btn))) then
+        if gear then known[btn] = nil end
         local o0 = btn.wkLock
         if o0 then
             for _, k in ipairs({ "badge", "ring", "icon", "bisRing", "bisBadge", "bisStar" }) do
@@ -321,7 +355,7 @@ local function walk(f, fn, depth)
     if depth > 8 or not f.GetChildren then return end
     for _, ch in ipairs({ f:GetChildren() }) do
         if ch:IsVisible() then
-            if isBagButton(ch) then fn(ch) end
+            if isBagButton(ch) then ch.wkForeign = true; fn(ch) end
             walk(ch, fn, depth + 1) -- on descend toujours : une case peut être plus bas qu'un cadre de sac
         end
     end
