@@ -223,6 +223,8 @@ local SHORTCUTS = {
       run = function()
           -- le journal des collections est protégé en combat (ouverture et changement d'onglet refusés)
           if _G.InCombatLockdown and _G.InCombatLockdown() then WK:Print(WK.T("Après le combat.")) return end
+          -- WoW Forever : les héritages sont une fenêtre à part (pas un onglet du journal) : ouverte si trouvée
+          if UI.OpenForeverHeirlooms() then return end
           if CollectionsJournal_LoadUI and not CollectionsJournal then pcall(CollectionsJournal_LoadUI) end
           -- (pas de COLLECTIONS_JOURNAL_TAB_INDEX_HEIRLOOMS : sur WoW Forever ce n° n'est pas un onglet et la
           -- fenêtre du jeu plantait ; l'ancienne recherche par le nom ratait « Objets en héritage » et ouvrait les
@@ -687,10 +689,76 @@ function UI.ClockMicroButton(def)
     return nil
 end
 
+-- Fenêtre des héritages propre au serveur (WoW Forever : fenêtre à part, pas l'onglet du journal de Classic
+-- Era, masqué). Noms globaux avec « heirloom », « heritage » ou « héritage », sans le journal du jeu.
+-- Ordre : un bouton (Click), une fonction Toggle…, puis une fenêtre posée sur UIParent (montrée / cachée).
+local function heirName(k)
+    if type(k) ~= "string" then return false end
+    local l = k:lower()
+    local hit = l:find("heirloom", 1, true) or l:find("heritage", 1, true) or l:find("héritage", 1, true)
+    if not hit then return false end
+    return not (k:find("^HeirloomsJournal") or k:find("CollectionsJournal") or k:find("^WarbandKeeper")
+        or k == "ShowHeirloomsJournalToClosestUpgradeablePage" or k:find("^C_"))
+end
+function UI.HeirloomCandidates()
+    local out = {}
+    for k, v in pairs(_G) do
+        if heirName(k) then
+            local kind
+            if type(v) == "function" then kind = "fonction"
+            elseif type(v) == "table" and type(v.GetObjectType) == "function" then
+                local ok, ot = pcall(v.GetObjectType, v)
+                kind = ok and ot or "?"
+            end
+            if kind then out[#out + 1] = { name = k, kind = kind, obj = v } end
+        end
+    end
+    table.sort(out, function(a, b) return a.name < b.name end)
+    return out
+end
+function UI.OpenForeverHeirlooms()
+    local cands = UI.HeirloomCandidates()
+    UI.heirScan = cands
+    local function rank(c)
+        local v = c.obj
+        if (c.kind == "Button" or c.kind == "CheckButton") and type(v.Click) == "function" then return 1 end
+        if c.kind == "fonction" and (c.name:find("^Toggle") or c.name:find("Toggle$")) then return 2 end
+        if c.kind == "Frame" and v.GetParent and v:GetParent() == _G.UIParent then return 3 end
+        return nil
+    end
+    local best, br
+    for _, c in ipairs(cands) do
+        local r = rank(c)
+        if r and (not br or r < br) then best, br = c, r end
+    end
+    if not best then return false end
+    UI.heirUsed = best.name
+    local v = best.obj
+    if br == 1 then pcall(v.Click, v)
+    elseif br == 2 then pcall(v)
+    elseif v:IsShown() then
+        if _G.HideUIPanel then pcall(_G.HideUIPanel, v) end
+        if v:IsShown() then v:Hide() end
+    else
+        if _G.ShowUIPanel then pcall(_G.ShowUIPanel, v) end
+        if not v:IsShown() then v:Show() end
+    end
+    return true
+end
+
 -- Diagnostic (/wk heritage) : trace du dernier clic sur le raccourci Héritages et état du journal.
 function UI:HeirloomReport()
     WK:Print(T("Raccourci Héritages : diagnostic"))
-    if not self.heirTrace then WK:Print("  " .. T("Clique d'abord sur le raccourci Héritages.")) return end
+    if self.heirUsed then WK:Print("  " .. T("Fenêtre du serveur utilisée :") .. " " .. self.heirUsed) end
+    local cands = UI.HeirloomCandidates()
+    local list = {}
+    for i, c in ipairs(cands) do
+        if i > 25 then list[#list + 1] = "…" break end
+        local shown = c.obj and type(c.obj) == "table" and c.obj.IsShown and c.obj:IsShown()
+        list[#list + 1] = c.name .. " (" .. c.kind .. (shown and ", " .. T("affichée") or "") .. ")"
+    end
+    WK:Print("  " .. T("Noms trouvés dans le jeu :") .. " " .. (#list > 0 and table.concat(list, ", ") or T("aucun")))
+    if not self.heirTrace then return end
     for _, l in ipairs(self.heirTrace) do WK:Print("  " .. l) end
     local cj = _G.CollectionsJournal
     local hj = _G.HeirloomsJournal

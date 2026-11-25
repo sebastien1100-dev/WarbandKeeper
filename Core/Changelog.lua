@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.352", date = "25/11/2026",
+        fixed = {
+            "Micro menu, raccourci Héritages : sur WoW Forever, les héritages ne sont pas un onglet du journal des collections mais une fenêtre à part. Le raccourci cherche maintenant cette fenêtre dans le jeu (nom contenant « heirloom » ou « héritage » : bouton, fonction d'ouverture ou fenêtre) et l'ouvre ou la ferme. /wk heritage liste les noms trouvés et celui utilisé.",
+        },
+    },
+    {
         version = "1.128.351", date = "25/11/2026",
         fixed = {
             "Micro menu, raccourci Héritages : sur WoW Forever, les onglets du journal des collections n'ont pas de texte lisible et le jeu masque l'onglet n° 4 (Héritages). Le raccourci ne le trouvait donc jamais et revenait sur Montures. Il affiche maintenant directement la page n° 4, même masquée. Si le jeu refuse, un message le dit.",
