@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.332", date = "25/11/2026",
+        added = {
+            "Hôtel des ventes : à côté de la barre de scan, le temps avant le prochain scan complet (« prochain scan complet dans 12:34 », le jeu n'en accepte qu'un toutes les 15 minutes environ), puis « scan complet possible » quand c'est le moment. Le compte à rebours avance chaque seconde.",
+        },
+    },
+    {
         version = "1.128.331", date = "25/11/2026",
         fixed = {
             "Hôtel des ventes, onglet À acheter : une liste de plus de 16 objets était coupée sans le dire (« 16 objets » alors qu'elle en avait 24). Les objets cachés manquaient au résumé (« À l'HV »), et c'est parmi eux qu'étaient les objets « sans prix ». Le tableau défile maintenant à la molette, et le nombre d'objets, le total et le résumé comptent toute la liste.",

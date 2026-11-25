@@ -53,6 +53,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.332 — 25/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Hôtel des ventes : à côté de la barre de scan, le temps avant le prochain scan complet (« prochain scan complet dans 12:34 », le jeu n'en accepte qu'un toutes les 15 minutes environ), puis « scan complet possible » quand c'est le moment. Le compte à rebours avance chaque seconde.
+
 ## v1.128.331 — 25/11/2026
 
 _Un /reload suffit._

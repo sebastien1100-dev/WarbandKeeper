@@ -402,6 +402,30 @@ local function build(host)
     f.scanBar.fillF:SetPoint("TOPLEFT"); f.scanBar.fillF:SetPoint("BOTTOMLEFT")
     f.scanBar.fill = UI:Rounded(f.scanBar.fillF, 3, 0, "ARTWORK", 1)
     f.scanInfo = UI:Text(head, 10, C.muted); f.scanInfo:SetPoint("LEFT", f.scanBar, "RIGHT", 8, 0)
+    -- dernier scan, objets connus et temps avant le prochain scan complet (le jeu n'en accepte qu'un toutes les
+    -- 15 minutes environ) ; le compte à rebours est repeint chaque seconde tant que la fenêtre est ouverte
+    function f.ScanText()
+        local d = S:Data()
+        local n = S:Count()
+        local txt = (d.last and string.format(T("scanné %s"), UI:Ago(d.last)) or T("jamais scanné"))
+            .. (n > 0 and ("  ·  " .. string.format(T("%s objets"), _G.BreakUpLargeNumbers and _G.BreakUpLargeNumbers(n)
+                or tostring(n))) or "")
+        local cd = S:FullCooldown()
+        if cd > 0 then
+            txt = txt .. "  ·  " .. string.format(T("prochain scan complet dans %d:%02d"), math.floor(cd / 60), cd % 60)
+        elseif d.last then
+            local r, g, b = UI:Accent()
+            txt = txt .. "  ·  " .. UI:Hex({ r, g, b }) .. T("scan complet possible") .. "|r"
+        end
+        return txt
+    end
+    f.scanTick = 0
+    f:HookScript("OnUpdate", function(s, el)
+        s.scanTick = s.scanTick + el
+        if s.scanTick < 1 then return end
+        s.scanTick = 0
+        if not S.scan then s.scanInfo:SetText(s:ScanText()) end
+    end)
 
     -- barre latérale : pages, puis tes recherches (enregistrées et récentes)
     local side = CreateFrame("Frame", nil, f)
@@ -3237,9 +3261,7 @@ local function build(host)
             self.scanInfo:SetText(T("scan en cours…"))
         else
             frac = d.last and math.max(0.05, 1 - math.min(1, (time() - d.last) / 86400)) or 0
-            local n = S:Count()
-            self.scanInfo:SetText((d.last and string.format(T("scanné %s"), UI:Ago(d.last)) or T("jamais scanné"))
-                .. (n > 0 and ("  ·  " .. string.format(T("%s objets"), BreakUpLargeNumbers and BreakUpLargeNumbers(n) or tostring(n))) or ""))
+            self.scanInfo:SetText(self:ScanText())
         end
         self.scanBar.fillF:SetWidth(math.max(1, 110 * frac))
         self.scanBtn:SetEnabled(sc == nil)
