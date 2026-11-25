@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.308", date = "25/11/2026",
+        fixed = {
+            "Munitions : avec une arme de jet (hache, dague ou couteau de lancer du voleur ou du guerrier), une baguette ou sans arme à distance, les flèches et balles du sac ne comptent plus : l'icône des munitions ne s'affiche plus à l'écran et aucune alerte « munitions basses ». Elle revient dès qu'un arc, une arbalète ou un fusil est équipé.",
+        },
+    },
+    {
         version = "1.128.307", date = "25/11/2026", restart = true,
         added = {
             "Fiche du perso > BiS : des sous-onglets en haut, « Mes listes » (tes listes, comme avant) puis une par spécialisation de ta classe (Armes, Fureur, Protection…). Une spécialisation montre la liste conseillée au niveau maximum dans le même mannequin, en JcE ou en JcJ (objets de ton camp) : au survol d'un emplacement, la facilité d'obtention, deux autres choix et le meilleur enchantement. « Copier dans mes listes » en fait une de tes listes, modifiable, partageable et à équiper. Data from ForeverDB.net (https://foreverdb.net).",

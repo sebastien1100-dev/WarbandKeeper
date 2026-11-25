@@ -322,6 +322,9 @@ function M:ScanAmmo()
     local c = WK.DB:Me()
     if not M.AMMO[myClass() or ""] or not GetInventoryItemID then return end
     local id = GetInventoryItemID("player", 0)
+    -- arme à distance qui ne tire rien (armes de jet du voleur et du guerrier : hache, dague, couteau ; baguette ;
+    -- rien d'équipé) : les munitions du sac ne servent pas, ni compte ni icône à l'écran
+    if id and not self:AmmoKind() then id = nil end
     if id then
         -- Vitesse de tir (secondes entre deux tirs) : pour estimer les minutes de tir restantes.
         local speed = UnitRangedDamage and readable((UnitRangedDamage("player")))

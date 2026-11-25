@@ -52,6 +52,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.308 — 25/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Munitions : avec une arme de jet (hache, dague ou couteau de lancer du voleur ou du guerrier), une baguette ou sans arme à distance, les flèches et balles du sac ne comptent plus : l'icône des munitions ne s'affiche plus à l'écran et aucune alerte « munitions basses ». Elle revient dès qu'un arc, une arbalète ou un fusil est équipé.
+
 ## v1.128.307 — 25/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
