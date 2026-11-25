@@ -966,7 +966,7 @@ UI:RegisterPage({
             return r
         end)
         -- réglages du perso HV
-        local sets = UI:Card(root, T("Vente à l'HV et courrier"),
+        local sets = UI:Card(root, T("Vente à l'HV"),
             T("le perso HV se choisit en haut de l'onglet Répartition"))
         self.stashSets = sets
         UI:SettingRow(sets, -40, "Vendre à l'HV à partir de",
@@ -978,10 +978,8 @@ UI:RegisterPage({
         UI:SettingRow(sets, -86, "Garder une réserve",
             "Quantité de chaque objet laissée sur le compte au lieu de la vendre.",
             UI:Slider(sets, 220, 0, 100, 5, function() return cfg.reserve or 0 end, function(v) cfg.reserve = v; S:Invalidate(); WK:NotifyChanged() end, "%d"), 240)
-        UI:SettingRow(sets, -132, "Proposer les envois à la boîte aux lettres",
-            "Un panneau à côté du courrier liste ce que ce perso doit envoyer, coché par défaut.",
-            UI:Toggle(sets, function() return cfg.mailPanel end, function(v) cfg.mailPanel = v end), 80)
-        sets:SetHeight(40 + 3 * 46 + 8)
+        -- (« Proposer les envois à la boîte aux lettres » : page Courrier, carte Fenêtre)
+        sets:SetHeight(40 + 2 * 46 + 8)
         UI:OnResize(pane, function() if self.char == "stash" then self:RefreshStash() end end)
     end,
 

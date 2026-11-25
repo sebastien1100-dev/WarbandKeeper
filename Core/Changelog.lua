@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.324", date = "25/11/2026",
+        changed = {
+            "Réglages passés en revue (environ 300 dans tout l'addon) : aucun n'était devenu inutile, quelques-uns étaient mal rangés.",
+            "Donjons : tout ce qui touche au chrono et à la sortie du donjon est maintenant dans la carte « Chrono à l'écran » (chrono affiché, départ du chrono, bilan à l'écran, résumé en sortant) ; « Réglages des donjons » ne garde que le panneau, les alertes, la limite d'instances, le Réal et la carte du donjon.",
+            "« Proposer les envois à la boîte aux lettres » quitte Inventaire > Rangement pour la page Courrier, carte Fenêtre, à côté de « Notre fenêtre de courrier » ; la carte du Rangement s'appelle maintenant « Vente à l'HV ».",
+            "La ligne « Liste BiS de… » des infobulles se règle avec toutes les autres lignes d'infobulle (Options > Général > Infobulles > Objets) ; l'onglet BiS des réglages de la fiche, qui n'avait que cette ligne, disparaît.",
+            "Sauvegarde : deux anciennes valeurs du Rangement (prix proposé et durée des enchères, plus lues depuis longtemps) sont effacées.",
+        },
+    },
+    {
         version = "1.128.323", date = "25/11/2026",
         changed = {
             "Hôtel des ventes, onglet Vendre : liste des sacs plus lisible. La quantité est écrite sur l'icône, la valeur de la pile tient en deux unités (« 2po 70pa ») et ne déborde plus sur la colonne voisine, la colonne est un peu plus large pour les noms.",

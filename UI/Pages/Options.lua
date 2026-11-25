@@ -597,6 +597,8 @@ UI:RegisterPage({
                     function() return cfg.tooltipProf ~= false end, function(v) cfg.tooltipProf = v end },
                 { "Fabriquer ou vendre", "Composant qu'une recette d'un de tes persos valorise mieux que la vente brute : la recette et ce qu'elle en tire à l'unité.",
                     function() return PHc().craftTip end, function(v) PHc().craftTip = v end },
+                { "Liste BiS", "Sur un objet de ta liste BiS : quels persos le veulent (« Liste BiS de… »).",
+                    function() return cfg.bisTooltip ~= false end, function(v) cfg.bisTooltip = v end },
                 { "Butin observé", "Dans l'infobulle d'un objet : les monstres qui le lâchent et à quelle fréquence, d'après les butins relevés par les joueurs (Everloot).",
                     function() return cfg.tooltipDrops ~= false end, function(v) cfg.tooltipDrops = v end },
                 { "Vendu par", "Dans l'infobulle d'un objet : le marchand le plus proche qui le vend dans WoW Forever"
@@ -681,10 +683,16 @@ UI:RegisterPage({
         UI:SettingRow(send, -136, "Trier les sacs ensuite",
             "Après l'envoi automatique (et la prise automatique si elle est activée).",
             toggle(send, function() return mcfg.sortAfter ~= false end, function(v) mcfg.sortAfter = v end), 80)
-        local win = card("Fenêtre", 88)
+        local win = card("Fenêtre", 136)
         UI:SettingRow(win, -40, "Notre fenêtre de courrier",
             "À la place de celle du jeu : Reçus, Envoyer, Rangement, Règles d'envoi et Historique au même endroit. « Fenêtre du jeu » y revient pour une visite.",
             toggle(win, function() return mcfg.window ~= false end, function(v) mcfg.window = v end), 80)
+        -- (avant dans Inventaire > Rangement : c'est un réglage du courrier)
+        UI:SettingRow(win, -88, "Proposer les envois à la boîte aux lettres",
+            "Avec la boîte aux lettres du jeu : un panneau à côté liste ce que ce perso doit envoyer, coché par défaut"
+                .. " (dans notre fenêtre, c'est la page Rangement).",
+            toggle(win, function() return WK.modules.Stash:Config().mailPanel end,
+                function(v) WK.modules.Stash:Config().mailPanel = v end), 80)
         local recv = card("Réception", 88)
         UI:SettingRow(recv, -40, "Tout prendre automatiquement",
             "Après les envois : or et objets (sauf contre-remboursement), arrêt si les sacs sont pleins. Un bouton « Tout prendre » est aussi ajouté à la boîte de réception.",

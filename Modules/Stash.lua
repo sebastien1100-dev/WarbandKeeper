@@ -10,7 +10,7 @@ local T = function(s) return WK.T(s) end
 --   autre chose que des composants, recettes, réactifs et gemmes.
 -- Route() rend { dest = { [perso] = { list = { { id, count, from = { [perso] = n }, why } } } },
 --               ah = { list }, sell = { list } (déjà sur le perso HV), vendor = { list } }.
-local DEFAULTS = { ahChar = nil, minAH = 5000, price = "lowest", duration = 24, reserve = 0, mailPanel = true }
+local DEFAULTS = { ahChar = nil, minAH = 5000, reserve = 0, mailPanel = true }
 -- classes d'objets concernées : réactifs (5), composants d'artisanat (7), recettes (9), gemmes (3)
 local ROUTE_CLASS = { [3] = true, [5] = true, [7] = true, [9] = true }
 
@@ -18,6 +18,7 @@ function M:Config()
     local g = WK.DB.global
     g.stash = g.stash or {}
     for k, v in pairs(DEFAULTS) do if g.stash[k] == nil then g.stash[k] = v end end
+    g.stash.price, g.stash.duration = nil, nil -- anciens réglages (prix proposé, durée), plus lus
     if g.stash.ahChar and not g.characters[g.stash.ahChar] then g.stash.ahChar = nil end
     for _, k in ipairs({ "cons", "fam", "chars", "items" }) do
         if type(g.stash[k]) ~= "table" then g.stash[k] = {} end

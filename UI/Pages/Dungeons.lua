@@ -70,60 +70,82 @@ UI:RegisterPage({
         -- roue dentée : réglages des donjons (panneau, alertes, chrono)
         local dc = D:Config()
         local scard = UI:Card(p, T("Réglages des donjons"))
-        scard:SetHeight(40 + 10 * 46 + 8)
+        scard:SetHeight(40 + 6 * 46 + 8)
         local dtog = {}
-        local function drow(i, label, desc, field, after)
-            local t = UI:Toggle(scard, function() return dc[field] end, function(v) dc[field] = v; if after then after() end; WK:NotifyChanged() end)
+        local function drow(i, label, desc, field, after, card)
+            card = card or scard
+            local t = UI:Toggle(card, function() return dc[field] end,
+                function(v) dc[field] = v; if after then after() end; WK:NotifyChanged() end)
             table.insert(dtog, t)
-            UI:SettingRow(scard, -40 - (i - 1) * 46, label, desc, t, 80)
+            UI:SettingRow(card, -40 - (i - 1) * 46, label, desc, t, 80)
         end
-        drow(1, "Panneau à côté de la carte", "En donjon sans carte : boss et butin collés à la carte du monde (aussi /wk donjon).", "panel")
-        drow(2, "Alerte en entrant", "Entrée dans un donjon qui contient des objets de ta liste d'envies.", "alertEnter")
+        drow(1, "Panneau à côté de la carte",
+            "En donjon sans carte : boss et butin collés à la carte du monde (aussi /wk donjon).", "panel")
+        drow(2, "Alerte en entrant", "Entrée dans un donjon qui contient des objets de ta liste d'envies.",
+            "alertEnter")
         drow(3, "Alerte de butin", "Un objet de ta liste d'envies vient de tomber.", "alertDrop")
-        drow(4, "Chrono à l'écran", "Temps du passage et écart avec ton record, déplaçable en mode édition.", "timer",
-            function() if UI.RefreshDungeonTimer then UI:RefreshDungeonTimer() end end)
-        drow(5, "Limite d'instances", "Alerte à 9 sur 10 nouvelles instances dans l'heure (limite du compte), et l'heure de la prochaine place libre.", "capAlert")
-        drow(6, "Rappel du Réal de Terremine", "Après la 1re victoire du jour sur un boss qui en donne un : une icône clignote jusqu'au butin de son corps.", "real",
+        drow(4, "Limite d'instances",
+            "Alerte à 9 sur 10 nouvelles instances dans l'heure (limite du compte), et l'heure de la prochaine"
+            .. " place libre.", "capAlert")
+        drow(5, "Rappel du Réal de Terremine",
+            "Après la 1re victoire du jour sur un boss qui en donne un : une icône clignote jusqu'au butin de"
+            .. " son corps.", "real",
             function() if UI.RefreshRealReminder then UI:RefreshRealReminder() end end)
-        local sumSeg = UI:Segmented(scard, { { "off", "Non" }, { "me", "Pour moi" }, { "group", "Au groupe" } }, function(v) dc.summary = v end, 24)
-        sumSeg:Select(dc.summary or "me")
-        UI:SettingRow(scard, -40 - 6 * 46, "Résumé en sortant", "Expérience, argent, morts et réputation du passage, envoyés au groupe (« Au groupe »),"
-            .. " ou dans ton chat quand le bilan à l'écran est coupé.", sumSeg, 230)
-        local startSeg = UI:Segmented(scard, { { "pull", "Au premier pack" }, { "enter", "En entrant" } }, function(v) dc.timerStart = v end, 24)
-        startSeg:Select(dc.timerStart or "pull")
-        UI:SettingRow(scard, -40 - 7 * 46, "Départ du chrono", "Au premier pack : le chrono attend ton premier combat dans le donjon (ou le chrono d'un membre du groupe). En entrant : dès la porte franchie.", startSeg, 250)
         do
             local t = UI:Toggle(scard, function() return dc.worldMap ~= false end, function(v)
                 dc.worldMap = v; if UI.RefreshDungeonWorldMap then UI.RefreshDungeonWorldMap() end
             end)
             table.insert(dtog, t)
-            UI:SettingRow(scard, -40 - 9 * 46, "Carte du donjon dans le jeu",
-                "Dans un donjon qui en a une, la touche M montre la carte du donjon avec ses boss (tués, prochain) et la liste"
+            UI:SettingRow(scard, -40 - 5 * 46, "Carte du donjon dans le jeu",
+                "Dans un donjon qui en a une, la touche M montre la carte du donjon avec ses boss (tués,"
+                    .. " prochain) et la liste"
                     .. " des boss à droite ; clic droit : la carte de la zone.", t, 80)
         end
-        drow(9, "Bilan à l'écran",
-            "En sortant du donjon, un bandeau en haut de l'écran pendant 5 s : temps et record, boss,"
-                .. " morts, XP et or (position en mode édition ; clic = fermer).", "summaryBanner")
         -- chrono à l'écran : préréglage, largeur, parties visibles (aperçu de quelques secondes à chaque changement)
         local to = UI:DungeonTimerOpts()
         local tcard = UI:Card(scard:GetParent(), T("Chrono à l'écran"))
+        -- chrono et bilan de sortie : tous ici (avant, une partie dans « Réglages des donjons »)
+        drow(1, "Chrono à l'écran", "Temps du passage et écart avec ton record, déplaçable en mode édition.",
+            "timer",
+            function() if UI.RefreshDungeonTimer then UI:RefreshDungeonTimer() end end, tcard)
+        local startSeg = UI:Segmented(tcard, { { "pull", "Au premier pack" }, { "enter", "En entrant" } },
+            function(v) dc.timerStart = v end, 24)
+        startSeg:Select(dc.timerStart or "pull")
+        UI:SettingRow(tcard, -86, "Départ du chrono",
+            "Au premier pack : le chrono attend ton premier combat dans le donjon"
+            .. " (ou le chrono d'un membre du groupe). En entrant : dès la porte franchie.", startSeg, 250)
+        drow(3, "Bilan à l'écran",
+            "En sortant du donjon, un bandeau en haut de l'écran pendant 5 s : temps et record, boss,"
+                .. " morts, XP et or (position en mode édition ; clic = fermer).", "summaryBanner", nil, tcard)
+        local sumSeg = UI:Segmented(tcard, { { "off", "Non" }, { "me", "Pour moi" }, { "group", "Au groupe" } },
+            function(v) dc.summary = v end, 24)
+        sumSeg:Select(dc.summary or "me")
+        UI:SettingRow(tcard, -178, "Résumé en sortant",
+            "Expérience, argent, morts et réputation du passage, envoyés au groupe (« Au groupe »),"
+            .. " ou dans ton chat quand le bilan à l'écran est coupé.", sumSeg, 230)
+        local TY = 4 * 46 -- les lignes du chrono ci-dessus décalent la suite
         local ttog = {}
         local function tchanged() if UI.PreviewDungeonTimer then UI:PreviewDungeonTimer() end end
-        local preSeg = UI:Segmented(tcard, { { "full", "Complet" }, { "compact", "Compact" }, { "minimal", "Minimal" }, { "custom", "Personnalisé" } },
+        local preSeg = UI:Segmented(tcard, { { "full", "Complet" }, { "compact", "Compact" }, { "minimal",
+            "Minimal" }, { "custom", "Personnalisé" } },
             function(v)
                 if v ~= "custom" then UI:ApplyDungeonTimerPreset(v) else to.timerPreset = "custom" end
                 for _, t in ipairs(ttog) do t:Refresh() end
                 tchanged()
             end, 24)
-        UI:SettingRow(tcard, -40, "Affichage", "Complet : tout. Compact : boss restants, sans les écarts. Minimal : chrono, record et barre.", preSeg, 330)
+        UI:SettingRow(tcard, -40 - TY, "Affichage",
+            "Complet : tout. Compact : boss restants, sans les écarts. Minimal : chrono, record et barre.", preSeg,
+            330)
         local wSeg
         local wSl = UI:Slider(tcard, 220, 180, 400, 10, function() return to.timerFixed end,
             function(v) to.timerFixed = v; to.timerWidth = "fixed"; wSeg:Select("fixed"); tchanged() end, "%d")
         wSeg = UI:Segmented(tcard, { { "tracker", "Comme le suivi des quêtes" }, { "fixed", "Fixe" } },
             function(v) to.timerWidth = v; tchanged() end, 24)
-        UI:SettingRow(tcard, -86, "Largeur", "Comme le suivi des quêtes : même largeur que lui ; place le chrono juste dessous en mode édition.", wSeg, 260)
-        UI:SettingRow(tcard, -132, "Largeur fixe", nil, wSl, 240)
-        local th = UI:Text(tcard, 10, C.dim); th:SetPoint("TOPLEFT", 16, -176); th:SetText(T("AFFICHER"))
+        UI:SettingRow(tcard, -86 - TY, "Largeur",
+            "Comme le suivi des quêtes : même largeur que lui ; place le chrono juste dessous en mode édition.",
+            wSeg, 260)
+        UI:SettingRow(tcard, -132 - TY, "Largeur fixe", nil, wSl, 240)
+        local th = UI:Text(tcard, 10, C.dim); th:SetPoint("TOPLEFT", 16, -176 - TY); th:SetText(T("AFFICHER"))
         local PL = {
             { "name", "Nom du donjon" }, { "cap", "Compteur de l'heure" },
             { "rec", "Record à côté du chrono" }, { "left", "Temps restant / dépassement" },
@@ -139,12 +161,12 @@ UI:RegisterPage({
                 tchanged()
             end)
             local col, rowI = (i - 1) % 2, math.floor((i - 1) / 2)
-            local y = -196 - rowI * 32
+            local y = -196 - TY - rowI * 32
             if col == 0 then t:SetPoint("TOPLEFT", 16, y) else t:SetPoint("TOPLEFT", tcard, "TOP", 8, y) end
             local l = UI:Text(tcard, 12, C.text); l:SetPoint("LEFT", t, "RIGHT", 8, 0); l:SetText(T(pl[2]))
             table.insert(ttog, t)
         end
-        tcard:SetHeight(196 + 5 * 32 + 8)
+        tcard:SetHeight(196 + TY + 5 * 32 + 8)
         local function tsync()
             to = UI:DungeonTimerOpts()
             preSeg:Select(to.timerPreset); wSeg:Select(to.timerWidth)

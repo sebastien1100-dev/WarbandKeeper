@@ -2323,16 +2323,13 @@ UI:RegisterPage({
                     function() return UI.TalentPlanGlowEnabled and UI.TalentPlanGlowEnabled() end,
                     function(v) ui().talentPlanGlow = v; if UI.TalentPlanGlow then UI:TalentPlanGlow() end end },
             }) },
-            bis = { card("BiS", {
-                { "Ligne « Liste BiS de… » dans les infobulles", "Sur un objet de ta liste BiS : quels persos le veulent.",
-                    function() return ui().bisTooltip ~= false end, function(v) ui().bisTooltip = v end },
-            }) },
         }
+        -- (ligne « Liste BiS de… » des infobulles : Options > Général > Infobulles, avec les autres lignes)
         -- onglets du volet, comme ceux de la fiche ; ouvert sur l'onglet affiché
         local tabCard = CreateFrame("Frame", nil, sheet); tabCard:SetHeight(34)
         sheet.setTab = "sheet"
         -- (réglages des sorts de classe : QoL > Classes > Général)
-        local seg = UI:Segmented(tabCard, { { "sheet", "Fiche" }, { "talents", "Talents" }, { "bis", "BiS" } }, function(v)
+        local seg = UI:Segmented(tabCard, { { "sheet", "Fiche" }, { "talents", "Talents" } }, function(v)
             sheet.setTab = v
             if self.gp then self.gp:Refresh() end
         end, 28)
