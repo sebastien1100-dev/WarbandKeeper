@@ -1399,8 +1399,11 @@ local function Detail(page, parent)
         local rank = pr.rank or 0
         local list, kind = G:Rows(self.prof, rank)
         local here = GetRealZoneText and GetRealZoneText() or ""
-        -- Zones conseillées en tuiles (ta zone actuelle d'abord)
+        -- Zones conseillées en tuiles (ta zone actuelle d'abord) ; dépeçage : d'après les bêtes de ForeverDB
         local best = G:BestZones(list)
+        local skinBest, beastsOf
+        if kind == "skin" then skinBest, beastsOf = G:SkinBest(rank) end
+        if skinBest and #skinBest > 0 then best = skinBest end
         local perZone = {}
         for _, d in ipairs(list) do
             if d.good then
@@ -1429,7 +1432,8 @@ local function Detail(page, parent)
         local perRow = math.max(2, math.min(4, math.floor((w - 32 + 10) / 210)))
         local tw = (w - 32 - (perRow - 1) * 10) / perRow
         local shown = math.min(#best, perRow * 2)
-        whereCredit:SetShown(kind ~= "skin" and G.fdb == true)
+        whereCredit:SetShown(G.fdb == true and (kind ~= "skin" or skinBest ~= nil))
+        whereCredit:SetText((kind == "skin" and T("Bêtes par zone · ") or T("Nœuds par zone · ")) .. G.CREDIT)
         whereText:SetShown(#best == 0)
         whereText:SetText(T("Plus rien ne fait monter ce métier : il est au maximum pour ces ressources."))
         for i = 1, shown do
@@ -1443,7 +1447,15 @@ local function Detail(page, parent)
             t.name:SetPoint("TOPRIGHT", isHere and -70 or -12, -9)
             t.level:SetText(G.ZONE_LEVELS[z] and string.format(T("Niv. %s"), G.ZONE_LEVELS[z]) or "")
             local parts = {}
-            for _, d in ipairs(perZone[z] or {}) do
+            for k, b in ipairs(beastsOf and beastsOf[z] or {}) do
+                local name = G:BeastName(b.npc)
+                if name and #parts < 4 then
+                    local col = DIFF[b.color] and DIFF[b.color].color or C.text
+                    table.insert(parts, UI:Hex(col) .. "•|r " .. name .. " " .. UI:Hex(C.muted) .. b.skill .. "|r")
+                end
+                if k > 20 then break end
+            end
+            for _, d in ipairs(#parts == 0 and perZone[z] or {}) do
                 local col = DIFF[d.color] and DIFF[d.color].color or C.text
                 local n = d.counts and d.counts[z]
                 table.insert(parts, UI:Hex(col) .. "•|r " .. ((UI:ItemInfo(d.id)) or "?")

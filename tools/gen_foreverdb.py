@@ -254,6 +254,28 @@ def fetch_gathering(api=None, dest=CACHE):
         d["_build"] = build
         with open(path, "w", encoding="utf-8") as f:
             json.dump(d, f)
+    # dépeçage : les bêtes de chaque zone (une requête par zone)
+    sk = os.path.join(gdir, "skinning.json")
+    with open(sk, encoding="utf-8") as f:
+        zones = (json.load(f).get("data") or {}).get("zones") or []
+    zdir = os.path.join(gdir, "skinning")
+    os.makedirs(zdir, exist_ok=True)
+    for z in zones:
+        m = z.get("mapId")
+        path = os.path.join(zdir, "%d.json" % m)
+        if not m or m in CONTINENTS:
+            continue
+        if os.path.exists(path):
+            try:
+                with open(path, encoding="utf-8") as f:
+                    if json.load(f).get("_build") == build:
+                        continue
+            except (ValueError, OSError):
+                pass
+        d = api.get("gathering/skinning?zone=%d" % m)
+        d["_build"] = build
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(d, f)
     print("Récolte : %d requêtes" % api.calls, flush=True)
 
 
@@ -522,7 +544,7 @@ def generate_bis(src=CACHE, out=BIS_OUT):
     return {"specs": sum(len(v) for v in by_class.values()), "lists": len(items)}
 
 
-def generate_gather(src=CACHE, out=GATHER_OUT):
+def generate_gather(questie=None, src=CACHE, out=GATHER_OUT):
     """Modules/ForeverGatherDB.lua : compétence de chaque plante et filon (client Forever), nombre de nœuds par zone,
     pêche par zone (compétence, seuil sans fuite, prises en centièmes de %, bancs, prises vues dans Forever).
     Seulement des nombres, jamais leurs textes (les bancs sont des n° de FISH_POOLS)."""
@@ -607,9 +629,50 @@ def generate_gather(src=CACHE, out=GATHER_OUT):
                                                          lua_str(loot), lua_str(",".join(pools)), lua_str(caught)))
         counts["fish"] += 1
     lines.append("}")
+    # dépeçage : bêtes par zone (Classic tant que non vues dans Forever ; compétence par la règle de Classic)
+    beasts, szones = {}, {}
+    fr = fr_names(questie) if questie else {}
+    zdir = os.path.join(gdir, "skinning")
+    for fn in sorted(os.listdir(zdir)) if os.path.isdir(zdir) else []:
+        with open(os.path.join(zdir, fn), encoding="utf-8") as f:
+            d = json.load(f)
+        for z in (d.get("data") or d).get("zones") or []:
+            m = z.get("mapId")
+            if not m or m in CONTINENTS or not z.get("beasts"):
+                continue
+            sp = {}
+            for b in z.get("beasts") or []:
+                n = b.get("npcId")
+                if not n:
+                    continue
+                gives = [g["itemId"] for g in b.get("gives") or [] if g.get("itemId")]
+                beasts[n] = (int(b.get("skill") or 0), int(b.get("minLevel") or 0), int(b.get("maxLevel") or 0),
+                             gives, 1 if b.get("elite") else 0, int(b.get("skinnedInForever") or 0),
+                             b.get("name") or "", fr.get(n))
+                sp[n] = sp.get(n, 0) + int(b.get("spawns") or 0)
+            sk = z.get("skill") or {}
+            szones[m] = (int(sk.get("min") or 0), int(sk.get("max") or 0), sp)
+    lines.append("-- WK.FSkin[pnj] = { compétence, niv. min, niv. max, \"objets\", élite (1), dépecé dans Forever (fois),")
+    lines.append("--   nom anglais (nom du jeu), nom français (QuestieDB, GPLv3) }")
+    lines.append("WK.FSkin = {")
+    for n in sorted(beasts):
+        b = beasts[n]
+        lines.append("    [%d] = { %d, %d, %d, %s, %d, %d, %s%s }," % (
+            n, b[0], b[1], b[2], lua_str(",".join(map(str, b[3]))), b[4], b[5], lua_str(b[6]),
+            (", " + lua_str(b[7])) if b[7] else ""))
+    lines.append("}")
+    lines.append("-- WK.FSkinZones[carte] = { compétence min, max, \"pnj:apparitions,…\" }")
+    lines.append("WK.FSkinZones = {")
+    for m in sorted(szones):
+        lo, hi, sp = szones[m]
+        txt = ",".join("%d:%d" % (n, c) for n, c in sorted(sp.items(), key=lambda x: (-x[1], x[0])) if c > 0)
+        lines.append("    [%d] = { %d, %d, %s }," % (m, lo, hi, lua_str(txt)))
+    lines.append("}")
+    counts["beasts"] = len(beasts)
     with open(out, "w", encoding="utf-8", newline="\n") as f:
         f.write("\n".join(lines) + "\n")
-    print("ForeverGatherDB.lua : %d nœuds, %d zones de pêche" % (counts["nodes"], counts["fish"]))
+    print("ForeverGatherDB.lua : %d nœuds, %d zones de pêche, %d bêtes à dépecer" % (counts["nodes"], counts["fish"],
+                                                                                   len(beasts)))
     return counts
 
 
@@ -633,4 +696,4 @@ if __name__ == "__main__":
         generate(args[0] if args else None)
         generate_prof(args[0] if args else None)
         generate_bis()
-        generate_gather()
+        generate_gather(args[0] if args else None)

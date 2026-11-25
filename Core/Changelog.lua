@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.310", date = "25/11/2026",
+        added = {
+            "Dépeçage : au survol d'une bête, si ton perso dépèce, la compétence pour la dépecer (en couleur selon la tienne : rouge, orange, jaune, vert, gris) et les cuirs qu'elle donne. 717 bêtes. Data from ForeverDB.net (https://foreverdb.net).",
+            "Métiers > Dépeçage : « Où aller à ton niveau » classe les zones par nombre de bêtes orange et jaunes, et chaque tuile nomme les plus nombreuses avec la compétence qu'il leur faut. Les zones de chaque cuir viennent des bêtes qui le donnent.",
+        },
+    },
+    {
         version = "1.128.309", date = "25/11/2026", restart = true,
         added = {
             "Métiers > Herboristerie et Minage : les ressources et leurs zones viennent maintenant de ForeverDB, avec la compétence du client Forever et le nombre de nœuds de chaque zone. « Où aller à ton niveau » classe les zones par nombre de nœuds orange et jaunes, et chaque tuile donne ce nombre à côté de la ressource. Data from ForeverDB.net (https://foreverdb.net).",

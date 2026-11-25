@@ -148,6 +148,26 @@ function M:ApplyForever()
         end
         if #list > 0 then self.DATA[kind] = list end
     end
+    -- dépeçage : chaque cuir garde ses niveaux, ses zones deviennent celles des bêtes qui le donnent (apparitions)
+    if WK.FSkin and WK.FSkinZones then
+        for _, d in ipairs(self.DATA.skin) do
+            local cnt = {}
+            for m, z in pairs(WK.FSkinZones) do
+                local name = zoneOfMap(m)
+                for n, c in z[3]:gmatch("(%d+):(%d+)") do
+                    local b = WK.FSkin[tonumber(n)]
+                    if name and b and ("," .. b[4] .. ","):find("," .. d.id .. ",", 1, true) then
+                        cnt[name] = (cnt[name] or 0) + tonumber(c)
+                        M.MAP_OF[name] = m
+                    end
+                end
+            end
+            local zs = {}
+            for name, c in pairs(cnt) do if c >= 10 then zs[#zs + 1] = name end end
+            table.sort(zs, function(a, b) if cnt[a] ~= cnt[b] then return cnt[a] > cnt[b] end return a < b end)
+            if #zs > 0 then d.zones, d.counts, d.fdb = zs, cnt, true end
+        end
+    end
     self.fdb = true
     return true
 end
@@ -612,4 +632,91 @@ function M:AddTooltip(tt, id)
     end
     tt:AddLine(T("Nœuds de récolte · ") .. M.CREDIT, 0.45, 0.45, 0.45)
     return true
+end
+
+---------------------------------------------------------------------------
+-- Dépeçage par bête (ForeverDB, Modules/ForeverGatherDB.lua) : WK.FSkin[pnj], WK.FSkinZones[carte].
+---------------------------------------------------------------------------
+-- { skill, min, max, items = { id }, elite, skinned } d'une bête, ou nil
+local skinCache = {}
+function M.SkinInfo(_, npc)
+    local b = npc and WK.FSkin and WK.FSkin[npc]
+    if not b then return nil end
+    local e = skinCache[npc]
+    if not e then
+        e = { skill = b[1], min = b[2], max = b[3], items = {}, elite = b[5] == 1, skinned = b[6] }
+        for n in b[4]:gmatch("%d+") do e.items[#e.items + 1] = tonumber(n) end
+        skinCache[npc] = e
+    end
+    return e
+end
+-- nom d'une bête : français (QuestieDB, ou Everloot) en jeu français, sinon anglais ; nil si inconnu
+function M.BeastName(_, npc)
+    local b = WK.FSkin and WK.FSkin[npc]
+    local ev = WK.EverNpcs and WK.EverNpcs[npc]
+    if WK.Lang() == "frFR" then
+        local fr = (b and b[8]) or (ev and ev[2])
+        if fr then return fr end
+    end
+    return (b and b[7] ~= "" and b[7]) or (ev and ev[1]) or nil
+end
+-- Zones où dépecer à cette compétence : liste de noms (les plus fournies en bêtes orange et jaunes d'abord) et,
+-- par zone, ses bêtes utiles { npc, n (apparitions), skill, color } rangées par apparitions ; nil sans données
+function M:SkinBest(rank)
+    if not (WK.FSkin and WK.FSkinZones) then return nil end
+    self:ApplyForever()
+    local order, score, beasts = {}, {}, {}
+    for m, z in pairs(WK.FSkinZones) do
+        local name = zoneOfMap(m)
+        if name then
+            for n, c in z[3]:gmatch("(%d+):(%d+)") do
+                n, c = tonumber(n), tonumber(c)
+                local b = WK.FSkin[n]
+                local col = b and self:Color(b[1], rank)
+                if col == "optimal" or col == "medium" then
+                    if not score[name] then score[name] = 0; beasts[name] = {}; order[#order + 1] = name end
+                    score[name] = score[name] + c * (col == "optimal" and 2 or 1)
+                    table.insert(beasts[name], { npc = n, n = c, skill = b[1], color = col })
+                end
+            end
+        end
+    end
+    table.sort(order, function(a, b) if score[a] ~= score[b] then return score[a] > score[b] end return a < b end)
+    for _, l in pairs(beasts) do table.sort(l, function(a, b) return a.n > b.n end) end
+    return order, beasts, score
+end
+
+-- Infobulle d'un monstre : peut-il être dépecé, à quelle compétence, et ce qu'il donne (perso dépeceur seulement)
+local function onUnitTooltip(tt)
+    if tt ~= _G.GameTooltip or not WK.FSkin then return end
+    if WK.DB.global.settings.ui.tooltipGather == false then return end
+    local mine = M:SkillFor("skin")
+    if not mine then return end
+    local R = WK.modules.Rares
+    local unit = R and R.Readable(select(2, tt:GetUnit()))
+    local npc = unit and R.NpcID(unit)
+    local b = M:SkinInfo(npc)
+    if not b then return end
+    local col = M:Color(b.skill, mine)
+    local C = WK.UI and WK.UI.colors or {}
+    local rgb = mine < b.skill and { 1, 0.35, 0.3 }
+        or ({ optimal = { 1, 0.55, 0.2 }, medium = { 1, 0.9, 0.25 }, easy = { 0.35, 0.85, 0.35 } })[col]
+        or C.muted or { 0.6, 0.6, 0.6 }
+    tt:AddLine(string.format(T("Dépeçable à %d"), b.skill) .. "  " .. string.format(T("(toi : %d)"), mine),
+        rgb[1], rgb[2], rgb[3])
+    local names = {}
+    for _, id in ipairs(b.items) do
+        local n = itemName(id)
+        if n then names[#names + 1] = n end
+    end
+    if #names > 0 then tt:AddLine("  " .. T("Donne : ") .. table.concat(names, ", "), 0.85, 0.85, 0.85, true) end
+    tt:AddLine(T("Dépeçage · ") .. M.CREDIT, 0.45, 0.45, 0.45)
+    tt:Show()
+end
+M.OnUnitTooltip = onUnitTooltip
+local TDP, EN = _G.TooltipDataProcessor, _G.Enum
+if TDP and TDP.AddTooltipPostCall and EN and EN.TooltipDataType and EN.TooltipDataType.Unit then
+    TDP.AddTooltipPostCall(EN.TooltipDataType.Unit, function(tt) pcall(onUnitTooltip, tt) end)
+elseif _G.GameTooltip and _G.GameTooltip.HookScript then
+    _G.GameTooltip:HookScript("OnTooltipSetUnit", function(tt) pcall(onUnitTooltip, tt) end)
 end

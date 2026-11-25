@@ -53,6 +53,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.310 — 25/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Dépeçage : au survol d'une bête, si ton perso dépèce, la compétence pour la dépecer (en couleur selon la tienne : rouge, orange, jaune, vert, gris) et les cuirs qu'elle donne. 717 bêtes. Data from ForeverDB.net (https://foreverdb.net).
+- Métiers > Dépeçage : « Où aller à ton niveau » classe les zones par nombre de bêtes orange et jaunes, et chaque tuile nomme les plus nombreuses avec la compétence qu'il leur faut. Les zones de chaque cuir viennent des bêtes qui le donnent.
+
 ## v1.128.309 — 25/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

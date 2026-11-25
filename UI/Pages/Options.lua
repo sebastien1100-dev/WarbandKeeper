@@ -603,7 +603,8 @@ UI:RegisterPage({
                     .. " et son prix, d'après les marchands vus par les joueurs (ForeverDB.net).",
                     function() return cfg.tooltipVendors ~= false end, function(v) cfg.tooltipVendors = v end },
                 { "Récolte", "Dans l'infobulle d'une herbe, d'un minerai ou d'une gemme : la compétence requise,"
-                    .. " la tienne, les zones les plus fournies et ce que le filon donne aussi (ForeverDB.net).",
+                    .. " la tienne, les zones les plus fournies et ce que le filon donne aussi ; au survol d'une bête,"
+                    .. " la compétence pour la dépecer et ce qu'elle donne (ForeverDB.net).",
                     function() return cfg.tooltipGather ~= false end, function(v) cfg.tooltipGather = v end },
                 { "Numéro de l'objet ou du sort",
                     "En bas de l'infobulle d'un objet, d'un sort ou d'un effet : son numéro (ID),"

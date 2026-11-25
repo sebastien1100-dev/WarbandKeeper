@@ -208,6 +208,7 @@ def metrics():
         elif name == "ForeverGatherDB":
             out["Plantes et filons (ForeverDB)"] = size(WK.FGather.herb) + size(WK.FGather.mining)
             out["Zones de pêche (ForeverDB)"] = size(WK.FFish)
+            out["Bêtes à dépecer (ForeverDB)"] = size(WK.FSkin)
         elif name == "BiSSpecDB":
             out["Listes BiS conseillées (ForeverDB)"] = size(WK.BiSSpecItems)
         elif name == "RepeatQuestsDB":
