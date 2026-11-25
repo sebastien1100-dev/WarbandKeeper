@@ -53,6 +53,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.321 — 25/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- File de fabrication : bouton « Lancer la file » dans la petite fenêtre près du métier et dans Métiers > File de fabrication. Il fabrique toute la file du métier ouvert, recette après recette, autant que tes sacs le permettent, en commençant par ce qui sert aux autres (les barres avant l'objet qui les demande). Une série finie lance la suivante ; le bouton devient « Arrêter la file ». Bouger (fabrication interrompue) ou fermer le métier arrête la file. Si le jeu refuse d'enchaîner sans clic, le bouton devient « Continuer » : un clic par recette.
+
 ## v1.128.320 — 25/11/2026
 
 _Un /reload suffit._

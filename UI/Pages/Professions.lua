@@ -826,6 +826,18 @@ local function Shopping(page, parent)
     local clear = UI:Button(planned, "Vider la liste", nil, 28, "ghost", "trash")
     clear:SetPoint("BOTTOMLEFT", 12, 12)
     clear:SetScript("OnClick", function() WK.modules.Recipes:ClearList(); page:Refresh() end)
+    -- toute la file du métier ouvert (fenêtre du métier du jeu ouverte), recette après recette
+    local runQ = UI:Button(planned, "Lancer la file", nil, 28, "primary")
+    runQ:SetPoint("BOTTOMRIGHT", -12, 12)
+    runQ:SetScript("OnClick", function() if UI.RunCraftQueue then UI:RunCraftQueue() end; page:Refresh() end)
+    runQ:SetScript("OnEnter", function(b)
+        UI:TooltipOwner(b, "ANCHOR_TOP")
+        _G.GameTooltip:SetText(T("Lancer la file"), 1, 1, 1)
+        _G.GameTooltip:AddLine(T("Fabrique toute la file du métier ouvert dans le jeu, recette après recette (les"
+            .. " barres avant les objets qui les demandent), autant que tes sacs le permettent."), 0.8, 0.8, 0.8, true)
+        _G.GameTooltip:Show()
+    end)
+    runQ:SetScript("OnLeave", function() _G.GameTooltip:Hide() end)
 
     local pRows = UI:Pool(function()
         local r = CreateFrame("Button", nil, ps.child)

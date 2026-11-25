@@ -533,8 +533,22 @@ local function hudEntries()
     for _, e in ipairs(PH():Queue()) do
         if e.mine and e.rec and (not prof or e.rec.prof == prof) then table.insert(out, e) end
     end
+    -- ordre de fabrication : une recette dont l'objet sert à une autre de la file passe avant (barres puis objet)
+    local feeds = {}
+    for _, a in ipairs(out) do
+        for _, b in ipairs(out) do
+            if a ~= b and a.rec.out then
+                for _, rg in ipairs(b.rec.reagents or {}) do if rg[1] == a.rec.out then feeds[a.key] = true end end
+            end
+        end
+    end
+    table.sort(out, function(a, b)
+        if (feeds[a.key] or false) ~= (feeds[b.key] or false) then return feeds[a.key] == true end
+        return (a.rec.name or "") < (b.rec.name or "")
+    end)
     return out
 end
+UI.CraftQueueEntries = hudEntries
 -- fermée par la croix ou en s'éloignant du poste de travail (plus de 15 m de l'endroit où le métier a été ouvert)
 local hudDismissed, hudAnchor
 local HUD_AWAY = 15
@@ -582,6 +596,10 @@ local function buildHUD()
     f.bar = UI:Progress(f, 5); f.bar:SetPoint("TOPLEFT", 12, -40); f.bar:SetPoint("TOPRIGHT", -12, -40)
     f.make = UI:Button(f, T("Fabriquer"), nil, 22, "primary"); f.make:SetPoint("BOTTOMLEFT", 10, 6)
     f.skip = UI:Button(f, T("Suivant"), nil, 22, "ghost"); f.skip:SetPoint("LEFT", f.make, "RIGHT", 6, 0)
+    -- toute la file du métier ouvert, recette après recette (UI:RunCraftQueue)
+    f.run = UI:Button(f, T("Lancer la file"), nil, 22, "secondary", "play")
+    f.run:SetPoint("BOTTOMRIGHT", -10, 6)
+    f.run:SetScript("OnClick", function() UI:RunCraftQueue() end)
     f.make:SetScript("OnClick", function()
         local e = f.e
         if e then PH():Craft(e.key, math.max(1, math.min(e.qty, e.can or e.qty))) end
@@ -612,16 +630,109 @@ function UI:RefreshCraftHUD()
     hud.make:SetLabel(can > 0 and string.format(T("Fabriquer %d"), math.min(e.qty, can)) or T("Composants manquants"))
     hud.make:SetWidth(hud.make.label:GetStringWidth() + 28)
     hud.make:SetEnabled(can > 0)
-    hud.skip:SetShown(#list > 1)
+    hud.skip:SetShown(#list > 1 and not UI.craftRun)
+    -- file lancée : « Lancer la file » devient « Arrêter », ou « Continuer » quand le jeu demande un clic
+    local run = UI.craftRun
+    local ready = 0
+    for _, x in ipairs(list) do if (x.can or 0) > 0 then ready = ready + 1 end end
+    if run and run.wait then
+        hud.run:SetLabel(string.format(T("Continuer (%d)"), ready))
+    elseif run then
+        hud.run:SetLabel(T("Arrêter la file"))
+    else
+        hud.run:SetLabel(ready > 1 and string.format(T("Lancer la file (%d)"), ready) or T("Lancer la file"))
+    end
+    hud.run:SetWidth(hud.run.label:GetStringWidth() + 40)
+    hud.run:SetEnabled(run ~= nil or ready > 0)
+    hud:SetWidth(math.max(240, hud.make:GetWidth() + (hud.skip:IsShown() and hud.skip:GetWidth() + 6 or 0)
+        + hud.run:GetWidth() + 32))
     hud:Show()
 end
+
+---------------------------------------------------------------------------
+-- « Lancer la file » : chaque recette de la file du métier ouvert, dans l'ordre (barres avant l'objet qui les
+-- demande), autant que les sacs le permettent. Une série finie (plus d'incantation depuis 2,5 s) lance la
+-- suivante ; si le jeu refuse une fabrication lancée sans clic (ADDON_ACTION_BLOCKED), on passe pour de bon à
+-- un clic par recette (« Continuer », cfg().queueClick). Bouger (incantation interrompue) ou fermer le métier
+-- arrête la file.
+---------------------------------------------------------------------------
+local runTicker
+local function stopRun(msg)
+    UI.craftRun = nil
+    if runTicker then runTicker:Cancel(); runTicker = nil end
+    if msg then WK:Print(msg) end
+    if hud then UI:RefreshCraftHUD() end
+end
+local function craftNext(fromClick)
+    local run = UI.craftRun
+    if not run then return end
+    local list = hudEntries()
+    local e
+    for _, x in ipairs(list) do if (x.can or 0) > 0 and not x.cd then e = x break end end
+    if not e then return stopRun(T("File de fabrication terminée (plus rien de faisable pour ce métier).")) end
+    if not fromClick and cfg().queueClick then
+        run.wait = true
+        if hud then UI:RefreshCraftHUD() end
+        return
+    end
+    local t0 = _G.GetTime()
+    run.wait, run.key, run.started, run.lastCast, run.casted = nil, e.key, t0, t0, false
+    run.tried = not fromClick
+    local n = math.max(1, math.min(e.qty, e.can))
+    if not PH():Craft(e.key, n) then return stopRun(T("Fabrication impossible : rouvre la fenêtre du métier.")) end
+    if hud then UI:RefreshCraftHUD() end
+end
+function UI.RunCraftQueue(_)
+    if UI.craftRun and not UI.craftRun.wait then return stopRun(T("File de fabrication arrêtée.")) end
+    if not profOpen then return WK:Print(T("Ouvre d'abord la fenêtre du métier (Fondre pour les barres).")) end
+    if _G.InCombatLockdown and _G.InCombatLockdown() then return end
+    if not UI.craftRun then UI.craftRun = {} end
+    if not runTicker and _G.C_Timer and _G.C_Timer.NewTicker then
+        runTicker = _G.C_Timer.NewTicker(0.5, function()
+            local run = UI.craftRun
+            if not run or run.wait then return end
+            local now = _G.GetTime()
+            if _G.UnitCastingInfo and _G.UnitCastingInfo("player") then run.lastCast, run.casted = now, true return end
+            -- série finie : plus d'incantation depuis 2,5 s (le jeu laisse un court battement entre deux)
+            if now - (run.lastCast or now) > 2.5 and now - (run.started or now) > 2.5 then
+                if not run.casted then
+                    -- rien n'a démarré (refusé sans clic, poste de travail trop loin…) : on attend un clic
+                    run.wait = true
+                    if hud then UI:RefreshCraftHUD() end
+                    return
+                end
+                craftNext(false)
+            end
+        end)
+    end
+    craftNext(true)
+end
+-- le jeu refuse une fabrication lancée sans clic : un clic par recette à partir de maintenant
+WK:On("ADDON_ACTION_BLOCKED", function(addon)
+    local run = UI.craftRun
+    if run and run.tried and addon == ADDON_NAME then
+        cfg().queueClick = true
+        run.wait = true
+        WK:Print(T("Le jeu demande un clic pour chaque recette : clique sur « Continuer » quand une série est finie."))
+        if hud then UI:RefreshCraftHUD() end
+    end
+end)
+WK:OnUnit("UNIT_SPELLCAST_INTERRUPTED", "player", function()
+    if UI.craftRun and not UI.craftRun.wait then
+        stopRun(T("File de fabrication arrêtée (fabrication interrompue)."))
+    end
+end)
 WK:On("TRADE_SKILL_SHOW", function()
     profOpen = true; hudDismissed = false
     local x, y, inst = playerPos()
     hudAnchor = x and { x, y, inst } or nil
     _G.C_Timer.After(0.5, function() UI:RefreshCraftHUD() end)
 end)
-WK:On("TRADE_SKILL_CLOSE", function() profOpen = false; if hud then hud:Hide() end end)
+WK:On("TRADE_SKILL_CLOSE", function()
+    profOpen = false
+    if UI.craftRun then stopRun() end
+    if hud then hud:Hide() end
+end)
 WK:On("BAG_UPDATE_DELAYED", function() if profOpen and hud then UI:RefreshCraftHUD() end end)
 WK:On("PLAYER_LOGIN", function() if not hud then hud = buildHUD() end end)
 

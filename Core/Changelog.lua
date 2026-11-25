@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.321", date = "25/11/2026",
+        added = {
+            "File de fabrication : bouton « Lancer la file » dans la petite fenêtre près du métier et dans Métiers > File de fabrication. Il fabrique toute la file du métier ouvert, recette après recette, autant que tes sacs le permettent, en commençant par ce qui sert aux autres (les barres avant l'objet qui les demande). Une série finie lance la suivante ; le bouton devient « Arrêter la file ». Bouger (fabrication interrompue) ou fermer le métier arrête la file. Si le jeu refuse d'enchaîner sans clic, le bouton devient « Continuer » : un clic par recette.",
+        },
+    },
+    {
         version = "1.128.320", date = "25/11/2026",
         fixed = {
             "File de fabrication : la petite fenêtre près du métier (« Fonte du cuivre 10 / 14 ») restait affichée après avoir vidé la file ou retiré la recette, et parfois après avoir fermé la fenêtre du métier. Elle suit maintenant la file tout de suite et se ferme avec la fenêtre du métier.",
