@@ -3159,6 +3159,7 @@ WK.Locales.enUS.text = {
     ["Croix : supprimer"] = "Cross: delete",
     ["prochain scan complet dans %d:%02d"] = "next full scan in %d:%02d",
     ["scan complet possible"] = "full scan available",
+    ["Pas en vente à l'HV pour l'instant"] = "Not for sale at the AH right now",
     ["Barre d'XP"] = "XP bar",
     ["Avant de partir"] = "Before you go",
     ["Le meilleur objet de chaque sorte pour ton niveau ; rouge : sous le seuil. Seuils x2 en raid ; en JcJ, pas d'élixir et moitié de nourriture."] = "The best item of each kind for your level; red: below threshold. Thresholds x2 in raids; in PvP, no elixir and half the food.",

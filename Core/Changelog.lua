@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.334", date = "25/11/2026",
+        changed = {
+            "Hôtel des ventes, onglet À acheter : sur la ligne « Introuvable » de « Ce qu'il faut », les icônes des objets à la place du nom coupé (cinq au plus, « +N » au-delà). Au survol, l'infobulle de l'objet.",
+        },
+    },
+    {
         version = "1.128.333", date = "25/11/2026",
         fixed = {
             "Hôtel des ventes, onglet À acheter : dans « Ce qu'il faut », les montants et les noms se chevauchaient avec les libellés (« À l'HV (21) 682po 61pa 75pc », « Introuvable » sous le nom de l'objet). Chaque valeur a maintenant sa place à droite, les montants tiennent en deux unités, et un texte trop long est coupé au lieu de déborder.",

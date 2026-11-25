@@ -1398,6 +1398,27 @@ local function build(host)
         if l.SetWordWrap then l:SetWordWrap(false) end
         bv.sumLines[i] = { l, v }
     end
+    -- icônes des objets introuvables, sur la ligne « Introuvable » (à la place du nom, coupé faute de place)
+    bv.noneIcons = {}
+    for k = 1, 5 do
+        local ic = _G.CreateFrame("Button", nil, bv.sum)
+        ic:SetSize(18, 18)
+        ic:SetPoint("TOPRIGHT", -12 - (5 - k) * 20, -32 - 3 * 24 + 3)
+        ic.tex = ic:CreateTexture(nil, "ARTWORK"); ic.tex:SetAllPoints(); ic.tex:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+        ic.more = UI:Text(ic, 10, C.text); ic.more:SetPoint("BOTTOMRIGHT", 2, -1)
+        ic:SetScript("OnEnter", function(s2)
+            if not s2.id then return end
+            local GT = _G.GameTooltip
+            UI:TooltipOwner(s2, "ANCHOR_LEFT")
+            if GT.SetItemByID then GT:SetItemByID(s2.id) end
+            GT:AddLine(" ")
+            GT:AddLine(T("Pas en vente à l'HV pour l'instant"), C.negative[1], C.negative[2], C.negative[3])
+            GT:Show()
+        end)
+        ic:SetScript("OnLeave", function() _G.GameTooltip:Hide() end)
+        ic:Hide()
+        bv.noneIcons[k] = ic
+    end
     bv.searchAll = UI:Button(bv.sum, "Chercher les prix", nil, 26, "secondary")
     bv.searchAll:SetPoint("TOPLEFT", 12, -160); bv.searchAll:SetPoint("TOPRIGHT", -12, -160)
     bv.buyAll = UI:Button(bv.sum, "Tout acheter", nil, 32, "primary")
@@ -1705,7 +1726,8 @@ local function build(host)
         self.empty:SetText(T("Crée une liste d'achat depuis la page Métiers (guide de montée ou recettes), ou ajoute des recettes à la file de fabrication."))
         local vseen = WK.DB.global.vendorSeen or {}
         self.skipSet = {}
-        local sAH, nAH, sVendor, nVendor, nAlt, nNone, noneName, n = 0, 0, 0, 0, 0, 0, nil, 0
+        local sAH, nAH, sVendor, nVendor, nAlt, nNone, n = 0, 0, 0, 0, 0, 0, 0
+        local noneIds = {}
         f.buyCount = 0
         local anyWho = false
         -- toute la liste est comptée (résumé, total, objets passés par « Tout acheter ») ; seules les lignes de la
@@ -1762,7 +1784,7 @@ local function build(host)
                         self.skipSet[id] = true
                     elseif none then
                         r.tag:Set(T("introuvable"), C.negative); r.tag:Show()
-                        nNone = nNone + 1; noneName = noneName or name
+                        nNone = nNone + 1; noneIds[#noneIds + 1] = id
                         self.skipSet[id] = true
                     else
                         r.tot:SetText(low and shortMoney(low * need, true) or "")
@@ -1789,10 +1811,21 @@ local function build(host)
             { string.format(T("À l'HV (%d)"), nAH), nAH > 0 and shortMoney(sAH) or "-" },
             { string.format(T("Chez le marchand (%d)"), nVendor), nVendor > 0 and shortMoney(sVendor) or "-" },
             { string.format(T("Chez tes persos (%d)"), nAlt), nAlt > 0 and (UI:Hex(C.info) .. T("par courrier") .. "|r") or "-" },
-            { string.format(T("Introuvable (%d)"), nNone), nNone > 0 and (UI:Hex(C.negative) .. (noneName or "") .. "|r") or "-" },
+            { string.format(T("Introuvable (%d)"), nNone), nNone > 0 and "" or "-" },
             { T("Ton or"), UI:GoldText(GetMoney and GetMoney() or 0) },
         }
         for i, sl in ipairs(self.sumLines) do sl[1]:SetText(lines[i][1]); sl[2]:SetText(lines[i][2]) end
+        -- objets introuvables : leurs icônes (survol = infobulle de l'objet), « +N » au-delà
+        local NI = #self.noneIcons
+        for k, ic in ipairs(self.noneIcons) do
+            local id = noneIds[k]
+            ic.id = id
+            if id then
+                ic.tex:SetTexture(itemIcon(id))
+                ic.more:SetText((k == NI and #noneIds > NI) and ("+" .. (#noneIds - NI + 1)) or "")
+                ic:Show()
+            else ic:Hide() end
+        end
         local inBuy = b and b.list == cur
         self.buyAll:SetEnabled(cur ~= nil and nAH > 0 or (inBuy and b.phase == "confirm"))
         self.searchAll:SetEnabled(cur ~= nil)
