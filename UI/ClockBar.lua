@@ -231,10 +231,11 @@ local SHORTCUTS = {
           -- Plusieurs essais pendant une demi-seconde : sur WoW Forever le journal revenait sur Montures après le
           -- clic (onglet remis par l'ouverture du journal). Échec : message avec les onglets vus (diagnostic).
           local function tabsOf(cj)
-              local tabs = {}
-              for i = 1, 10 do local t = _G["CollectionsJournalTab" .. i]; if t then tabs[#tabs + 1] = t end end
+              local tabs, seen = {}, {}
+              local function add(t) if t and not seen[t] then seen[t] = true; tabs[#tabs + 1] = t end end
+              for i = 1, 10 do add(_G["CollectionsJournalTab" .. i]) end
               if type(cj.TabContainer) == "table" and cj.TabContainer.GetChildren then
-                  for _, t in ipairs({ cj.TabContainer:GetChildren() }) do tabs[#tabs + 1] = t end
+                  for _, t in ipairs({ cj.TabContainer:GetChildren() }) do add(t) end
               end
               return tabs
           end
@@ -246,7 +247,7 @@ local SHORTCUTS = {
           end
           local function textOf(b)
               local t = b.GetText and b:GetText()
-              if not t and b.Text and b.Text.GetText then t = b.Text:GetText() end
+              if not t and type(b.Text) == "table" and b.Text.GetText then t = b.Text:GetText() end
               if not t and b.GetRegions then
                   for _, r in ipairs({ b:GetRegions() }) do
                       if r.GetText and r:GetText() then t = r:GetText() break end
@@ -276,8 +277,13 @@ local SHORTCUTS = {
                   pcall(_G.CollectionsJournal_SetTab, cj, id)
               end
           end
+          -- WoW Forever (/wk heritage) : onglets sans texte lisible et onglet n° 4 (Héritages du journal de
+          -- Classic Era) masqué par le jeu : à défaut de texte, l'onglet n° 4, même masqué
           local function heirTab(cj)
-              for _, t in ipairs(tabsOf(cj)) do if isHeirloom(textOf(t)) then return t end end
+              local tabs = tabsOf(cj)
+              for _, t in ipairs(tabs) do if isHeirloom(textOf(t)) then return t end end
+              local t4 = _G.CollectionsJournalTab4
+              if t4 and _G.HeirloomsJournal then return t4 end
           end
           local function done(cj, t)
               if onHeirlooms(cj) then return true end
@@ -295,8 +301,13 @@ local SHORTCUTS = {
               return table.concat(seen, ", ") .. " ; " .. tostring(selected(cj))
           end
           local function report(cj)
-              WK:Print(WK.T("Onglet des héritages introuvable dans le journal des collections.")
-                  .. " (" .. tabList(cj) .. ")")
+              local t4 = _G.CollectionsJournalTab4
+              if t4 and t4.IsShown and not t4:IsShown() then
+                  WK:Print(WK.T("Le jeu masque l'onglet des héritages sur ce serveur et refuse de l'afficher."))
+              else
+                  WK:Print(WK.T("Onglet des héritages introuvable dans le journal des collections.")
+                      .. " (" .. tabList(cj) .. ")")
+              end
           end
           local DELAYS = { 0, 0.15, 0.4 }
           -- trace du dernier clic, lue par /wk heritage (diagnostic sur WoW Forever)

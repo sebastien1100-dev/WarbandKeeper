@@ -53,6 +53,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.351 — 25/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Micro menu, raccourci Héritages : sur WoW Forever, les onglets du journal des collections n'ont pas de texte lisible et le jeu masque l'onglet n° 4 (Héritages). Le raccourci ne le trouvait donc jamais et revenait sur Montures. Il affiche maintenant directement la page n° 4, même masquée. Si le jeu refuse, un message le dit.
+
 ## v1.128.350 — 25/11/2026
 
 _Un /reload suffit._

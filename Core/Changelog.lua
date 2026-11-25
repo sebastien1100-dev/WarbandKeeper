@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.351", date = "25/11/2026",
+        fixed = {
+            "Micro menu, raccourci Héritages : sur WoW Forever, les onglets du journal des collections n'ont pas de texte lisible et le jeu masque l'onglet n° 4 (Héritages). Le raccourci ne le trouvait donc jamais et revenait sur Montures. Il affiche maintenant directement la page n° 4, même masquée. Si le jeu refuse, un message le dit.",
+        },
+    },
+    {
         version = "1.128.350", date = "25/11/2026",
         added = {
             "/wk heritage (aussi dans Options > Fiabilité, diagnostics) : après un clic sur le raccourci Héritages du micro menu, montre ce qui s'est passé à chaque essai (onglet trouvé, onglet affiché, journal ouvert ou non) et la liste des onglets du journal des collections. Sert à corriger le raccourci, qui ouvre encore Montures sur WoW Forever.",
