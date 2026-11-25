@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.305", date = "25/11/2026",
+        changed = {
+            "Quêtes : 195 donneurs et 215 points de rendu sont maintenant placés là où les joueurs les ont vus dans WoW Forever (PNJ déplacés par Forever, ou dont la place manquait), au lieu de la place de Classic : le guidage vers un donneur ou un rendu mène au bon endroit. Ces quêtes portent la pastille CORRIGÉE dans le journal des données. Data from ForeverDB.net (https://foreverdb.net).",
+        },
+    },
+    {
         version = "1.128.304", date = "25/11/2026", restart = true,
         added = {
             "Métiers > Guide : une étape dont la recette n'est pas encore apprise a un bouton « Maître · 3 pa » (ou « Formule · 5 pa » pour une recette à acheter) : un clic te guide vers le maître ou le marchand le plus proche de ton camp, d'après les maîtres et marchands vus dans WoW Forever (Data from ForeverDB.net, https://foreverdb.net).",

@@ -50,6 +50,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.305 — 25/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Quêtes : 195 donneurs et 215 points de rendu sont maintenant placés là où les joueurs les ont vus dans WoW Forever (PNJ déplacés par Forever, ou dont la place manquait), au lieu de la place de Classic : le guidage vers un donneur ou un rendu mène au bon endroit. Ces quêtes portent la pastille CORRIGÉE dans le journal des données. Data from ForeverDB.net (https://foreverdb.net).
+
 ## v1.128.304 — 25/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

@@ -289,6 +289,13 @@ def main():
             log("QuestieDB")
             qpath, qrev = questie(opt("--questie"))
             sources.append("QuestieDB `%s`" % qrev)
+            # donneurs et rendus vus dans WoW Forever (ForeverDB) : lus par gen_quests.py et gen_objectives.py ;
+            # sans clé ou en cas d'échec, le cache d'avant sert (ou rien)
+            if os.environ.get("FOREVERDB_KEY"):
+                try:
+                    run(os.path.join(HERE, "gen_foreverdb.py"), "--fetch-quests")
+                except subprocess.CalledProcessError as e:
+                    log("  ! ForeverDB (quêtes) indisponible :", e)
             for gen in ["gen_places.py", "gen_roads.py", "gen_rares.py", "gen_quests.py", "gen_objectives.py"]:
                 run(os.path.join(HERE, gen), qpath)
         if do_wowtbc:
@@ -342,7 +349,7 @@ def main():
                 try:
                     run(os.path.join(HERE, "gen_foreverdb.py"), "--fetch")
                     run(os.path.join(HERE, "gen_foreverdb.py"), qpath)
-                    sources.append("ForeverDB (marchands, maîtres et recettes des métiers)")
+                    sources.append("ForeverDB (marchands, maîtres et recettes des métiers, donneurs et rendus des quêtes)")
                 except subprocess.CalledProcessError as e:
                     log("  ! ForeverDB indisponible, fichier gardé tel quel :", e)
             else:

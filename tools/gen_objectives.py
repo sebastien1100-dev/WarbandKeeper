@@ -168,6 +168,12 @@ def main(root, out):
                     return "%d,%.1f,%.1f" % p[0]
         return None
 
+    # rendus vus dans WoW Forever (ForeverDB) : seulement si le cache existe (tools/gen_foreverdb.py --fetch-quests)
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import gen_foreverdb
+    FDB = gen_foreverdb.quest_points()
+    fdb_end = [0]
+
     vend = {}  # objet -> ["carte,x,y,faction,nom"]
 
     def vendors_of(iid):
@@ -282,6 +288,17 @@ def main(root, out):
                 blocks.append("x%s:" % idx + ";".join(c))
                 prefs.append("*" + enc(pts))
         fin = finisher(q)
+        # rendu vu dans WoW Forever (ForeverDB) : passe avant QuestieDB s'il n'y en a pas ou s'il a bougé de plus
+        # de 1 % de la carte
+        fe = (FDB.get(qid) or {}).get("end")
+        if fe:
+            fpt = "%d,%.1f,%.1f" % (fe[2], fe[3], fe[4])
+            if not fin:
+                fin, fdb_end[0] = fpt, fdb_end[0] + 1
+            else:
+                m, x, y = fin.split(",")
+                if int(m) != fe[2] or abs(float(x) - fe[3]) > 1 or abs(float(y) - fe[4]) > 1:
+                    fin, fdb_end[0] = fpt, fdb_end[0] + 1
         if not blocks and not fin:
             continue
         lines.append('[%d]="%s%s",' % (qid, "|".join(blocks), ("@" + fin) if fin else ""))
@@ -291,7 +308,8 @@ def main(root, out):
         f.write("-- FICHIER GÉNÉRÉ par tools/gen_objectives.py : ne pas modifier à la main.\n"
                 "-- Camps des objectifs de quête et point de rendu. Données tirées de QuestieDB\n"
                 "-- (https://github.com/Questie/QuestieDB), base de données de l'addon Questie : sous la\n"
-                "-- licence de Questie (GPLv3 selon son équipe). Format décrit dans tools/gen_objectives.py.\n"
+                "-- licence de Questie (GPLv3 selon son équipe). Points de rendu vus dans WoW Forever : Data from\n"
+                "-- ForeverDB.net (https://foreverdb.net). Format décrit dans tools/gen_objectives.py.\n"
                 "%s\nWK.QuestObjRaw = {\n" % DATA_HDR)
         f.write("\n".join(lines))
         f.write("\n}\n-- objets de quête vendus chez un marchand : [quête] = \"objet,objet\"\nWK.QuestBuy = {\n")
@@ -304,6 +322,7 @@ def main(root, out):
                 "-- base64 par point (x * 201 + y, x et y de 0 à 200)\nWK.SpawnPts = {\n")
         f.write("\n".join('%s="%s",' % (k, v) for k, v in sorted(spawn.items()) if v))
         f.write("\n}\n")
+    print("%d points de rendu placés d'après ForeverDB (vus dans WoW Forever)" % fdb_end[0])
     print("%d PNJ ou objets avec points (%d Ko)" % (sum(1 for v in spawn.values() if v), sum(len(v) for v in spawn.values()) // 1024))
     print("%d quêtes, %d objectifs, %d camps, %d zones à explorer, %d objectifs cachés, %d objets qui démarrent une quête, %d quêtes avec achat" % (len(lines), n_obj, n_camp, n_explore, n_extra, len(starts), len(buy)))
 

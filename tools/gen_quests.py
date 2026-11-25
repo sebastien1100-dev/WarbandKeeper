@@ -143,6 +143,11 @@ def main(root):
     wh_stats = {"fr": 0, "lvl": 0, "missing": 0}
     per_map = {}
     skipped = 0
+    # donneurs vus dans WoW Forever (ForeverDB) : seulement si le cache existe (tools/gen_foreverdb.py --fetch-quests)
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import gen_foreverdb
+    FDB = gen_foreverdb.quest_points()
+    fdb_moved = 0
     repeatable = []
     for qid, q in quests.items():
         # répétables, et quêtes jamais ouvertes dans le jeu (« <NYI> », « [DEPRECATED] »…)
@@ -183,6 +188,26 @@ def main(root):
             if a in dungeon_parent:
                 a, x, y = dungeon_parent[a], None, None
             mp = ui(a)
+        # donneur vu dans WoW Forever par les joueurs de ForeverDB (tools/gen_foreverdb.py --fetch-quests) : sa
+        # place passe avant celle de QuestieDB (PNJ déplacé, ou place inconnue de QuestieDB)
+        fs = (FDB.get(qid) or {}).get("start")
+        if fs:
+            ftype, fid, fmap, fx_, fy_ = fs
+            if mp and fmap == mp:
+                # seulement un donneur déplacé (plus de 1 % de la carte) ou sans place : pas de bruit d'un dixième
+                if x is None or smap is not None or abs(x - fx_) > 1 or abs(y - fy_) > 1:
+                    fdb_moved += 1
+                    x, y, smap = fx_, fy_, None
+                else:
+                    fs = None
+            elif mp and x is None:
+                x, y, smap = fx_, fy_, fmap
+                fdb_moved += 1
+            elif not mp:
+                mp, x, y = fmap, fx_, fy_
+                fdb_moved += 1
+            if fs:
+                sid = fid if ftype == "npc" else -fid
         if not mp:
             # aucune zone connue (ni zone de la quête, ni donneur placé) : gardée à part (WK.QuestsOther),
             # comptée dans les totaux mais sur aucune carte
@@ -264,6 +289,7 @@ def main(root):
             e["prev"] = sorted(ps)
             nprev += 1
     print("  %d quêtes avec une quête d'avant tirée de la chaîne" % nprev, file=sys.stderr)
+    print("  %d donneurs placés d'après ForeverDB (vus dans WoW Forever)" % fdb_moved, file=sys.stderr)
 
     def s(x):
         return '"' + x.replace("\\", "\\\\").replace('"', '\\"') + '"' if x else "nil"
@@ -275,7 +301,8 @@ def main(root):
         "-- FICHIER GÉNÉRÉ par tools/gen_quests.py : ne pas modifier à la main.",
         "-- Quêtes de WoW Forever rangées par zone (quêtes de donjon : zone de l'entrée).",
         "-- Données tirées de QuestieDB (https://github.com/Questie/QuestieDB), base de données de l'addon",
-        "-- Questie : sous la licence de Questie (GPLv3 selon son équipe).",
+        "-- Questie : sous la licence de Questie (GPLv3 selon son équipe). Place des donneurs vus dans WoW Forever :",
+        "-- Data from ForeverDB.net (https://foreverdb.net).",
         "-- WK.QuestsDB[uiMapID] = { { id, nom, nom fr, niveau, niveau requis, faction (1 Alliance, 2 Horde),",
         "--   classes (masque), genre (\"d\" donjon, \"p\" métier, \"c\" classe), métier, x, y (donneur, 0-100),",
         "--   donneur (PNJ > 0, objet < 0), XP, { une de ces quêtes avant }, { toutes ces quêtes avant }, suivante,",

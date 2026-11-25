@@ -152,6 +152,60 @@ def fetch_professions(api=None, dest=CACHE):
     print("métiers : %d requêtes" % api.calls, flush=True)
 
 
+def fetch_quests(api=None, dest=CACHE):
+    """Quêtes (100 par page, donneur, rendu, chaîne) : une seule liste, gardée pour la même version du jeu."""
+    api = api or Api()
+    path = os.path.join(dest, "quests.json")
+    build = api.get("meta")["data"]["build"]
+    if os.path.exists(path):
+        try:
+            with open(path, encoding="utf-8") as f:
+                if json.load(f).get("_build") == build:
+                    print("quêtes : déjà à jour", flush=True)
+                    return
+        except (ValueError, OSError):
+            pass
+    quests, off = [], 0
+    while True:
+        page = api.get("quests?limit=100&offset=%d" % off)
+        quests += page["data"]
+        off += 100
+        if not page["meta"].get("next") or off >= (page["meta"].get("total") or 0):
+            break
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump({"_build": build, "quests": quests}, f)
+    print("quêtes : %d (%d requêtes)" % (len(quests), api.calls), flush=True)
+
+
+def quest_points(src=CACHE):
+    """Donneur et rendu des quêtes **vus dans WoW Forever** (cache de --fetch-quests), pour gen_quests.py et
+    gen_objectives.py : { quête: {"start": (genre, n°, carte, x, y) ou None, "end": (…) ou None} } ; {} sans cache."""
+    path = os.path.join(src, "quests.json")
+    if not os.path.exists(path):
+        return {}
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+    except (ValueError, OSError):
+        return {}
+    out = {}
+
+    def pt(e):
+        if not e or e.get("instance") or e.get("type") not in ("npc", "object") or not e.get("id"):
+            return None
+        loc = e.get("location") or {}
+        if not str(loc.get("source") or "").startswith("seen in WoW Forever"):
+            return None
+        if loc.get("uiMapId") is None or loc.get("x") is None or loc.get("y") is None:
+            return None
+        return (e["type"], int(e["id"]), int(loc["uiMapId"]), round(float(loc["x"]), 1), round(float(loc["y"]), 1))
+    for q in data.get("quests") or []:
+        s, e = pt(q.get("starts")), pt(q.get("ends"))
+        if s or e:
+            out[int(q["id"])] = {"start": s, "end": e}
+    return out
+
+
 def fr_names(root):
     """Noms français des PNJ (QuestieDB, comme tools/gen_places.py) ; {} sans clone ni lupa."""
     try:
@@ -323,9 +377,12 @@ def generate_prof(questie=None, src=CACHE, out=PROF_OUT):
 if __name__ == "__main__":
     if "--fetch-prof" in sys.argv:
         fetch_professions()
+    elif "--fetch-quests" in sys.argv:
+        fetch_quests()
     elif "--fetch" in sys.argv:
         fetch()
         fetch_professions()
+        fetch_quests()
     else:
         args = [a for a in sys.argv[1:] if not a.startswith("--")]
         generate(args[0] if args else None)
