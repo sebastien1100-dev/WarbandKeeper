@@ -16,6 +16,8 @@ WK.FEATURES = {
     { key = "classes", label = "Classes", icon = "users", group = "MES PERSOS", qol = "classes", desc = "section des réglages" },
     { key = "xp", label = "Expérience", icon = "chart", group = "MES PERSOS", qol = "xp", desc = "barre, repos, quêtes à rendre" },
     { key = "range", label = "Distance", icon = "arrow", group = "MES PERSOS", desc = "ruban de distance du chasseur", reload = true },
+    { key = "leveling", label = "Plans de montée", icon = "chart", group = "LEVELING", page = "leveling",
+      desc = "talents et sorts par classe" },
     { key = "stats", label = "Stats", icon = "chart", group = "ARGENT", page = "stats" },
     { key = "mail", label = "Courrier", icon = "mail", group = "ARGENT", page = "mail" },
     { key = "ah", label = "Hôtel des ventes", icon = "coin", group = "ARGENT", desc = "prix, scan, vente, alertes" },

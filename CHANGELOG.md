@@ -53,6 +53,15 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.341 — 25/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Nouvelle catégorie « Leveling » dans la barre latérale, page « Plans de montée » : la barre des 9 classes en haut, puis le plan de la classe choisie en deux colonnes. À gauche, ses arbres de talents avec, sur chaque case, les niveaux où le point est pris (clic : point suivant du plan, clic droit : retirer le dernier, « Annuler le dernier point »). À droite, les sorts du maître rangés par niveau avec leur coût : un clic achète ou écarte un sort (les sorts d'un talent du plan, bordés de violet, n'apparaissent que si le talent est prévu).
+- Plusieurs plans par classe (« + plan », renommer, supprimer en deux clics, « Copier mon plan » reprend celui de la fiche du perso). Tous les persos de la classe suivent le plan actif : le panneau de la fenêtre des talents et la lueur du talent suivant le suivent, et le panneau du maître coche ce que le plan achète. Les pastilles « Suivi par » montrent les persos de la classe ; un clic détache un perso, qui reprend son plan à lui.
+- Les arbres de talents viennent d'un perso de la classe déjà connecté : pour une classe jamais jouée, la page demande de connecter un perso une fois.
+
 ## v1.128.340 — 25/11/2026
 
 _Un /reload suffit._

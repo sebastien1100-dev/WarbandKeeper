@@ -17,6 +17,7 @@ local HOME_PAGE = "overview"
 local GROUPS = {
     -- « qol:<section> » : une section de la page QoL, rangée avec le thème qui va avec
     { "MES PERSOS", { "characters", "inventory", "qol:classes" }, "logo" },
+    { "LEVELING", { "leveling" }, "chart" },
     { "ARGENT", { "stats", "journal" }, "coin" },
     { "ARTISANAT", { "professions", "fishing", "qol:campfire" }, "hammer" },
     { "FARM", { "farm", "loot" }, "bag" },
@@ -26,7 +27,7 @@ local GROUPS = {
 local BOTTOM = { "options" }
 local ICONS = {
     overview = "home", characters = "users", inventory = "bag", stats = "chart", professions = "hammer",
-    mail = "mail", auction = "coin", farm = "play", loot = "filter", journal = "clock", notes = "notes", options = "gear", qol = "spark", lfg = "lfg", profiles = "users", rares = "star", quests = "bang", fishing = "fish", dungeons = "skull",
+    mail = "mail", auction = "coin", farm = "play", loot = "filter", journal = "clock", notes = "notes", options = "gear", qol = "spark", lfg = "lfg", profiles = "users", rares = "star", leveling = "chart", quests = "bang", fishing = "fish", dungeons = "skull",
 }
 local LABELS = { notes = "Patch notes", options = "Options", farm = "Session de farm" }
 

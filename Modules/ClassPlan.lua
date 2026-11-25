@@ -1,0 +1,147 @@
+local _, WK = ...
+local M = WK:NewModule("ClassPlan")
+local T = function(s) return WK.T(s) end
+
+-- Plans de montée par classe (page Leveling, maquette A) : un plan = l'ordre des points de talent (comme les
+-- plans par perso de Modules/TalentPlan.lua) + les sorts du maître à ne pas acheter. Tous les persos de la classe
+-- le suivent (sauf ceux qui s'en détachent) : panneau de la fenêtre des talents, lueur du talent suivant, et
+-- coches du panneau du maître de classe (Modules/ClassSpells.lua : Skip / Skipped passent par ici).
+--   WK.DB.global.classPlans[CLASSE] = { list = { { name, steps = { { arbre, n°, nœud, nom } },
+--     skip = { [sort] = true } } }, active = n°, nofollow = { [perso] = true } }
+-- Arbres de talents : ceux relevés sur un perso de la classe (le connecté d'abord, sinon le plus récent).
+
+local function store(class)
+    local g = WK.DB.global
+    g.classPlans = g.classPlans or {}
+    local s = g.classPlans[class]
+    if not s then s = { list = {} }; g.classPlans[class] = s end
+    s.list = s.list or {}
+    s.nofollow = s.nofollow or {}
+    for _, p in ipairs(s.list) do p.steps = p.steps or {}; p.skip = p.skip or {} end
+    return s
+end
+M.Store = store
+
+function M.Plans(_, class) return store(class).list end
+function M.Active(_, class)
+    if not class then return nil end
+    local s = store(class)
+    return s.active and s.list[s.active], s.active
+end
+function M:SetActive(class, i)
+    store(class).active = i
+    self:Changed()
+end
+function M:New(class, name, steps)
+    local s = store(class)
+    local cp = {}
+    for k, st in ipairs(steps or {}) do cp[k] = { st[1], st[2], st[3], st[4] } end
+    table.insert(s.list, { name = name, steps = cp, skip = {} })
+    if not s.active then s.active = #s.list end
+    self:Changed()
+    return #s.list
+end
+function M:Delete(class, i)
+    local s = store(class)
+    table.remove(s.list, i)
+    if s.active == i then s.active = (#s.list > 0) and 1 or nil
+    elseif s.active and s.active > i then s.active = s.active - 1 end
+    self:Changed()
+end
+function M:Rename(class, i, name)
+    local p = store(class).list[i]
+    if p and name and name ~= "" then p.name = name; self:Changed() end
+end
+
+-- Perso de référence de la classe (arbres relevés) : le connecté s'il est de cette classe, sinon le plus récent
+function M.RefChar(_, class)
+    local me = WK:CharKey()
+    local chars = WK.DB.global.characters
+    local c = chars[me]
+    if c and c.class == class and c.talents and c.talents[1] and c.talents[1].list then return me, c end
+    local best, bk
+    for key, ch in pairs(chars) do
+        if ch.class == class and ch.talents and ch.talents[1] and ch.talents[1].list then
+            if not best or (ch.sheetAt or 0) > (best.sheetAt or 0) then best, bk = ch, key end
+        end
+    end
+    return bk, best
+end
+function M:Trees(class)
+    local _, c = self:RefChar(class)
+    return c and c.talents
+end
+
+-- Persos de la classe (clé, perso) et ceux qui suivent le plan
+function M.Chars(_, class)
+    local out = {}
+    for key, c in pairs(WK.DB.global.characters) do
+        if c.class == class then out[#out + 1] = { key = key, c = c } end
+    end
+    table.sort(out, function(a, b) return (a.c.level or 0) > (b.c.level or 0) end)
+    return out
+end
+function M.Follows(_, key)
+    local c = WK.DB.global.characters[key]
+    if not (c and c.class) then return false end
+    return not store(c.class).nofollow[key]
+end
+function M:SetFollow(key, v)
+    local c = WK.DB.global.characters[key]
+    if not (c and c.class) then return end
+    store(c.class).nofollow[key] = (not v) or nil
+    self:Changed()
+end
+-- Plan que suit un perso (celui de sa classe), ou nil
+function M:PlanFor(key)
+    local c = WK.DB.global.characters[key or WK:CharKey()]
+    if not (c and c.class) or not self:Follows(key or WK:CharKey()) then return nil end
+    return (self:Active(c.class))
+end
+
+-- Ajoute un point (mêmes règles que les plans par perso : rang maximum, 5 points par rangée au-dessus)
+function M:AddStep(class, i, ti, j)
+    local p = store(class).list[i]
+    local trees = self:Trees(class)
+    local d = trees and trees[ti] and trees[ti].list and trees[ti].list[j]
+    if not (p and d) then return false end
+    local TP = WK.modules.TalentPlan
+    local ranks = TP:Ranks(p)
+    local r = ranks[ti .. ":" .. j] or 0
+    if r >= (d[6] or 1) then return false, T("Ce talent est déjà au maximum dans le plan.") end
+    local inTree = 0
+    for k, v in pairs(ranks) do if k:match("^(%d+):") == tostring(ti) then inTree = inTree + v end end
+    local need = ((d[3] or 1) - 1) * 5
+    if inTree < need then
+        local fmt = T("Rangée pas encore accessible : il faut %d points dans cet arbre (%d pour l'instant).")
+        return false, string.format(fmt, need, inTree)
+    end
+    if #p.steps >= 51 then return false, T("Le plan a déjà tous ses points (niveau 60).") end
+    table.insert(p.steps, { ti, j, d[8], d[1] })
+    self:Changed()
+    return true
+end
+function M:RemoveLast(class, i)
+    local p = store(class).list[i]
+    if p and #p.steps > 0 then table.remove(p.steps); self:Changed() end
+end
+
+-- Sorts écartés (pas achetés chez le maître)
+function M.Skipped(_, plan, name) return plan and plan.skip and plan.skip[name] or false end
+function M:SetSkip(class, i, name, v)
+    local p = store(class).list[i]
+    if p then p.skip[name] = v and true or nil; self:Changed() end
+end
+-- Noms des talents pris dans le plan : leurs sorts (rangs appris chez le maître) font partie des achats
+function M.TalentNames(_, plan)
+    local out = {}
+    for _, st in ipairs(plan and plan.steps or {}) do if st[4] then out[st[4]] = true end end
+    return out
+end
+
+function M.Changed(_)
+    WK:NotifyChanged()
+    local UI = WK.UI
+    if UI and UI.RefreshTalentPlan then pcall(UI.RefreshTalentPlan, UI) end
+    if UI and UI.RefreshClassTrainer then pcall(UI.RefreshClassTrainer, UI) end
+end

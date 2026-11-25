@@ -23,6 +23,14 @@ function M:Active(key)
     return p, s.active
 end
 function M:SetActive(key, i) store(key).active = i; WK:NotifyChanged() end
+-- Plan suivi par un perso : celui de sa classe (page Leveling, Modules/ClassPlan.lua) s'il le suit et qu'il existe,
+-- sinon son plan à lui ; 2e valeur vraie pour un plan de classe
+function M:Current(key)
+    local CP = WK.modules.ClassPlan
+    local cp = CP and CP:PlanFor(key)
+    if cp then return cp, true end
+    return (self:Active(key)), false
+end
 function M:New(key, name)
     local s = store(key)
     table.insert(s.list, { name = name, steps = {} })
@@ -157,7 +165,7 @@ end
 -- Où en est le perso : points dépensés, étape suivante (n°, étape, talent), points libres
 function M:Progress(key)
     local c = WK.DB.global.characters[key]
-    local p = self:Active(key)
+    local p = self:Current(key)
     if not (c and p) then return nil end
     local spent = 0
     for _, t in ipairs(c.talents or {}) do for _, d in ipairs(t.list or {}) do spent = spent + (d[5] or 0) end end

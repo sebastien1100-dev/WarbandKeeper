@@ -141,6 +141,17 @@ local function build()
     f.planBtn = UI:Button(f, "", 272, 26, "secondary"); f.planBtn:SetPoint("TOPLEFT", 14, -36)
     f.planBtn:SetScript("OnClick", function()
         local key = WK:CharKey()
+        -- plan de la classe (page Leveling) : plan de classe suivant
+        local _, isClass = P:Current(key)
+        local CP = WK.modules.ClassPlan
+        local c0 = WK.DB.global.characters[key]
+        if isClass and CP and c0 then
+            local cl = CP:Plans(c0.class)
+            local _, ca = CP:Active(c0.class)
+            if #cl > 0 then CP:SetActive(c0.class, ((ca or 0) % #cl) + 1) end
+            f:Paint()
+            return
+        end
         local list = P:Plans(key)
         if #list == 0 then return end
         local _, a = P:Active(key)
@@ -187,7 +198,7 @@ local function build()
     function f:Paint()
         local key = WK:CharKey()
         local c = WK.DB.global.characters[key]
-        local plan = P:Active(key)
+        local plan, isClass = P:Current(key)
         local r1, g1, b1 = UI:Accent()
         -- aucun plan : un texte sur plusieurs lignes au lieu du bouton (le libellé débordait)
         if not self.empty then
@@ -195,12 +206,13 @@ local function build()
             self.empty:SetPoint("TOPLEFT", 14, -40); self.empty:SetPoint("TOPRIGHT", -14, -40)
             self.empty:SetJustifyH("LEFT")
             if self.empty.SetWordWrap then self.empty:SetWordWrap(true) end
-            self.empty:SetText(T("Aucun plan de montée pour ce perso. Crée-le dans la fiche du perso, onglet Talents, carte « Plans de montée »."))
+            self.empty:SetText(T("Aucun plan de montée pour ce perso. Crée celui de ta classe dans la page Leveling."))
         end
         self.empty:SetShown(plan == nil)
         self.planBtn:SetShown(plan ~= nil)
         self.stepsHead:SetShown(plan ~= nil)
-        local label = plan and (plan.name .. "  ·  " .. T("changer")) or ""
+        local label = plan and (plan.name .. (isClass and ("  " .. UI:Hex(C.muted) .. T("(classe)") .. "|r") or "")
+            .. "  ·  " .. T("changer")) or ""
         self.planBtn:SetLabel(label)
         -- nom de plan trop long : coupé dans le bouton
         self.planBtn.label:SetWidth(self.planBtn:GetWidth() - 20)

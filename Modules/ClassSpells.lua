@@ -161,6 +161,11 @@ function M:Known(key, id)
     return s and s[id] or false
 end
 
+-- Sorts écartés : ceux du plan de la classe (page Leveling) quand le perso le suit, sinon les siens
+local function classPlanOf(key)
+    local CP = WK.modules.ClassPlan
+    return CP and CP:PlanFor(key)
+end
 ---------------------------------------------------------------------------
 -- Ce qu'un perso a à apprendre
 ---------------------------------------------------------------------------
@@ -171,7 +176,8 @@ function M:ForChar(key)
     local c = charOf(key)
     local lvl = (key == WK:CharKey() and UnitLevel and UnitLevel("player")) or c.level or 1
     local cfg = self:Config()
-    local skip = cfg.skip[key] or {}
+    local cp = classPlanOf(key)
+    local skip = cp and cp.skip or cfg.skip[key] or {}
     local cat = self:Catalog(class)
     -- sorts de talent : seulement si le perso en connaît un rang (il a le talent)
     -- rang le plus haut connu de chaque sort : le jeu ne dit plus « connu » pour un rang remplacé par le
@@ -217,12 +223,22 @@ end
 function M:Skip(key, name, v)
     local cfg = self:Config()
     key = key or WK:CharKey()
+    local cp = classPlanOf(key)
+    if cp then
+        cp.skip[name] = v and true or nil
+        WK.modules.ClassPlan:Changed()
+        self:Changed()
+        return
+    end
     cfg.skip[key] = cfg.skip[key] or {}
     cfg.skip[key][name] = v and true or nil
     self:Changed()
 end
 function M:Skipped(key, name)
-    local s = self:Config().skip[key or WK:CharKey()]
+    key = key or WK:CharKey()
+    local cp = classPlanOf(key)
+    if cp then return cp.skip[name] or false end
+    local s = self:Config().skip[key]
     return s and s[name] or false
 end
 
