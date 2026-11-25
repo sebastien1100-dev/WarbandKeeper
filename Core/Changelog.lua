@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.370", date = "25/11/2026",
+        added = {
+            "Mini-fenêtre « À faire » : réglage « Colonnes alignées ». Toutes les pastilles prennent la même largeur, en grille, et tombent l'une sous l'autre d'une rangée à l'autre (au lieu de rangées aux largeurs différentes).",
+        },
+    },
+    {
         version = "1.128.369", date = "25/11/2026",
         fixed = {
             "Halo : la barre de vie du PNJ ami désigné restait visible, car le jeu remettait l'opacité de sa plaque. La barre et le cadre du PNJ sont maintenant cachés aussi, et le masquage est réappliqué tant que ce PNJ reste désigné.",

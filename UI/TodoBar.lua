@@ -30,6 +30,7 @@ local SIZES = { s = 20, m = 26, l = 32 }
 
 -- width = largeur fixe (px) ; grow = down (rangées ajoutées dessous, infobulle dessous) / up (dessus)
 local DEFAULTS = { scope = "all", labels = false, hideEmpty = false, size = "m", width = 360, grow = "down",
+    grid = false,
     bg = true, max = 0, hoverFull = true, tips = true, click = true, hideCombat = false }
 UI.TODO_W_MIN, UI.TODO_W_MAX = 120, 800
 function UI.TodoConfig()
@@ -191,10 +192,23 @@ local function barPaint(f, list)
         items[1] = { r = f.empty, w = f.empty:GetStringWidth() }
     end
     local rows, cur, used = {}, {}, 0
-    for _, it in ipairs(items) do
-        if #cur > 0 and used + 6 + it.w > inner then rows[#rows + 1] = cur; cur, used = {}, 0 end
-        used = used + (#cur > 0 and 6 or 0) + it.w
-        cur[#cur + 1] = it
+    -- colonnes alignées (réglage) : toutes les pastilles de la même largeur, en grille, l'une sous l'autre
+    local cell
+    if cfg.grid and items[1] and items[1].pill then
+        local widest = 0
+        for _, it in ipairs(items) do widest = math.max(widest, it.w) end
+        local cols = math.max(1, math.min(#items, math.floor((inner + 6) / (widest + 6))))
+        cell = (inner - 6 * (cols - 1)) / cols
+        for _, it in ipairs(items) do
+            if #cur >= cols then rows[#rows + 1] = cur; cur = {} end
+            cur[#cur + 1] = it
+        end
+    else
+        for _, it in ipairs(items) do
+            if #cur > 0 and used + 6 + it.w > inner then rows[#rows + 1] = cur; cur, used = {}, 0 end
+            used = used + (#cur > 0 and 6 or 0) + it.w
+            cur[#cur + 1] = it
+        end
     end
     if #cur > 0 then rows[#rows + 1] = cur end
     for ri, rw in ipairs(rows) do
@@ -204,6 +218,7 @@ local function barPaint(f, list)
         local x, y = 0, PAD + (ri - 1) * (h + 4)
         for _, it in ipairs(rw) do
             local w = it.w + extra
+            if cell then extra = cell - it.w; w = cell end
             local r = it.r
             if it.pill then
                 r:SetWidth(w)

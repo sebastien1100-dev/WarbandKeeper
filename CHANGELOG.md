@@ -54,6 +54,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.370 — 25/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Mini-fenêtre « À faire » : réglage « Colonnes alignées ». Toutes les pastilles prennent la même largeur, en grille, et tombent l'une sous l'autre d'une rangée à l'autre (au lieu de rangées aux largeurs différentes).
+
 ## v1.128.369 — 25/11/2026
 
 _Un /reload suffit._

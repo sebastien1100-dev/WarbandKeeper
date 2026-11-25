@@ -800,7 +800,7 @@ UI:RegisterPage({
             local function redraw() if UI.RefreshTodoBar then UI:RefreshTodoBar() end end
             local kinds = UI.TODO_KINDS
             local half = math.ceil(#kinds / 2)
-            local tcard = card("Mini-fenêtre « À faire »", 40 + 15 * 46 + 34 + half * 30 + 12,
+            local tcard = card("Mini-fenêtre « À faire »", 40 + 16 * 46 + 34 + half * 30 + 12,
                 "barre de pastilles à l'écran, placée en mode édition")
             local ty = -40
             local function trow(label, desc, ctl, w) UI:SettingRow(tcard, ty, label, desc, ctl, w); ty = ty - 46 end
@@ -832,6 +832,9 @@ UI:RegisterPage({
             grow:Select(tc.grow or "down")
             trow("Nouvelles rangées", "Où s'ajoutent les rangées de pastilles ; l'infobulle s'ouvre du même côté.",
                 grow, 240)
+            trow("Colonnes alignées", "Toutes les pastilles de la même largeur, en grille : elles tombent l'une sous"
+                .. " l'autre d'une rangée à l'autre.",
+                tog(function() return tc.grid end, function(v) tc.grid = v end), 80)
             trow("Fond", "Fond graphite derrière les pastilles ; sans fond, seules les pastilles restent.",
                 tog(function() return tc.bg end, function(v) tc.bg = v end), 80)
             trow("Pastilles au plus", "Les plus urgentes d'abord ; 0 : toutes.",
