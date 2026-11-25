@@ -53,6 +53,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.311 — 25/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Recherche de groupe : cliquer sur un donjon pendant qu'une recherche était en cours donnait l'erreur « WarbandKeeper a tenté d'appeler la fonction protégée » (le jeu n'accepte la recherche que sur un clic, et elle était relancée plus tard). Le clic relance maintenant la recherche tout de suite, à la place de celle en cours.
+
 ## v1.128.310 — 25/11/2026
 
 _Un /reload suffit._

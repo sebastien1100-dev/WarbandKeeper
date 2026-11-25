@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.311", date = "25/11/2026",
+        fixed = {
+            "Recherche de groupe : cliquer sur un donjon pendant qu'une recherche était en cours donnait l'erreur « WarbandKeeper a tenté d'appeler la fonction protégée » (le jeu n'accepte la recherche que sur un clic, et elle était relancée plus tard). Le clic relance maintenant la recherche tout de suite, à la place de celle en cours.",
+        },
+    },
+    {
         version = "1.128.310", date = "25/11/2026",
         added = {
             "Dépeçage : au survol d'une bête, si ton perso dépèce, la compétence pour la dépecer (en couleur selon la tienne : rouge, orange, jaune, vert, gris) et les cuirs qu'elle donne. 717 bêtes. Data from ForeverDB.net (https://foreverdb.net).",
