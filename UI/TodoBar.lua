@@ -90,7 +90,9 @@ local function build()
     f.pool = UI:Pool(function()
         local b = CreateFrame("Button", nil, f)
         b:SetHeight(26)
-        b.bg = UI:Rounded(b, 10, 0, "BACKGROUND", 2)
+        -- liseré (sans fond de barre seulement) sous le fond de la pastille, lui 1 px plus petit
+        b.edge = UI:Rounded(b, 10, 0, "BACKGROUND", 1)
+        b.bg = UI:Rounded(b, 10, 1, "BACKGROUND", 2)
         b.icon = b:CreateTexture(nil, "ARTWORK")
         b.icon:SetSize(16, 16)
         b.icon:SetPoint("LEFT", 8, 0)
@@ -101,7 +103,8 @@ local function build()
         end)
         b:SetScript("OnEnter", function(s)
             local col = s.color or { UI:Accent() }
-            s.bg:SetColor(col[1], col[2], col[3], 0.32)
+            local hv = s.hoverCol or { col[1], col[2], col[3], 0.32 }
+            s.bg:SetColor(hv[1], hv[2], hv[3], hv[4])
             if not UI.TodoConfig().tips then return end
             UI:TooltipOwner(s, UI.TodoConfig().grow == "up" and "ANCHOR_TOP" or "ANCHOR_BOTTOM")
             local tip = GameTooltip
@@ -120,7 +123,8 @@ local function build()
         end)
         b:SetScript("OnLeave", function(s)
             local col = s.color or { UI:Accent() }
-            s.bg:SetColor(col[1], col[2], col[3], 0.18)
+            local bc = s.baseCol or { col[1], col[2], col[3], 0.18 }
+            s.bg:SetColor(bc[1], bc[2], bc[3], bc[4])
             GameTooltip:Hide()
         end)
         return b
@@ -159,7 +163,20 @@ local function barPaint(f, list)
         b.icon:SetTexture(p.gicon)
         local col = p.color or { UI:Accent() }
         b.icon:SetVertexColor(col[1], col[2], col[3], 1)
-        b.bg:SetColor(col[1], col[2], col[3], 0.18)
+        -- sans fond de barre : pastille opaque (graphite teinté de sa couleur) + liseré de sa couleur, pour
+        -- rester lisible sur n'importe quel décor ; avec fond : teinte légère comme avant
+        if cfg.bg then
+            b.baseCol, b.hoverCol = { col[1], col[2], col[3], 0.18 }, { col[1], col[2], col[3], 0.32 }
+            b.edge:Hide()
+        else
+            local d = C.bg
+            local function mix(k, a) return { d[1] + (col[1] - d[1]) * k, d[2] + (col[2] - d[2]) * k,
+                d[3] + (col[3] - d[3]) * k, a } end
+            b.baseCol, b.hoverCol = mix(0.22, 0.94), mix(0.4, 0.97)
+            b.edge:SetColor(col[1], col[2], col[3], 0.85)
+            b.edge:Show()
+        end
+        b.bg:SetColor(b.baseCol[1], b.baseCol[2], b.baseCol[3], b.baseCol[4])
         local txt = p.label or tostring(p.n)
         if cfg.labels and p.short and not p.label then txt = p.n .. " " .. p.short end
         b.n:SetFont(UI.FONT, fs, "")
