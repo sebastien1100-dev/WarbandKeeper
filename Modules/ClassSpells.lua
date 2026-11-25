@@ -275,14 +275,30 @@ function M:ReadTrainer()
 end
 
 -- Sorts disponibles chez le maître : { { index, name, rank, cost, skipped } }
-function M:TrainerAvailable()
+-- compétence d'arme (le maître de classe en propose parfois) : jamais dans la liste des sorts
+local function weaponName(name)
+    local WS = WK.modules.WeaponSkills
+    for _, alts in pairs(WS and WS.SKILL_NAMES or {}) do
+        for _, a in ipairs(alts) do if a == name then return true end end
+    end
+    return false
+end
+-- Services du maître : disponibles (et, avec `later`, ceux de plus haut niveau : `later` = vrai, `level`).
+-- Un nom absent du catalogue n'est plus caché (un nom du jeu qui ne correspondait pas au catalogue cachait le
+-- sort : le panneau n'avait plus que « Tout apprendre ») ; seules les compétences d'armes sont écartées.
+function M:TrainerAvailable(later)
     local out = {}
     if not isClassTrainer() then return out end
     local set = classNames()
+    local LR = _G.GetTrainerServiceLevelReq
     for i = 1, _G.GetNumTrainerServices() do
         local name, rank, category = _G.GetTrainerServiceInfo(i)
-        if name and category == "available" and (set[name] or not next(set)) then
-            table.insert(out, { index = i, name = name, rank = rank or "", cost = _G.GetTrainerServiceCost and (_G.GetTrainerServiceCost(i)) or 0,
+        if name and (category == "available" or (later and category == "unavailable"))
+            and (set[name] or not weaponName(name)) then
+            local lvl
+            if LR then local ok, v = pcall(LR, i); if ok then lvl = v end end
+            table.insert(out, { index = i, name = name, rank = rank or "", later = category ~= "available", level = lvl,
+                cost = _G.GetTrainerServiceCost and (_G.GetTrainerServiceCost(i)) or 0,
                 skipped = self:Skipped(nil, name) })
         end
     end

@@ -53,6 +53,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.340 — 25/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Maître de classe : une coche devant chaque sort (cochée : dans la sélection, décochée : écarté pour ce perso, retenu), puis les sorts des niveaux suivants en grisé avec leur niveau, cochables d'avance. Le bouton devient « Apprendre la sélection (prix) » ; un clic sur le nom d'un sort l'apprend seul.
+
+### Corrections
+- Maître de classe : le panneau « À apprendre ici » n'avait parfois que le bouton, sans aucun sort. Un sort dont le nom donné par le maître ne correspondait pas au catalogue de l'addon était caché ; il est maintenant gardé (seules les compétences d'armes restent à part).
+
 ## v1.128.339 — 25/11/2026
 
 _Un /reload suffit._

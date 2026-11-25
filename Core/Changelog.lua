@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.340", date = "25/11/2026",
+        fixed = {
+            "Maître de classe : le panneau « À apprendre ici » n'avait parfois que le bouton, sans aucun sort. Un sort dont le nom donné par le maître ne correspondait pas au catalogue de l'addon était caché ; il est maintenant gardé (seules les compétences d'armes restent à part).",
+        },
+        changed = {
+            "Maître de classe : une coche devant chaque sort (cochée : dans la sélection, décochée : écarté pour ce perso, retenu), puis les sorts des niveaux suivants en grisé avec leur niveau, cochables d'avance. Le bouton devient « Apprendre la sélection (prix) » ; un clic sur le nom d'un sort l'apprend seul.",
+        },
+    },
+    {
         version = "1.128.339", date = "25/11/2026",
         changed = {
             "QoL > Classes : « Buffer autour de toi » devient un sous-onglet de Général, commun à toutes les classes (avant : un onglet dans chacune des classes druide, mage, paladin et prêtre). Les réglages valent pour toutes ces classes. Sur un perso dont la classe n'a pas de buff à donner, la carte est grisée et l'infobulle dit pourquoi ; « Rois d'abord » est grisé hors paladin. Général a maintenant deux sous-onglets : Sorts de classe et Buffer autour.",
