@@ -53,6 +53,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.337 — 25/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Hôtel des ventes, onglet À acheter : les listes se suppriment. Au survol d'une liste, une corbeille remplace le nombre d'objets ; un clic l'arme (« Clique encore pour confirmer », pendant 3 s), un 2e clic supprime la liste. La file de fabrication (refaite d'office depuis la page Métiers) et les prix surveillés n'en ont pas.
+
 ## v1.128.336 — 25/11/2026
 
 _Un /reload suffit._

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.337", date = "25/11/2026",
+        added = {
+            "Hôtel des ventes, onglet À acheter : les listes se suppriment. Au survol d'une liste, une corbeille remplace le nombre d'objets ; un clic l'arme (« Clique encore pour confirmer », pendant 3 s), un 2e clic supprime la liste. La file de fabrication (refaite d'office depuis la page Métiers) et les prix surveillés n'en ont pas.",
+        },
+    },
+    {
         version = "1.128.336", date = "25/11/2026",
         fixed = {
             "Fiche du personnage, onglet BiS : le personnage en 3D clignotait encore. La vraie cause : un objet que le serveur ne connaît pas (« #231578 » dans ta liste) était redemandé à chaque dessin ; la réponse « inconnu » faisait redessiner toute la fenêtre, qui le redemandait, sans fin. Un objet inconnu ne relance plus le dessin qu'une fois, le personnage n'est plus rhabillé ni replacé sans raison, et c'est pareil pour le personnage de l'onglet Fiche.",
