@@ -11648,6 +11648,19 @@
 -748
 ]
 },
+"0:96eacf6064f8":{
+"c":0,
+"pts":[
+-6262,
+346,
+-6293,
+349,
+-6305,
+343,
+-6300,
+357
+]
+},
 "0:97b0342bb13a":{
 "c":0,
 "pts":[
@@ -22852,6 +22865,22 @@
 "ROGUE|Vol à la tire|unavailable":[
 100,
 4
+],
+"SHAMAN|Arme Croque-roc|available":[
+10,
+1
+],
+"SHAMAN|Horion de terre|unavailable":[
+100,
+4
+],
+"SHAMAN|Totem de lien terrestre|unavailable":[
+100,
+6
+],
+"SHAMAN|Vague de soins|unavailable":[
+100,
+6
 ]
 },
 "tram":{

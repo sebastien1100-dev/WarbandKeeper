@@ -4,7 +4,7 @@ local _, WK = ...
 -- ce que l'addon a appris en jeu chez ses joueurs, ajouté au démarrage à ce qui manque
 -- (Modules/Learned.lua). Ne pas modifier à la main.
 WK.LearnedDB = {
-    v = "f83b62e68b",
+    v = "3639e36915",
     quests = {
         [98072] = {l=27,n="Crocos des cieux",s=1,t={map=1437,npc=2094,x=0.0854,y=0.5583}},
         [98208] = {l=29,n="Fleur des cieux",s=1,t={map=1437,npc=270844,x=0.0794,y=0.5583}},
@@ -610,6 +610,7 @@ WK.LearnedDB = {
         ["0:9642c1927a68"] = {c=0,pts={-9556,-2189,-9574,-2159}},
         ["0:967ed447d056"] = {c=0,pts={-2329,-2505,-2275,-2501}},
         ["0:96dc4ca6e7d8"] = {c=0,pts={-3693,-756,-3724,-748}},
+        ["0:96eacf6064f8"] = {c=0,pts={-6262,346,-6293,349,-6305,343,-6300,357}},
         ["0:97b0342bb13a"] = {c=0,pts={-3186,-2147,-3175,-2017,-3166,-1988}},
         ["0:981fb856eca8"] = {c=0,pts={-5144,65,-5160,93,-5200,132,-5213,138,-5232,159,-5327,221,-5353,254}},
         ["0:99e2e27cfae5"] = {c=0,pts={-3468,-1811,-3486,-1837}},
@@ -1447,6 +1448,10 @@ WK.LearnedDB = {
         ["ROGUE|Surin|unavailable"] = {23000,44},
         ["ROGUE|Vol à la tire|available"] = {100,4},
         ["ROGUE|Vol à la tire|unavailable"] = {100,4},
+        ["SHAMAN|Arme Croque-roc|available"] = {10,1},
+        ["SHAMAN|Horion de terre|unavailable"] = {100,4},
+        ["SHAMAN|Totem de lien terrestre|unavailable"] = {100,6},
+        ["SHAMAN|Vague de soins|unavailable"] = {100,6},
     },
     vendorPrices = {
         [10290] = {npc="Alexandra Bolero",p=2500},
