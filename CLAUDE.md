@@ -128,6 +128,8 @@ Tous les réglages des métiers sont dans l'onglet « settings » de la page Mé
 
 ## Changer de couche
 
+Raccourci « heirloom » du micro menu (`UI/ClockBar.lua`) : onglet du journal des collections reconnu par son texte (`HEIRLOOMS`, « ritage », « heirloom ») puis cliqué **seul** (pas de vérification juste après le clic : sur WoW Forever `HeirloomsJournal` n'est pas reconnu et on finissait sur le dernier onglet) ; sinon chaque onglet jusqu'à un cadre « Heirloom » visible, et message avec les noms des onglets. Jamais `COLLECTIONS_JOURNAL_TAB_INDEX_HEIRLOOMS` (plantait).
+
 **Retiré à la demande du joueur** (1.128.181 : `Modules/Layer.lua`, raccourci « layer » du micro menu, `Media/layers.tga`, carte de QoL > Micro menu ; `q.clock.layerGone` ôte le raccourci et `WK.DB.global.layer` une fois) : ne pas le remettre.
 
 ## Points /way (à la TomTom)

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.347", date = "25/11/2026",
+        fixed = {
+            "Micro menu, raccourci Héritages : le journal des collections finissait sur un autre onglet (souvent Apparences) avec le message « Onglet des héritages introuvable ». L'onglet reconnu par son nom est maintenant cliqué seul. S'il n'est pas reconnu, le message liste les noms des onglets trouvés.",
+        },
+    },
+    {
         version = "1.128.346", date = "25/11/2026",
         fixed = {
             "Métiers, onglet Niveaux : un métier de récolte au plafond (Dépeçage 75/75, Minage, Herboristerie) ou la Pêche n'avait jamais l'encadré orange « Plafond atteint : va voir le maître ». Tous les métiers l'ont maintenant.",

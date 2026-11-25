@@ -249,29 +249,44 @@ local SHORTCUTS = {
               end
               local tabs = {}
               for i = 1, 10 do local t = _G["CollectionsJournalTab" .. i]; if t then tabs[#tabs + 1] = t end end
-              if cj.TabContainer and cj.TabContainer.GetChildren then
+              if type(cj.TabContainer) == "table" and cj.TabContainer.GetChildren then
                   for _, t in ipairs({ cj.TabContainer:GetChildren() }) do tabs[#tabs + 1] = t end
               end
-              -- la page des héritages est-elle vraiment affichée ? (sur WoW Forever, le clic sur l'onglet trouvé par
-              -- son texte laissait les Apparences : on vérifie, puis on essaie chaque onglet jusqu'à la bonne page)
+              -- page des héritages affichée ? (HeirloomsJournal, ou un cadre enfant du journal nommé « Heirloom »)
               local function onHeirlooms()
                   local hj = _G.HeirloomsJournal
-                  return hj and hj.IsVisible and hj:IsVisible() or false
+                  if hj and hj.IsVisible and hj:IsVisible() then return true end
+                  for _, c in ipairs({ cj:GetChildren() }) do
+                      local n = c.GetName and c:GetName()
+                      if n and n:find("Heirloom", 1, true) and c:IsVisible() then return true end
+                  end
+                  return false
               end
               local function pick(t)
                   if t.Click then pcall(t.Click, t) end
-                  if not onHeirlooms() and _G.CollectionsJournal_SetTab and t.GetID then
+                  local sel = _G.PanelTemplates_GetSelectedTab and _G.PanelTemplates_GetSelectedTab(cj)
+                  if t.GetID and sel ~= t:GetID() and _G.CollectionsJournal_SetTab then
                       pcall(_G.CollectionsJournal_SetTab, cj, t:GetID())
                   end
-                  return onHeirlooms()
               end
+              -- 1) l'onglet reconnu par son texte : on le clique et on s'arrête là (avant, si la page n'était pas
+              -- reconnue juste après le clic, on cliquait tous les onglets l'un après l'autre et on finissait sur le
+              -- dernier, avec le message « introuvable »)
               for _, t in ipairs(tabs) do
-                  if t.IsShown and t:IsShown() and isHeirloom(textOf(t)) and pick(t) then return end
+                  if t.IsShown and t:IsShown() and isHeirloom(textOf(t)) then pick(t) return end
               end
+              -- 2) sinon chaque onglet, jusqu'à la page des héritages
+              local names = {}
               for _, t in ipairs(tabs) do
-                  if t.IsShown and t:IsShown() and pick(t) then return end
+                  if t.IsShown and t:IsShown() then
+                      names[#names + 1] = tostring(textOf(t))
+                      pick(t)
+                      if onHeirlooms() then return end
+                  end
               end
-              WK:Print(WK.T("Onglet des héritages introuvable dans le journal des collections."))
+              if tabs[1] then pick(tabs[1]) end
+              WK:Print(WK.T("Onglet des héritages introuvable dans le journal des collections.")
+                  .. " (" .. table.concat(names, ", ") .. ")")
           end)
       end },
     { key = "prof", label = "Métier principal", icon = function() return UI.MEDIA .. "hammer" end, tint = true,
