@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.330", date = "25/11/2026",
+        fixed = {
+            "Sacs : pendant un scan de l'HV, le sac à munitions se fondait dans les autres sacs, puis revenait, en boucle. Le scan fait passer des milliers d'objets par la mémoire du jeu, et le jeu oubliait un instant que ton sac est un carquois ou une giberne. Un sac reconnu comme sac à munitions le reste maintenant tant que c'est le même sac.",
+        },
+    },
+    {
         version = "1.128.329", date = "25/11/2026",
         added = {
             "Hôtel des ventes, barre de gauche : les recherches se suppriment. Au survol d'une recherche, une croix la retire (enregistrée ou récente) ; la corbeille à côté de « Recherches » efface toutes les récentes d'un coup (les enregistrées restent). Avant, une recherche récente ne pouvait qu'être enregistrée.",

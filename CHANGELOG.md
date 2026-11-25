@@ -53,6 +53,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.330 — 25/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Sacs : pendant un scan de l'HV, le sac à munitions se fondait dans les autres sacs, puis revenait, en boucle. Le scan fait passer des milliers d'objets par la mémoire du jeu, et le jeu oubliait un instant que ton sac est un carquois ou une giberne. Un sac reconnu comme sac à munitions le reste maintenant tant que c'est le même sac.
+
 ## v1.128.329 — 25/11/2026
 
 _Un /reload suffit._

@@ -86,6 +86,17 @@ end
 
 -- carquois et gibernes du perso (genre de sac « flèches » 1 ou « balles » 2) : seules des munitions y vont,
 -- leur contenu et leurs places libres ont leur propre section, comme le sac de composants
+-- Le genre du sac vient de l'objet sac : pendant un scan de l'HV, des milliers d'objets passent par le cache du jeu
+-- et l'objet sac peut en sortir un instant (genre lu à 0) : le carquois se fondait alors dans les autres sacs, puis
+-- revenait, en boucle. Un sac reconnu le reste tant que c'est le même objet sac (ammoSeen[sac] = n° de l'objet).
+local ammoSeen = {}
+local function bagItemID(bag)
+    local CC = _G.C_Container
+    local inv = CC and CC.ContainerIDToInventoryID and select(2, pcall(CC.ContainerIDToInventoryID, bag))
+    if type(inv) ~= "number" or not _G.GetInventoryItemID then return nil end
+    local ok, id = pcall(_G.GetInventoryItemID, "player", inv)
+    return ok and id or nil
+end
 local function ammoBags()
     local out = {}
     local CC = _G.C_Container
@@ -93,10 +104,21 @@ local function ammoBags()
     if not nf then return out end
     for bag = 1, (_G.NUM_BAG_SLOTS or 4) do
         local ok, _, family = pcall(nf, bag)
-        if ok and type(family) == "number" and family > 0 and (family % 4) > 0 and family < 4 then out[bag] = true end
+        local item = bagItemID(bag)
+        if ok and type(family) == "number" and family > 0 and (family % 4) > 0 and family < 4 then
+            out[bag] = true
+            ammoSeen[bag] = item or true
+        elseif ammoSeen[bag] and (item == nil or ammoSeen[bag] == true or ammoSeen[bag] == item)
+            and (WK.Container.NumSlots(bag) or 0) > 0 then
+            -- genre illisible pour l'instant, même sac : toujours un carquois
+            out[bag] = true
+        else
+            ammoSeen[bag] = nil
+        end
     end
     return out
 end
+UI.BagsAmmoSeen = ammoSeen -- (tests)
 
 local function instant(id)
     local f = _G.C_Item and _G.C_Item.GetItemInfoInstant or _G.GetItemInfoInstant
