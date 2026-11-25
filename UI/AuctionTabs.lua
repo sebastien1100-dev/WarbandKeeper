@@ -1377,6 +1377,44 @@ local function build(host)
             if s.name ~= cfg().curList and S.buy and S.buy.list then S:CancelBuy() end
             cfg().curList = s.name; bv.search:SetText(""); bv:Refresh()
         end)
+        -- corbeille au survol (pas pour la file de fabrication, refaite d'office, ni les prix surveillés) :
+        -- un 1er clic l'arme (3 s, l'infobulle le dit), le 2e supprime la liste
+        r.del = UI:IconButton(r, "trash", 18, "Supprimer cette liste", true)
+        r.del:SetPoint("RIGHT", -6, 0); r.del:Hide()
+        local function disarm() r.del.armed = nil end
+        r.del:SetScript("OnClick", function(b)
+            if not r.name then return end
+            if not b.armed then
+                b.armed = true
+                local GT = _G.GameTooltip
+                UI:TooltipOwner(b, "ANCHOR_RIGHT")
+                GT:SetText(T("Supprimer cette liste"), 1, 1, 1)
+                GT:AddLine(T("Clique encore pour confirmer."), C.negative[1], C.negative[2], C.negative[3])
+                GT:Show()
+                _G.C_Timer.After(3, function() if b.armed then disarm() end end)
+                return
+            end
+            disarm()
+            _G.GameTooltip:Hide()
+            if S.buy and S.buy.list == r.name then S:CancelBuy() end
+            S:DeleteList(r.name)
+            WK:Print(string.format(T("Liste « %s » supprimée."), r.name))
+            bv:Refresh()
+        end)
+        local function deletable() return r.name and r.name ~= QNAME and r.name ~= WATCH end
+        r:HookScript("OnEnter", function()
+            if deletable() then r.del:Show(); r.pill:Hide() end
+        end)
+        r:HookScript("OnLeave", function()
+            if r.del:IsMouseOver() then return end
+            r.del:Hide(); disarm()
+            r.pill:SetShown((tonumber(r.pill.t:GetText()) or 0) > 0)
+        end)
+        r.del:HookScript("OnLeave", function()
+            if r:IsMouseOver() and not r.del:IsMouseOver() then return end
+            r.del:Hide(); disarm()
+            r.pill:SetShown((tonumber(r.pill.t:GetText()) or 0) > 0)
+        end)
         r:Hide()
         bv.lrows[i] = r
     end
