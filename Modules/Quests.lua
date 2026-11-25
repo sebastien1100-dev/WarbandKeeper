@@ -603,6 +603,84 @@ local function learnTurnIn()
     if t.npc or t.map then e.t = t; changed() end
 end
 WK:On("QUEST_COMPLETE", function() pcall(learnTurnIn) end)
+---------------------------------------------------------------------------
+-- Quêtes journalières et répétables vues en jeu (pour la future section « Journalières » de la page Quêtes,
+-- classée par réputation ou par zone) : la base générée n'en a pas la liste (QuestieDB ne marque aucune
+-- journalière sur Forever ; ses répétables sont dans Data/RepeatQuestsDB.lua). Notées quand un PNJ en montre une,
+-- qu'on la prend ou qu'on la rend.
+--   WK.DB.global.dailyQuests[n°] = { n = nom, p = 1 journalière / 2 hebdomadaire / 0 répétable, g = { npc, map, x, y },
+--     z = carte, s = camp, at = première fois vue, c = nombre de rendus, done = { [perso] = dernier rendu } }
+-- (hors profils ; 600 au plus)
+---------------------------------------------------------------------------
+local function dailyStore()
+    local g = WK.DB.global
+    g.dailyQuests = g.dailyQuests or {}
+    return g.dailyQuests
+end
+M.DailyStore = dailyStore
+local function dailyEntry(id, create)
+    local st = dailyStore()
+    local e = st[id]
+    if not e and create then
+        local n = 0
+        for _ in pairs(st) do n = n + 1 end
+        if n >= 600 then return nil end
+        e = { at = _G.time(), s = side(), p = 0 }
+        st[id] = e
+    end
+    return e
+end
+local function noteDaily(id, per, title)
+    local e = dailyEntry(id, true)
+    if not e then return end
+    if per and per > (e.p or 0) then e.p = per end
+    local secret = _G.issecretvalue and _G.issecretvalue(title)
+    if type(title) == "string" and title ~= "" and not secret then e.n = title end
+    return e
+end
+WK:On("QUEST_DETAIL", function()
+    pcall(function()
+        local id = _G.GetQuestID and _G.GetQuestID()
+        if type(id) ~= "number" or id <= 0 then return end
+        local per = (_G.QuestIsDaily and _G.QuestIsDaily() and 1)
+            or (_G.QuestIsWeekly and _G.QuestIsWeekly() and 2) or nil
+        if not per and not M:IsRepeatable(id) then return end
+        local e = noteDaily(id, per, _G.GetTitleText and _G.GetTitleText())
+        if not e then return end
+        local g, d = where()
+        if g.npc or g.map then e.g = g end
+        e.z = (d and d.entry and d.entry[1]) or g.map or e.z
+    end)
+end)
+WK:On("QUEST_ACCEPTED", function(a, b)
+    local id = (type(b) == "number" and b) or (type(a) == "number" and (b == nil or a > 100) and a) or nil
+    if not id then return end
+    _G.C_Timer.After(0.5, function()
+        local QL = _G.C_QuestLog
+        local idx = QL and QL.GetLogIndexForQuestID and QL.GetLogIndexForQuestID(id)
+        local info = idx and QL.GetInfo and QL.GetInfo(idx)
+        if type(info) ~= "table" then return end
+        local fq = tonumber(info.frequency) or 0
+        if fq <= 0 and not info.isRepeatable and not dailyStore()[id] then return end
+        noteDaily(id, fq > 0 and math.min(fq, 2) or nil, info.title)
+    end)
+end)
+WK:On("QUEST_TURNED_IN", function(qid)
+    if type(qid) ~= "number" then return end
+    local e = dailyStore()[qid]
+    if not e and not M:IsRepeatable(qid) then return end
+    e = e or dailyEntry(qid, true)
+    if not e then return end
+    e.c = (e.c or 0) + 1
+    e.done = e.done or {}
+    e.done[WK:CharKey()] = _G.time()
+end)
+function M.DailyCount()
+    local n = 0
+    for _ in pairs(dailyStore()) do n = n + 1 end
+    return n
+end
+
 function M:LearnedCount()
     local n = 0
     for _, e in pairs(learnStore()) do if e.n then n = n + 1 end end

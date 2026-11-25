@@ -38,6 +38,7 @@ _Prévu, pas encore commencé._
 
 ### Donjons et quêtes
 - **Ta position dans les donjons sans carte** (haute) — Apprise en jeu : avec les coordonnées du monde, l'entrée et chaque boss tué recalent la carte du donjon une fois pour toutes ; sans elles, position à l'estime collée aux couloirs appris au fil des passages. Flèche et cercle sur la carte du donjon, encart rond à l'écran au choix, partagé avec les Découvertes. En attente du /wk dmap au Kraal de Tranchebauge.
+- **Quêtes journalières** (moyenne) — Une section du module Quêtes avec les quêtes journalières et répétables (déjà relevées), classées par réputation ou par zone ; pour les métiers, à décider.
 - **Raids de Classic** (basse) — Cœur du Magma, Zul'Gurub… si WoW Forever les ouvre.
 
 ### Fiabilité
@@ -49,6 +50,13 @@ _Prévu, pas encore commencé._
 ### Guilde et partage
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.128.306 — 25/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Quêtes journalières (préparation) : l'addon note désormais chaque quête journalière, hebdomadaire ou répétable que tu vois chez un PNJ, prends ou rends (nom, donneur et sa place, zone, dernier rendu par perso), et garde une base des 784 quêtes répétables connues (réputation gagnée, métier, donneur). Rien ne s'affiche encore : elles serviront à une section « Journalières » de la page Quêtes, classée par réputation ou par zone.
 
 ## v1.128.305 — 25/11/2026
 

@@ -32,7 +32,7 @@ CACHE = os.path.join(HERE, ".cache")
 QUESTIE_URL = "https://github.com/Questie/QuestieDB"
 WOWTBC = "https://wowtbc.gg/page-data/warcraftforever"
 UA = "WarbandKeeper-data-update"
-TARGETS = ["PlacesDB", "RoadsDB", "RaresDB", "QuestsDB", "QuestObjDB", "DungeonsDB", "Guides", "RecipeDB", "EverlootDB", "ItemsDB", "BoatLinesDB", "MapRevealDB", "ClassSpellsDB", "DataLogDB", "WayZonesDB", "ClassPricesDB", "ForeverVendorsDB", "ForeverProfDB"]
+TARGETS = ["PlacesDB", "RoadsDB", "RaresDB", "QuestsDB", "QuestObjDB", "DungeonsDB", "Guides", "RecipeDB", "EverlootDB", "ItemsDB", "BoatLinesDB", "MapRevealDB", "ClassSpellsDB", "DataLogDB", "WayZonesDB", "ClassPricesDB", "ForeverVendorsDB", "ForeverProfDB", "RepeatQuestsDB"]
 KEEP = [os.path.join(HERE, "guides"), os.path.join(HERE, "dungeons")]  # données importées, versionnées
 DROP_LIMIT = 0.20
 
@@ -205,6 +205,8 @@ def metrics():
         elif name == "ForeverVendorsDB":
             out["Marchands vus dans Forever (ForeverDB)"] = size(WK.FVendorNpc)
             out["Objets vendus par ces marchands"] = size(WK.FVendorSells)
+        elif name == "RepeatQuestsDB":
+            out["Quêtes répétables (journalières, réputation)"] = size(WK.RepeatQuests)
         elif name == "ForeverProfDB":
             out["Recettes avec maître ou formule vus dans Forever"] = size(WK.FRecipes)
         elif name == "EverlootDB":

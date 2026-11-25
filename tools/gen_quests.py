@@ -364,10 +364,81 @@ def main(root):
     entry = datalog.record(before, text)
     if entry:
         print("journal : +%d quêtes, %d corrigées, %d retirées" % (len(entry["add"]), len(entry["chg"]), len(entry["rem"])))
+    write_repeatables(repeatable, quests, fr, wh, FDB, starter, ui, lst, dungeon_parent, side_of=side_mask)
     if wh:
         print("  wowhead : %d noms français ajoutés ou mis à jour, %d niveaux corrigés, %d quêtes absentes retirées" % (
             wh_stats["fr"], wh_stats["lvl"], wh_stats["missing"]), file=sys.stderr)
     print("%d quêtes sur %d cartes, %d sans zone (%d ignorées) -> %s (%d Ko)" % (total, len(per_map), len(other), skipped, out, os.path.getsize(out) // 1024))
+
+
+def side_mask(races):
+    if races and not (races & HORDE):
+        return 1
+    if races and not (races & ALLIANCE):
+        return 2
+    return 0
+
+
+def write_repeatables(ids, quests, fr, wh, FDB, starter, ui, lst, dungeon_parent, side_of=side_mask):
+    """Data/RepeatQuestsDB.lua (dossier chargé à la demande) : les quêtes répétables, gardées hors de la base
+    (journalières, remises de réputation, métiers), pour la future section « Journalières » de la page Quêtes.
+    WK.RepeatQuests[n°] = { nom, nom fr, niveau, niveau requis, camp (0/1/2), carte, donneur (PNJ > 0, objet < 0),
+      x, y (0-100), métier (n° de compétence), niveau du métier, "faction:points,…" (réputation gagnée), 1 si daily,
+      2 si hebdo }. Donneur vu dans WoW Forever (ForeverDB) passe avant QuestieDB."""
+    def s(x):
+        return '"' + x.replace("\\", "\\\\").replace('"', '\\"') + '"' if x else "nil"
+    lines = [
+        "-- FICHIER GÉNÉRÉ par tools/gen_quests.py : ne pas modifier à la main.",
+        "-- Quêtes répétables (journalières, remises de réputation, métiers), hors de Modules/QuestsDB.lua.",
+        "-- Données tirées de QuestieDB (https://github.com/Questie/QuestieDB), base de données de l'addon Questie :",
+        "-- sous la licence de Questie (GPLv3 selon son équipe). Donneurs vus dans WoW Forever : Data from ForeverDB.net",
+        "-- (https://foreverdb.net). Format : tools/gen_quests.py (write_repeatables).",
+        "local WK = WarbandKeeper -- table de l'addon principal (dossier chargé à la demande)",
+        "WK.RepeatQuests = {",
+    ]
+    n = 0
+    for qid in sorted(ids):
+        q = quests[qid]
+        w = wh.get(qid) or {}
+        if w.get("missing"):
+            continue
+        f = fr[qid] if fr else None
+        frname = w.get("fr") or (f[1] if f else None)
+        sid, pos = starter(q)
+        zs = q[17] or 0
+        area = zs if zs > 0 else None
+        if area in dungeon_parent:
+            area = dungeon_parent[area]
+        mp = ui(area)
+        x = y = None
+        for a, p in pos.items():
+            if ui(a) and (not mp or ui(a) == mp):
+                mp = mp or ui(a)
+                x, y = p
+                break
+        fs = (FDB.get(qid) or {}).get("start")
+        if fs:
+            ftype, fid, fmap, fx_, fy_ = fs
+            if not mp or fmap == mp:
+                mp, x, y = fmap, fx_, fy_
+                sid = fid if ftype == "npc" else -fid
+        skill = q[18] and q[18][1] or None
+        slv = q[18] and q[18][2] or None
+        reps = ",".join("%d:%d" % (r[1], r[2]) for r in lst(q[26]) if r and r[1])
+        flags = q[23] or 0
+        per = 1 if flags & 4096 else (2 if flags & 32768 else None)
+        vals = [str(qid), s(q[1]), s(frname), str(w.get("lvl") or q[5] or 0), str(q[4] or 0), str(side_of(q[6] or 0)),
+                str(mp or "nil"), str(sid or "nil"), str(x if x is not None else "nil"), str(y if y is not None else "nil"),
+                str(skill or "nil"), str(slv or "nil"), s(reps), str(per or "nil")]
+        while vals and vals[-1] == "nil":
+            vals.pop()
+        lines.append("[%s]={%s}," % (vals[0], ",".join(vals[1:])))
+        n += 1
+    lines.append("}")
+    out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Data", "RepeatQuestsDB.lua")
+    with open(out, "w", encoding="utf-8") as fh:
+        fh.write("\n".join(lines) + "\n")
+    print("  %d quêtes répétables -> Data/RepeatQuestsDB.lua" % n, file=sys.stderr)
 
 
 if __name__ == "__main__":

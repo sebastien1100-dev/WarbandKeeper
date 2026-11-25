@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.306", date = "25/11/2026", restart = true,
+        added = {
+            "Quêtes journalières (préparation) : l'addon note désormais chaque quête journalière, hebdomadaire ou répétable que tu vois chez un PNJ, prends ou rends (nom, donneur et sa place, zone, dernier rendu par perso), et garde une base des 784 quêtes répétables connues (réputation gagnée, métier, donneur). Rien ne s'affiche encore : elles serviront à une section « Journalières » de la page Quêtes, classée par réputation ou par zone.",
+        },
+    },
+    {
         version = "1.128.305", date = "25/11/2026",
         changed = {
             "Quêtes : 195 donneurs et 215 points de rendu sont maintenant placés là où les joueurs les ont vus dans WoW Forever (PNJ déplacés par Forever, ou dont la place manquait), au lieu de la place de Classic : le guidage vers un donneur ou un rendu mène au bon endroit. Ces quêtes portent la pastille CORRIGÉE dans le journal des données. Data from ForeverDB.net (https://foreverdb.net).",
@@ -7690,6 +7696,7 @@ WK.RoadmapPrio = {
     { label = "Basse", color = "muted" },
 }
 WK.Roadmap = {
+    { prio = 2, theme = "dung", title = "Quêtes journalières", text = "Une section du module Quêtes avec les quêtes journalières et répétables (déjà relevées), classées par réputation ou par zone ; pour les métiers, à décider." },
     { prio = 3, theme = "class", title = "Salut choisi par classe", text = "Cocher dans le tableau des bénédictions quelles classes reçoivent le Salut, et revoir les priorités une fois Puissance et Salut collectif vérifiés en jeu." },
     { prio = 2, theme = "ui", title = "Recherche globale", text = "Dans tout l'addon : persos, objets, recettes, quêtes et notes de carte." },
     { prio = 3, theme = "ui", title = "Idées d'Utilities en attente", text = "Macros intelligentes, jeux de barres d'action, pistages de classe et de race, inspection du groupe." },
