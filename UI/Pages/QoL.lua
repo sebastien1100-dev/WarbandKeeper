@@ -537,6 +537,15 @@ UI:RegisterPage({
             toggle(shop, function() return g.sellGrey end, function(v) g.sellGrey = v end), 80)
         UI:SettingRow(shop, -226, "Fermer la fenêtre après la réparation", "Après la vente des gris et les achats automatiques. Maj enfoncée en parlant au marchand : elle reste ouverte.",
             toggle(shop, function() return g.closeAfterRepair end, function(v) g.closeAfterRepair = v end), 80)
+        -- réassort chez le marchand (UI/BagHelp.lua) : avant dans la roue d'Inventaire, rangé ici avec le marchand
+        if UI.BuildRestockCard then
+            local rc = UI:BuildRestockCard(root)
+            current.cards = current.cards or {}
+            table.insert(current.cards, rc)
+            rc:SetWidth(W)
+            rc:SetPoint("TOPLEFT", 0, -y); rc:SetPoint("TOPRIGHT", 0, -y)
+            y = y + rc:GetHeight() + GAP
+        end
 
         -- barre à l'écran sacs / marchand / maître (UI/BagHelp.lua, HUD bagSpace) : un seul endroit pour ses réglages
         do

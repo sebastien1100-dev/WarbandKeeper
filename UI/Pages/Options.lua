@@ -713,34 +713,35 @@ UI:RegisterPage({
             return t
         end
 
-        local nodesCard
-        -- Coins de récolte sur la carte du monde
+        -- Filons et plantes déjà récoltés (Modules/Nodes.lua) et coins de récolte (Modules/GatherMap.lua) :
+        -- une seule carte (avant, « Coins de récolte » à part avec une seule ligne) ; HUD de récolte (UI/GatherHUD.lua)
         local gm = WK.DB.global.gatherMap
-        local spotsCard = card("Coins de récolte", 136)
-        UI:SettingRow(spotsCard, -40, "Enregistrer mes récoltes",
+        local nd = WK.modules.Nodes:Config()
+        local nodesCard = card("Filons et plantes récoltés", 40 + 7 * 46 + 30,
+            "là où tes persos ont déjà récolté (tout le compte)")
+        local function ntoggle(field)
+            return gtoggle(nodesCard, function() return nd[field] end, function(v) nd[field] = v; UI:RefreshNodePins() end)
+        end
+        UI:SettingRow(nodesCard, -40, "Enregistrer mes récoltes",
             "À chaque plante, minerai ou cuir ramassé, l'endroit est noté (tous les persos).",
-            gtoggle(spotsCard, function() return gm.record end, function(v) gm.record = v end), 80)
-        -- (l'affichage sur la carte du monde est celui du calque « Filons et plantes », réglé plus bas)
-        self.spotsInfo = UI:Text(spotsCard, 11, C.muted)
-        self.spotsInfo:SetPoint("BOTTOMLEFT", 16, 18)
-        local clearSpots = UI:Button(spotsCard, "Effacer", nil, 28, "danger", "trash")
-        clearSpots:SetPoint("BOTTOMRIGHT", -12, 12)
+            gtoggle(nodesCard, function() return gm.record end, function(v) gm.record = v end), 80)
+        local clearSpots = UI:Button(nodesCard, "Effacer", nil, 28, "danger", "trash")
         clearSpots.tooltip = "Maj + clic : efface tous les coins enregistrés."
         clearSpots:SetScript("OnClick", function()
             if IsShiftKeyDown() then WK.modules.GatherMap:Clear(); self:Refresh() end
         end)
-
-        -- Filons et plantes déjà récoltés (Modules/Nodes.lua) et HUD de récolte (UI/GatherHUD.lua)
-        local nd = WK.modules.Nodes:Config()
-        local function ntoggle(field)
-            return gtoggle(nodesCard, function() return nd[field] end, function(v) nd[field] = v; UI:RefreshNodePins() end)
-        end
-        nodesCard = card("Filons et plantes récoltés", 40 + 5 * 46 + 30, "là où tes persos ont déjà récolté (tout le compte)")
-        UI:SettingRow(nodesCard, -40, "Afficher sur la minicarte", "Une petite icône par nœud déjà récolté autour de toi, même hors de portée du pistage du jeu.", ntoggle("minimap"), 80)
-        UI:SettingRow(nodesCard, -86, "Afficher sur la carte du monde", "Tous les nœuds déjà récoltés de la zone.", ntoggle("map"), 80)
-        UI:SettingRow(nodesCard, -132, "Seulement mes métiers", "Plantes si le perso a l'Herboristerie, filons s'il a le Minage.", ntoggle("onlyMine"), 80)
-        UI:SettingRow(nodesCard, -178, "Seulement ce que je peux récolter", "Cache ce qui demande plus que ta compétence.", ntoggle("onlyUsable"), 80)
-        UI:SettingRow(nodesCard, -224, "Taille des icônes", nil,
+        local spotsRow = UI:SettingRow(nodesCard, -86, "Récoltes enregistrées", " ", clearSpots, 110)
+        self.spotsInfo = spotsRow.desc
+        UI:SettingRow(nodesCard, -132, "Afficher sur la minicarte",
+            "Une petite icône par nœud déjà récolté autour de toi, même hors de portée du pistage du jeu.",
+            ntoggle("minimap"), 80)
+        UI:SettingRow(nodesCard, -178, "Afficher sur la carte du monde", "Tous les nœuds déjà récoltés de la zone.",
+            ntoggle("map"), 80)
+        UI:SettingRow(nodesCard, -224, "Seulement mes métiers",
+            "Plantes si le perso a l'Herboristerie, filons s'il a le Minage.", ntoggle("onlyMine"), 80)
+        UI:SettingRow(nodesCard, -270, "Seulement ce que je peux récolter",
+            "Cache ce qui demande plus que ta compétence.", ntoggle("onlyUsable"), 80)
+        UI:SettingRow(nodesCard, -316, "Taille des icônes", nil,
             UI:Slider(nodesCard, 220, 8, 24, 1, function() return nd.size or 14 end, function(v) nd.size = v; UI:RefreshNodePins() end, "%d px"), 240)
         local nodesNote = UI:Text(nodesCard, 11, C.muted)
         nodesNote:SetPoint("BOTTOMLEFT", 16, 14)

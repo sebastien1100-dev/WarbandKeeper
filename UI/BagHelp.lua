@@ -9,7 +9,7 @@ local T = function(s) return WK.T(s) end
 --   * bouton « Réassort » sous la fenêtre du marchand : ce qui manque et le prix, acheté sur un clic ;
 --   * HUD « wearOffer » : objet arrivé dans les sacs meilleur que celui porté, « L'équiper » / « Pas celui-là » ;
 --   * fenêtre de destruction du jeu : « Encore demandé par : quête » pour un objet d'une quête du journal ;
---   * carte de réglages « Sacs, marchand et équipement » (roue de la page Inventaire).
+--   * carte « Sacs et équipement » (roue de la page Inventaire) ; « Réassort chez le marchand » : QoL > Général > Marchand.
 local function BH() return WK.modules.BagHelp end
 local function inCombat() return InCombatLockdown and InCombatLockdown() or false end
 
@@ -709,8 +709,7 @@ if hooksecurefunc and StaticPopup_Show then hooksecurefunc("StaticPopup_Show", o
 ---------------------------------------------------------------------------
 function UI:BuildBagHelpCard(root)
     local cfg = BH():Config()
-    local rs = BH():Restock()
-    local card = UI:Card(root, T("Sacs, marchand et équipement"))
+    local card = UI:Card(root, T("Sacs et équipement"))
     local y = -40
     local function row(label, desc, ctrl, w) UI:SettingRow(card, y, label, desc, ctrl, w); y = y - 46 end
     -- notre inventaire (UI/Bags.lua) : remplace les sacs du jeu ; changement pris en compte au /reload
@@ -755,6 +754,77 @@ function UI:BuildBagHelpCard(root)
     -- barre à l'écran (sacs, marchand, maître) : réglages dans QoL > Général > Marchand
     row("Amélioration à porter", "Un objet qui arrive dans les sacs et vaut mieux que celui porté est proposé (jamais équipé tout seul).",
         UI:Toggle(card, function() return cfg.wear end, function(v) cfg.wear = v; UI:RefreshWearOffer() end), 80)
+    -- ouvrir tout seul (Modules/BagHelp.lua : OpenNext) : palourdes et objets choisis, ou tout ce qui s'ouvre
+    y = y - 10
+    row("Ouvrir tout seul certains objets", "Palourdes et objets de la liste, un par un, hors combat ; jamais chez un marchand, à la banque, à la boîte aux lettres ni à l'échange, ni sans case libre.",
+        UI:Toggle(card, function() return cfg.autoOpen end, function(v) cfg.autoOpen = v; if v then BH():OpenNext() end end), 80)
+    local seg = UI:Segmented(card, { { "list", "La liste" }, { "all", "Tout ce qui s'ouvre" } }, function(v) cfg.openMode = v end, 24)
+    row("Quoi ouvrir", "« Tout ce qui s'ouvre » : sacs, coffrets et palourdes, sauf les coffrets fermés à clé.", seg, seg:GetWidth())
+    seg:Select(cfg.openMode or "list")
+    local odrop = CreateFrame("Button", nil, card)
+    odrop:SetSize(34, 34)
+    odrop.bg = UI:Rounded(odrop, 8, 0, "BACKGROUND", 1); odrop.bg:SetColor(unpack(C.surface2))
+    odrop.plus = UI:Icon(odrop, "plus", 14, nil, "ARTWORK"); odrop.plus:SetPoint("CENTER")
+    odrop:SetPoint("TOPLEFT", 16, y - 4)
+    local ol = UI:Text(card, 12); ol:SetPoint("LEFT", odrop, "RIGHT", 10, 6); ol:SetText(T("Objets à ouvrir"))
+    local od = UI:Text(card, 10, C.muted); od:SetPoint("LEFT", odrop, "RIGHT", 10, -8); od:SetText(T("Glisse un objet des sacs sur la case pour l'ajouter."))
+    y = y - 46
+    local OMAX = 8
+    local orows = {}
+    local function refreshOpen()
+        local list = BH():OpenList()
+        local ids = {}
+        for id in pairs(list) do ids[#ids + 1] = id end
+        table.sort(ids)
+        for i = 1, OMAX do
+            local r = orows[i]
+            local id = ids[i]
+            r:SetShown(id ~= nil)
+            if id then
+                r.id = id
+                r.name:SetText(WK.GetItemInfo(id) or ("#" .. id))
+            end
+        end
+    end
+    local function oadd()
+        local kind, id
+        if GetCursorInfo then kind, id = GetCursorInfo() end
+        if kind ~= "item" or not id then return end
+        ClearCursor()
+        local list = BH():OpenList()
+        local n = 0
+        for _ in pairs(list) do n = n + 1 end
+        if not list[id] and n >= OMAX then return end
+        list[id] = true
+        refreshOpen()
+    end
+    odrop:SetScript("OnReceiveDrag", oadd)
+    odrop:SetScript("OnClick", oadd)
+    for i = 1, OMAX do
+        local r = CreateFrame("Frame", nil, card)
+        r:SetHeight(22)
+        r:SetPoint("TOPLEFT", 16, y - (i - 1) * 24); r:SetPoint("TOPRIGHT", card, "TOPRIGHT", -16, y - (i - 1) * 24)
+        r.name = UI:Text(r, 11); r.name:SetPoint("LEFT", 4, 0); r.name:SetPoint("RIGHT", -30, 0)
+        r.del = UI:IconButton(r, "close", 20, T("Retirer"), true); r.del:SetPoint("RIGHT", 0, 0)
+        r.del:SetScript("OnClick", function() BH():OpenList()[r.id] = nil; refreshOpen() end)
+        orows[i] = r
+    end
+    y = y - OMAX * 24
+    refreshOpen()
+    card:HookScript("OnShow", refreshOpen)
+    card:SetHeight(-y + 10)
+    return card
+end
+
+-- Réassort chez le marchand : carte de QoL > Général > Marchand (avec la réparation et la vente des gris ;
+-- avant dans la carte des sacs de la roue d'Inventaire)
+function UI.BuildRestockCard(_, root)
+    local cfg = BH():Config()
+    local rs = BH():Restock()
+    local card = UI:Card(root, T("Réassort chez le marchand"), T("ce perso"))
+    card.cardKey = "Réassort chez le marchand"
+    local y = -40
+    local function row(label, desc, ctrl, w) UI:SettingRow(card, y, label, desc, ctrl, w); y = y - 46 end
     row("Réassort chez le marchand", "Un bouton sous la fenêtre du marchand complète ce qui manque, sur un clic (munitions et composants de classe : QoL > Classes).",
         UI:Toggle(card, function() return cfg.restock end, function(v) cfg.restock = v; UI:RefreshRestock() end), 80)
     row("Boissons (ce perso)", "Le meilleur que vend le marchand pour ton niveau.",
@@ -816,64 +886,6 @@ function UI:BuildBagHelpCard(root)
     end
     y = y - MAXR * 26
     refreshItems()
-    -- ouvrir tout seul (Modules/BagHelp.lua : OpenNext) : palourdes et objets choisis, ou tout ce qui s'ouvre
-    y = y - 10
-    row("Ouvrir tout seul certains objets", "Palourdes et objets de la liste, un par un, hors combat ; jamais chez un marchand, à la banque, à la boîte aux lettres ni à l'échange, ni sans case libre.",
-        UI:Toggle(card, function() return cfg.autoOpen end, function(v) cfg.autoOpen = v; if v then BH():OpenNext() end end), 80)
-    local seg = UI:Segmented(card, { { "list", "La liste" }, { "all", "Tout ce qui s'ouvre" } }, function(v) cfg.openMode = v end, 24)
-    row("Quoi ouvrir", "« Tout ce qui s'ouvre » : sacs, coffrets et palourdes, sauf les coffrets fermés à clé.", seg, seg:GetWidth())
-    seg:Select(cfg.openMode or "list")
-    local odrop = CreateFrame("Button", nil, card)
-    odrop:SetSize(34, 34)
-    odrop.bg = UI:Rounded(odrop, 8, 0, "BACKGROUND", 1); odrop.bg:SetColor(unpack(C.surface2))
-    odrop.plus = UI:Icon(odrop, "plus", 14, nil, "ARTWORK"); odrop.plus:SetPoint("CENTER")
-    odrop:SetPoint("TOPLEFT", 16, y - 4)
-    local ol = UI:Text(card, 12); ol:SetPoint("LEFT", odrop, "RIGHT", 10, 6); ol:SetText(T("Objets à ouvrir"))
-    local od = UI:Text(card, 10, C.muted); od:SetPoint("LEFT", odrop, "RIGHT", 10, -8); od:SetText(T("Glisse un objet des sacs sur la case pour l'ajouter."))
-    y = y - 46
-    local OMAX = 8
-    local orows = {}
-    local function refreshOpen()
-        local list = BH():OpenList()
-        local ids = {}
-        for id in pairs(list) do ids[#ids + 1] = id end
-        table.sort(ids)
-        for i = 1, OMAX do
-            local r = orows[i]
-            local id = ids[i]
-            r:SetShown(id ~= nil)
-            if id then
-                r.id = id
-                r.name:SetText(WK.GetItemInfo(id) or ("#" .. id))
-            end
-        end
-    end
-    local function oadd()
-        local kind, id
-        if GetCursorInfo then kind, id = GetCursorInfo() end
-        if kind ~= "item" or not id then return end
-        ClearCursor()
-        local list = BH():OpenList()
-        local n = 0
-        for _ in pairs(list) do n = n + 1 end
-        if not list[id] and n >= OMAX then return end
-        list[id] = true
-        refreshOpen()
-    end
-    odrop:SetScript("OnReceiveDrag", oadd)
-    odrop:SetScript("OnClick", oadd)
-    for i = 1, OMAX do
-        local r = CreateFrame("Frame", nil, card)
-        r:SetHeight(22)
-        r:SetPoint("TOPLEFT", 16, y - (i - 1) * 24); r:SetPoint("TOPRIGHT", card, "TOPRIGHT", -16, y - (i - 1) * 24)
-        r.name = UI:Text(r, 11); r.name:SetPoint("LEFT", 4, 0); r.name:SetPoint("RIGHT", -30, 0)
-        r.del = UI:IconButton(r, "close", 20, T("Retirer"), true); r.del:SetPoint("RIGHT", 0, 0)
-        r.del:SetScript("OnClick", function() BH():OpenList()[r.id] = nil; refreshOpen() end)
-        orows[i] = r
-    end
-    y = y - OMAX * 24
-    refreshOpen()
-    card:HookScript("OnShow", refreshOpen)
     card:SetHeight(-y + 10)
     card:HookScript("OnShow", refreshItems)
     return card

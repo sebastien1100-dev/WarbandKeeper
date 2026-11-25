@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.325", date = "25/11/2026",
+        changed = {
+            "Marchand au même endroit : « Réassort chez le marchand » (le bouton, les boissons et la nourriture de ce perso, les objets à garder en stock) quitte la roue de l'Inventaire pour QoL > Général > Marchand, sous la réparation et la vente des gris. La carte de l'Inventaire s'appelle maintenant « Sacs et équipement ».",
+            "Métiers : la carte « Coins de récolte », qui n'avait qu'une ligne, rejoint « Filons et plantes récoltés » : « Enregistrer mes récoltes » et le nombre de récoltes enregistrées (avec le bouton Effacer) sont en tête de cette carte.",
+        },
+    },
+    {
         version = "1.128.324", date = "25/11/2026",
         changed = {
             "Réglages passés en revue (environ 300 dans tout l'addon) : aucun n'était devenu inutile, quelques-uns étaient mal rangés.",
