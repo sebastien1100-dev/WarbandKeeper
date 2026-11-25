@@ -8,6 +8,7 @@ ces fichiers : tu peux les réutiliser selon leur licence d'origine, en gardant 
 |---|---|---|---|
 | **QuestieDB** (base de l'addon Questie) · github.com/Questie/QuestieDB | Lieux du guidage (boîtes aux lettres, banquiers, marchands, maîtres), monstres rares, quêtes, objectifs de quête, boss des donjons, chemins de patrouille des PNJ | `Modules/PlacesDB.lua`, `Modules/RaresDB.lua`, `Modules/QuestsDB.lua`, `Modules/RoadsDB.lua`, `Modules/DataLogDB.lua`, `Data/QuestObjDB.lua`, parties de `Modules/DungeonsDB.lua` | GPLv3 |
 | **Everloot** · everloot.app | Taux de drop observés par les joueurs, trajets de vol | `Modules/EverlootDB.lua` | CC BY-SA 4.0 (« Data from Everloot (https://everloot.app), CC BY-SA 4.0 ») |
+| **ForeverDB** · foreverdb.net | Marchands vus dans WoW Forever (place, objets vendus, prix) | `Modules/ForeverVendorsDB.lua` | API ForeverDB, crédit obligatoire (« Data from ForeverDB.net (https://foreverdb.net) ») |
 | **wowlayerup-forever/opendata** · github.com/wowlayerup-forever/opendata | Objets portables (liste BiS), objets de camp | `Data/ItemsDB.lua`, données de `Modules/Camp.lua` | CC BY 4.0 |
 | **What's Training** · github.com/fusionpit/WhatsTraining | Prix de base des sorts de classe, maîtres d'armes | `Modules/ClassPricesDB.lua` | MIT |
 | **LibRangeCheck-3.0** · github.com/WeakAuras/LibRangeCheck-3.0 | Distance de la cible | `Libs/LibRangeCheck-3.0/` (avec son `LICENSE`) | MIT |

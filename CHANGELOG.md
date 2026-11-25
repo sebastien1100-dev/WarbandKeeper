@@ -50,6 +50,15 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.303 — 25/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Marchands de WoW Forever (928 marchands, 1 541 objets vus en jeu par les joueurs ; Data from ForeverDB.net, https://foreverdb.net) : l'infobulle d'un objet dit qui le vend le plus près de toi, dans quelle zone et à quel prix (réglage « Vendu par » dans Options > Infobulles).
+- HV > À acheter : un objet vendu par un marchand est marqué « au marchand » même si aucun de tes persos ne l'a encore vu chez lui ; un clic sur la ligne te guide vers ce marchand.
+- Métiers > Guide, infobulle d'une étape : un composant vendu par un marchand passe dans « Acheter 10 Fil grossier chez … · prix » au lieu de « Trouver … à l'HV ». Un prix vu par un de tes persos passe avant celui de ForeverDB.
+
 ## v1.128.302 — 24/11/2026
 
 _Un /reload suffit._

@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.303", date = "25/11/2026", restart = true,
+        added = {
+            "Marchands de WoW Forever (928 marchands, 1 541 objets vus en jeu par les joueurs ; Data from ForeverDB.net, https://foreverdb.net) : l'infobulle d'un objet dit qui le vend le plus près de toi, dans quelle zone et à quel prix (réglage « Vendu par » dans Options > Infobulles).",
+            "HV > À acheter : un objet vendu par un marchand est marqué « au marchand » même si aucun de tes persos ne l'a encore vu chez lui ; un clic sur la ligne te guide vers ce marchand.",
+            "Métiers > Guide, infobulle d'une étape : un composant vendu par un marchand passe dans « Acheter 10 Fil grossier chez … · prix » au lieu de « Trouver … à l'HV ». Un prix vu par un de tes persos passe avant celui de ForeverDB.",
+        },
+    },
+    {
         version = "1.128.302", date = "24/11/2026",
         fixed = {
             "Sacs : chez le marchand, l'or disparaissait du bas des sacs pour laisser la place aux boutons « Vendre les inutiles » et « Réunir les piles ». Il reste maintenant affiché : les boutons prennent d'abord un libellé court (« Inutiles (1) », « Piles », « Camelote ») et, si la fenêtre est vraiment trop étroite, l'or passe dans l'en-tête, à côté des places.",
