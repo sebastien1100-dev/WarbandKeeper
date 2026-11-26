@@ -33,7 +33,7 @@ from tkinter import filedialog, font as tkfont
 
 import learned  # Découvertes (client/learned.py, partagé avec tools/gen_learned.py)
 
-CLIENT_VERSION = "1.9.31"
+CLIENT_VERSION = "1.9.32"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 DATA_ADDON = "WarbandKeeper_Data"  # grosses bases, chargées à la demande (dossier à côté de l'addon)
@@ -1917,15 +1917,34 @@ class Page(tk.Frame):
             return
         # pastille arrondie, même style que l'état addon / client à droite (avant : rectangle à angles droits)
         fl, fv = App.fonts["smallb"], App.fonts["bodyb"]
+        dot = 9
         for lab, val, col in items:
-            lw, vw = fl.measure(lab), fv.measure(str(val))
+            # ("money", cuivre, signe) : montant en pièces de couleur, comme le reste de l'Accueil
+            segs = []
+            if isinstance(val, tuple) and val and val[0] == "money":
+                for i, (n, kind) in enumerate(money_parts(abs(int(val[1] or 0)))):
+                    txt = (val[2] if i == 0 else "") + format(n, ",").replace(",", " ")
+                    segs.append(("t", txt, 0 if i == 0 else 6))
+                    segs.append(("d", kind, 2))
+            else:
+                segs.append(("t", str(val), 0))
+            vw = sum(g + (fv.measure(v) if k == "t" else dot) for k, v, g in segs)
+            lw = fl.measure(lab)
             w, h = 10 + lw + 6 + vw + 11, 24
             p = tk.Canvas(self.pillBox, width=w, height=h, bg=C["bg"], highlightthickness=0, bd=0)
             p.pill = True
             # fond plein sans liseré, comme Chip (le liseré au bord de la zone était rogné par Windows : coins en biais)
             rounded(p, 0, 0, w, h, 12, fill=C["surface2"], outline="")
             p.create_text(10, h / 2, text=lab, fill=C["dim"], font=fl, anchor="w")
-            p.create_text(10 + lw + 6, h / 2, text=str(val), fill=C.get(col, col) if col else C["text"], font=fv, anchor="w")
+            x = 10 + lw + 6
+            for k, v, g in segs:
+                x += g
+                if k == "t":
+                    p.create_text(x, h / 2, text=v, fill=C.get(col, col) if col else C["text"], font=fv, anchor="w")
+                    x += fv.measure(v)
+                else:
+                    p.create_oval(x, h / 2 - dot / 2, x + dot, h / 2 + dot / 2, fill=C[v], outline="")
+                    x += dot
             p.pack(side="left", padx=(0, 6))
         self.after_idle(self.fit_pills)
 
@@ -1978,7 +1997,12 @@ def card_title(parent, text, right=None, rightColor="dim"):
     row.pack(fill="x", pady=(0, 4))
     label(row, text.upper(), fg="dim", font="smallb").pack(side="left")
     r = None
-    if right is not None:
+    if isinstance(right, tuple) and right and right[0] == "money":
+        # ("money", cuivre signé) : « -5 ● » en pièces de couleur
+        v = int(right[1] or 0)
+        r = money_widget(row, v, bg=parent["bg"], fg=rightColor, sign="+" if v >= 0 else "-")
+        r.pack(side="right")
+    elif right is not None:
         r = label(row, right, fg=rightColor, font="small")
         r.pack(side="right")
     return row, r
@@ -2127,8 +2151,8 @@ class DashPage(Page):
         else:
             net = (gold[-1] - gold[-2]) if len(gold) > 1 else 0
         letters = sum(int(m.get("count") or 0) for m in mail)
-        self.set_pills([("OR", money_text(cur), "gold"), ("24 H", ("+" if net >= 0 else "-") + money_text(abs(net)),
-                                                           "positive" if net >= 0 else "negative"),
+        self.set_pills([("OR", ("money", cur, ""), "text"), ("24 H", ("money", net, "+" if net >= 0 else "-"),
+                                                            "positive" if net >= 0 else "negative"),
                         ("COURRIER", str(letters), "warning" if letters else None),
                         ("ENVOIS", plural(len(stash), "lot") if stash else "0", "accent" if stash else None)])
         cols = tk.Frame(self.body, bg=C["bg"])
@@ -2163,8 +2187,10 @@ class DashPage(Page):
         money_widget(top, pts[-1] if pts else 0, font="h2").pack(side="left")
         if len(pts) > 1:
             dv = pts[-1] - pts[0]
-            label(top, "  %s%s sur %d j" % ("+" if dv >= 0 else "-", money_text(abs(dv)), days),
-                  fg="positive" if dv >= 0 else "negative", font="small").pack(side="left", pady=(4, 0))
+            money_widget(top, dv, fg="positive" if dv >= 0 else "negative",
+                         sign="+" if dv >= 0 else "-").pack(side="left", padx=(12, 0), pady=(4, 0))
+            label(top, " sur %d j" % days, fg="positive" if dv >= 0 else "negative",
+                  font="small").pack(side="left", pady=(4, 0))
         cv = tk.Canvas(ch.body, height=104, bg=C["surface"], highlightthickness=0)
         cv.pack(fill="x", pady=(4, 0))
 
@@ -2234,12 +2260,12 @@ class DashPage(Page):
         dc.pack(fill="x")
         if day is None:
             g = (gold[-1] - gold[-2]) if len(gold) > 1 else 0
-            card_title(dc.body, "Dernières 24 h", ("+" if g >= 0 else "-") + money_text(abs(g)), "positive" if g >= 0 else "negative")
+            card_title(dc.body, "Dernières 24 h", ("money", g), "positive" if g >= 0 else "negative")
             label(dc.body, "Or du compte d'hier à aujourd'hui (addon sans journal de l'or).", fg="dim", font="small",
                   wraplength=240).pack(anchor="w")
             return
         net = int(day.get("net") or 0)
-        card_title(dc.body, "Dernières 24 h", ("+" if net >= 0 else "-") + money_text(abs(net)), "positive" if net >= 0 else "negative")
+        card_title(dc.body, "Dernières 24 h", ("money", net), "positive" if net >= 0 else "negative")
         by = [b for b in lua_list(day.get("by")) if isinstance(b, dict)][:5]
         if not by:
             label(dc.body, "Aucun mouvement d'or.", fg="dim", font="small").pack(anchor="w")

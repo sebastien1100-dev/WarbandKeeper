@@ -3,6 +3,11 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.9.32 — 26/11/2026
+
+### Modifications
+- Accueil : les pièces de couleur aussi dans les pastilles OR et 24 H de l'en-tête, dans l'écart « +22 ● sur 7 j » de l'or du compte et dans le total des Dernières 24 h (avant : « 22 po », « -5 pa » en texte).
+
 ## 1.9.31 — 26/11/2026
 
 ### Modifications
