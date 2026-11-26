@@ -3,6 +3,11 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.9.31 — 26/11/2026
+
+### Modifications
+- Accueil : l'or s'affiche en pièces, comme dans le jeu (« 18 ● 42 ● ») : chaque nombre suivi d'une pastille or, argent ou cuivre. Avant, « 18 po » et « 4 pa » avaient la même couleur dorée et se confondaient. Dans la carte Persos, dans les lignes des Dernières 24 h et dans le total de l'or du compte.
+
 ## 1.9.30 — 25/11/2026
 
 ### Modifications

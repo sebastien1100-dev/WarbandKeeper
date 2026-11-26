@@ -33,7 +33,7 @@ from tkinter import filedialog, font as tkfont
 
 import learned  # Découvertes (client/learned.py, partagé avec tools/gen_learned.py)
 
-CLIENT_VERSION = "1.9.30"
+CLIENT_VERSION = "1.9.31"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 DATA_ADDON = "WarbandKeeper_Data"  # grosses bases, chargées à la demande (dossier à côté de l'addon)
@@ -52,6 +52,7 @@ C = {
     "hover": "#212327", "border": "#303338", "text": "#edeff2", "muted": "#999ea8",
     "dim": "#65686f", "accent": "#1f8fff", "accent2": "#4da6ff", "onAccent": "#ffffff",
     "positive": "#9ed17a", "warning": "#f2a84d", "negative": "#e86b6b", "gold": "#e8c35a",
+    "silver": "#c7ccd4", "copper": "#d9895b",
 }
 # couleurs de classe du jeu (persos de l'Accueil)
 CLASS_COLORS = {"WARRIOR": "#c79c6e", "PALADIN": "#f58cba", "HUNTER": "#abd473", "ROGUE": "#fff569", "PRIEST": "#e6e6e6",
@@ -723,6 +724,40 @@ def money_text(c):
     c = int(c or 0)
     g, s = c // 10000, (c // 100) % 100
     return ("%s po" % format(g, ",").replace(",", " ")) if g else ("%d pa" % s)
+
+
+def money_parts(c):
+    """Montant en pièces, comme dans le jeu : la plus grosse pièce non nulle et la suivante si elle n'est pas nulle.
+    [(nombre, "gold"|"silver"|"copper")] ; 0 = [(0, "copper")]."""
+    c = int(c or 0)
+    units = [(c // 10000, "gold"), ((c // 100) % 100, "silver"), (c % 100, "copper")]
+    for i, (n, _k) in enumerate(units):
+        if n:
+            out = [units[i]]
+            if i + 1 < 3 and units[i + 1][0]:
+                out.append(units[i + 1])
+            return out
+    return [(0, "copper")]
+
+
+def money_widget(parent, c, bg=None, font="small", fg="text", sign=""):
+    """Montant en pièces de couleur (maquette B) : « 18 ● 42 ● », nombre + pastille or / argent / cuivre.
+    Avant : « 18 po » / « 4 pa » dans la même couleur dorée, qu'on confondait."""
+    bg = bg or C["surface"]
+    f = App.fonts[font] if isinstance(font, str) else font
+    box = tk.Frame(parent, bg=bg)
+    try:
+        size = max(9, int(tkfont.Font(font=f).metrics("ascent") * 0.8))
+    except Exception:
+        size = 9
+    fgc = C.get(fg, fg)
+    for i, (n, kind) in enumerate(money_parts(abs(int(c or 0)))):
+        txt = ("%s%s" % (sign if i == 0 else "", format(n, ",").replace(",", " ")))
+        tk.Label(box, text=txt, bg=bg, fg=fgc, font=f, padx=0).pack(side="left", padx=(6 if i else 0, 2))
+        dot = tk.Canvas(box, width=size + 1, height=size + 1, bg=bg, highlightthickness=0)
+        dot.create_oval(1, 1, size, size, fill=C[kind], outline="")
+        dot.pack(side="left")
+    return box
 
 
 def ago_text(t):
@@ -2125,7 +2160,7 @@ class DashPage(Page):
         pts = gold[-(days + 1):] if gold else []
         top = tk.Frame(ch.body, bg=C["surface"])
         top.pack(fill="x")
-        label(top, money_text(pts[-1] if pts else 0), fg="gold", font="h2").pack(side="left")
+        money_widget(top, pts[-1] if pts else 0, font="h2").pack(side="left")
         if len(pts) > 1:
             dv = pts[-1] - pts[0]
             label(top, "  %s%s sur %d j" % ("+" if dv >= 0 else "-", money_text(abs(dv)), days),
@@ -2181,7 +2216,7 @@ class DashPage(Page):
             dot.grid(row=r, column=0, padx=(0, 6))
             cell(r, 1, c.get("name") or "?", col, anchor="w")
             cell(r, 2, str(c.get("level") or "?"), C["muted"], width=3)
-            cell(r, 3, money_text(int(c.get("money") or 0)), C["gold"], width=7)
+            money_widget(grid, int(c.get("money") or 0), font=f).grid(row=r, column=3, sticky="e", padx=(8, 0), pady=3)
             rr = rest.get(c.get("name"))
             if rr and rr.get("full"):
                 rt, rc = "plein", C["positive"]
@@ -2213,8 +2248,8 @@ class DashPage(Page):
             v = int(b.get("v") or 0)
             row = tk.Frame(dc.body, bg=C["surface"])
             row.pack(fill="x", pady=1)
-            tk.Label(row, text=("+" if v >= 0 else "-") + money_text(abs(v)), bg=C["surface"],
-                     fg=C["positive"] if v >= 0 else C["negative"], font=App.fonts["small"], width=9, anchor="e").pack(side="right")
+            money_widget(row, v, fg="positive" if v >= 0 else "negative",
+                         sign="+" if v >= 0 else "-").pack(side="right")
             label(row, str(b.get("s") or "?"), font="small").pack(side="left")
             bar = tk.Canvas(dc.body, height=4, bg=C["surface"], highlightthickness=0)
             bar.pack(fill="x", pady=(0, 3))
