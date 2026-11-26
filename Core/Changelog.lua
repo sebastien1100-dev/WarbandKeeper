@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.376", date = "26/11/2026",
+        changed = {
+            "Données mises à jour depuis QuestieDB, Everloot, wago.tools, wowtbc.gg, What's Training et opendata : 4 quêtes de plus.",
+        },
+    },
+    {
         version = "1.128.375", date = "26/11/2026",
         changed = {
             "Rien ne change en jeu : cette version livre le client PC 1.9.32 (pièces de couleur aussi dans les pastilles d'en-tête et les titres de l'Accueil).",

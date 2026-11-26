@@ -4056,7 +4056,7 @@ WK.ItemsDBRaw = [==[
 272429	ranged	4	8	3	65	60	Idole de synthèse		
 272430	ranged	4	8	3	65	60	Idole grouillante		
 272431	ranged	4	9	3	65	60	Totem des marées		
-272432	ranged	4	9	3	65	60	Totem de l’orage		
+272432	ranged	4	9	3	65	60	Totem du maelström		
 272433	ranged	4	9	3	65	60	Totem ardent		
 272434	ranged	4	7	3	65	60	Libram de sentinelle		
 272435	ranged	4	7	3	65	60	Libram de législation		
