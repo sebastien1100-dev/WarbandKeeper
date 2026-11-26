@@ -4,7 +4,7 @@ local _, WK = ...
 -- ce que l'addon a appris en jeu chez ses joueurs, ajouté au démarrage à ce qui manque
 -- (Modules/Learned.lua). Ne pas modifier à la main.
 WK.LearnedDB = {
-    v = "bf5905dbbf",
+    v = "dfe8ff45ff",
     quests = {
         [98072] = {l=27,n="Crocos des cieux",s=1,t={map=1437,npc=2094,x=0.0854,y=0.5583}},
         [98208] = {l=29,n="Fleur des cieux",s=1,t={map=1437,npc=270844,x=0.0794,y=0.5583}},
@@ -1768,6 +1768,7 @@ WK.LearnedDB = {
         ["1:fe597e04ff26"] = {c=1,pts={2874,-96,2878,-31,2849,8,2841,44}},
         ["1:ff35c95aa8e7"] = {c=1,pts={2912,190,2980,159}},
         ["1:ff583a9c6a33"] = {c=1,pts={901,362,914,351,931,372,908,360,897,370}},
+        ["2991:62c6820e7e2b"] = {c=2991,pts={4098,1850,4089,1862,4088,1850,4087,1903}},
     },
     camp = {
         [1229739] = "sit",
