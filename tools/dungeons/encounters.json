@@ -4,6 +4,10 @@
 "instances": {
 "109": [
 [
+492,
+"Avatar of Hakkar"
+],
+[
 2952,
 "Atal'alarion"
 ],
@@ -94,10 +98,6 @@
 [
 2814,
 "Atal'alarion"
-],
-[
-492,
-"Avatar of Hakkar"
 ]
 ],
 "129": [
@@ -500,26 +500,6 @@
 ],
 "289": [
 [
-2808,
-"Lorekeeper Polkelt"
-],
-[
-2812,
-"The Ravenian"
-],
-[
-2807,
-"Lord Alexei Barov"
-],
-[
-2806,
-"Lady Illucia Barov"
-],
-[
-2801,
-"Darkmaster Gandling"
-],
-[
 2805,
 "Kirtonos"
 ],
@@ -554,6 +534,26 @@
 [
 2802,
 "Doctor Theolen Krastinov"
+],
+[
+2808,
+"Lorekeeper Polkelt"
+],
+[
+2812,
+"The Ravenian"
+],
+[
+2807,
+"Lord Alexei Barov"
+],
+[
+2806,
+"Lady Illucia Barov"
+],
+[
+2801,
+"Darkmaster Gandling"
 ]
 ],
 "2921": [
@@ -678,6 +678,10 @@
 ],
 "309": [
 [
+785,
+"High Priestess Jeklik"
+],
+[
 784,
 "High Priest Venoxis"
 ],
@@ -712,10 +716,6 @@
 [
 793,
 "Hakkar"
-],
-[
-785,
-"High Priestess Jeklik"
 ]
 ],
 "329": [
@@ -1158,6 +1158,30 @@
 ],
 "48": [
 [
+2916,
+"Ghamoo-ra"
+],
+[
+2915,
+"Lady Sarevess"
+],
+[
+2914,
+"Geilhast"
+],
+[
+2913,
+"Lorgus Jett"
+],
+[
+2912,
+"Old Serra'kis"
+],
+[
+2911,
+"Twilight Lord Kelris"
+],
+[
 2694,
 "Baron Aquanis"
 ],
@@ -1216,30 +1240,6 @@
 [
 2891,
 "Aku'mai"
-],
-[
-2916,
-"Ghamoo-ra"
-],
-[
-2915,
-"Lady Sarevess"
-],
-[
-2914,
-"Geilhast"
-],
-[
-2913,
-"Lorgus Jett"
-],
-[
-2912,
-"Old Serra'kis"
-],
-[
-2911,
-"Twilight Lord Kelris"
 ]
 ],
 "509": [
