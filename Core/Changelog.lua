@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.378", date = "28/11/2026",
+        changed = {
+            "Données mises à jour depuis QuestieDB, Everloot, wago.tools, wowtbc.gg, What's Training et opendata : 33 quêtes de plus avec leurs camps d'objectifs.",
+        },
+    },
+    {
         version = "1.128.377", date = "27/11/2026",
         changed = {
             "Données mises à jour depuis QuestieDB, Everloot, wago.tools, wowtbc.gg, What's Training et opendata : 1 quête de plus avec leurs camps d'objectifs.",
